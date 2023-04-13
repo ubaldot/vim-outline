@@ -2,14 +2,12 @@ vim9script
 
 # ======== This shall be file dependent BEGIN ===============
 
-
-
 # TODO: create a function in ftplugin: # https://vi.stackexchange.com/questions/11231/is-it-possible-to-create-a-function-with-the-same-name-for-different-filetypes
 #
 # Input should be the window ID
 # Output the line numbers for the jumps
 
-def PyOutlineParseBuffer(outline_win_id: number): list<number>
+export def g:PyOutlineParseBuffer(outline_win_id: number): list<number>
 
     win_execute(outline_win_id, 'setlocal syntax=python')
     # var pattern_blank_line = '^\s*$'
@@ -84,4 +82,4 @@ enddef
 
 # ======== This shall be file dependent END ==============
 #
-b:PyOutlineParseBuffer = function('<SID>PyOutlineParseBuffer')
+b:PyOutlineParseBuffer = function('<SID>ftplugin#python#PyOutlineParseBuffer')
