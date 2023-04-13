@@ -23,18 +23,19 @@ enddef
 
 
 export def g:PyOutlineClose()
+    # In 2 steps: 1. Close the window, 2. wipeout the buffer
     var outline_win_id = bufwinid("^" .. g:outline_buf_name .. "$")
     # echo "ccc"
 
+    # Close the window
     if outline#PyOutlineIsOpen() != -1
         win_gotoid(outline#PyOutlineIsOpen())
         exe ":close"
     endif
 
     # Throw away the old Outline (that was a scratch buffer)
-    # outline_win_id =
     if bufexists(bufnr("^" .. g:outline_buf_name .. "$"))
-       # echom "Outline buffer deleted."
+       echom "Outline buffer deleted."
        exe "bw " .. bufnr("^" .. g:outline_buf_name .. "$")
     endif
 enddef
@@ -45,8 +46,6 @@ export def g:PyOutlineIsOpen(): number
     return bufwinid("^" .. g:outline_buf_name .. "$")
 enddef
 
-
-
 export def g:PyOutlineToggle(show_private: bool)
     if outline#PyOutlineIsOpen() != -1
         outline#PyOutlineClose()
@@ -55,7 +54,7 @@ export def g:PyOutlineToggle(show_private: bool)
     endif
 enddef
 
-export def g:PyOutlineParseBufferFallback(outline_win_id: number): list<number>
+def PyOutlineParseBufferFallback(outline_win_id: number): list<number>
     echo "In the fallback function! :D"
     return []
 enddef
@@ -90,29 +89,34 @@ export def g:PyOutlineOpen(show_private: bool = 1): number
         \ nonumber equalalways winfixwidth')
 
     # Parse the buffer and populate the window
-    var line_numbers = b:PyOutlineParseBuffer(outline_win_id)
-
+    var line_numbers = [0] # It does not line [] initialization
+    if exists('b:PyOutlineParseBuffer')
+        line_numbers = b:PyOutlineParseBuffer(outline_win_id)
+    else
+        line_numbers = PyOutlineParseBufferFallback(outline_win_id)
+    endif
 
     # FINAL TOUCH
     # TODO: keep size independently of the opened windows
     # Set instructions, append after lnum 0
-    appendbufline(g:outline_buf_name, 0, title)
+    appendbufline(winbufnr(outline_win_id), 0, title)
+    # appendbufline(bufnr(g:outline_buf_name), 0, title)
     cursor(len(title) + 1, 1)
 
-    # After write, set it to do non-modifiable
+    # # After write, set it to do non-modifiable
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
     setwinvar(win_id2win(outline_win_id), "line_numbers", line_numbers)
     win_execute(outline_win_id, 'nnoremap <buffer> <enter> :call g:PyFindDef(w:line_numbers)<cr>')
     return outline_win_id
 enddef
 
-augroup Outline_parse_buffer
-    au!
-    autocmd BufRead,BufNewFile *
-        \ if !exists('b:PyOutlineParseBuffer') |
-        \   b:PyOutlineParseBuffer = function('<SID>outline#PyOutlineParseBufferFallback') |
-        \ endif
-augroup END
+# augroup Outline_parse_buffer
+#     au!
+#     autocmd BufRead,BufNewFile *
+#         \ if !exists('b:PyOutlineParseBuffer') |
+#         \   b:PyOutlineParseBuffer = function('<SID>PyOutlineParseBufferFallback') |
+#         \ endif
+# augroup END
 
 augroup Outline_autochange
     au!
