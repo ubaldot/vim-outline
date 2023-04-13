@@ -1,12 +1,12 @@
-
+vim9script
 
 # ========================================================
 # Outline functions
 # ========================================================
 
-g:outline_buf_name = "Outline"
-g:outline_win_size = 29
-g:show_private = 0
+
+# Script variables
+var title = ["Go on a line and hit <enter>", "to jump to definition.", ""]
 
 def g:PyFindDef(line_numbers: list<number>)
     # You should always go on the right spot
@@ -24,9 +24,10 @@ enddef
 
 export def g:PyOutlineClose()
     var outline_win_id = bufwinid("^" .. g:outline_buf_name .. "$")
+    # echo "ccc"
 
-    if myfunctions#PyOutlineIsOpen() != -1
-        win_gotoid(myfunctions#PyOutlineIsOpen())
+    if outline#PyOutlineIsOpen() != -1
+        win_gotoid(outline#PyOutlineIsOpen())
         exe ":close"
     endif
 
@@ -48,27 +49,30 @@ enddef
 
 
 export def g:PyOutlineToggle(show_private: bool)
-    if myfunctions#PyOutlineIsOpen() != -1
-        myfunctions#PyOutlineClose()
+    if outline#PyOutlineIsOpen() != -1
+        outline#PyOutlineClose()
     else
-        myfunctions#PyOutlineOpen(show_private)
+        outline#PyOutlineOpen(show_private)
     endif
 enddef
 
+export def g:PyOutlineParseBufferFallback(outline_win_id: number): list<number>
+    echo "In the fallback function"
+    return []
+enddef
 
-var title = ["Go on a line and hit <enter>", "to jump to definition.", ""]
 export def g:PyOutlineOpen(show_private: bool = 1): number
     # Return the win ID or -1 if &filetype is not python.
     # TODO Refresh automatically
     # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
     if &filetype != "python"
         echo "Filetype is not python!"
-        myfunctions#PyOutlineClose()
+        outline#PyOutlineClose()
         return -1
     endif
 
     # Close previous Outline view (if any)
-    myfunctions#PyOutlineClose()
+    outline#PyOutlineClose()
 
     # CREATE EMPTY WIN.
     # Create empty win from current position
@@ -86,85 +90,86 @@ export def g:PyOutlineOpen(show_private: bool = 1): number
         \ nonumber equalalways winfixwidth')
 
 
-    # ======== This shall be file dependent BEGIN ===============
-    # TODO: create a function in ftplugin: # https://vi.stackexchange.com/questions/11231/is-it-possible-to-create-a-function-with-the-same-name-for-different-filetypes
-    #
-    # Input should be the window ID
-    # Output the line numbers for the jumps
-    #
-    win_execute(outline_win_id, 'setlocal syntax=python')
-    # var pattern_blank_line = '^\s*$'
-    # var pattern_empty_line = '^$'
-    # var pattern_docstrings1 = '^\s*\w*' # a docstring may start with r""" ...
-    # # var pattern_docstrings2 = '"""\_.\{-}"""$' # Everything inside between two consecutive """ """
-    # var pattern_docstrings2 = '"""\.*"""$' # Everything inside between two consecutive """ """
-    var pattern_docstrings_gtp = '\v([rf]?["'']{3})(\_.{-})(\1)'
-    var pattern_class = '^class'
-    var pattern_def = '^\s*def'
-    var pattern_private_def = '^\s*def\s_\{-1,2}'
+
+    ## ======== This shall be file dependent BEGIN ===============
+    ## TODO: create a function in ftplugin: # https://vi.stackexchange.com/questions/11231/is-it-possible-to-create-a-function-with-the-same-name-for-different-filetypes
+    ##
+    ## Input should be the window ID
+    ## Output the line numbers for the jumps
+    ##
+    #win_execute(outline_win_id, 'setlocal syntax=python')
+    ## var pattern_blank_line = '^\s*$'
+    ## var pattern_empty_line = '^$'
+    ## var pattern_docstrings1 = '^\s*\w*' # a docstring may start with r""" ...
+    ## # var pattern_docstrings2 = '"""\_.\{-}"""$' # Everything inside between two consecutive """ """
+    ## var pattern_docstrings2 = '"""\.*"""$' # Everything inside between two consecutive """ """
+    #var pattern_docstrings_gtp = '\v([rf]?["'']{3})(\_.{-})(\1)'
+    #var pattern_class = '^class'
+    #var pattern_def = '^\s*def'
+    #var pattern_private_def = '^\s*def\s_\{-1,2}'
 
 
-    var Outline = getline(1, "$")
-    # Remove docstrings in two steps:
-    # 1) replace all the docstrings lines with tmp_string
-    # 2) filter out lines that are not tmp_string
-    #
-    # Init
-    var ii = 0
-    var is_comment = Outline[ii] =~ '"""' && Outline[ii] !~ '.*""".*"""'
+    #var Outline = getline(1, "$")
+    ## Remove docstrings in two steps:
+    ## 1) replace all the docstrings lines with tmp_string
+    ## 2) filter out lines that are not tmp_string
+    ##
+    ## Init
+    #var ii = 0
+    #var is_comment = Outline[ii] =~ '"""' && Outline[ii] !~ '.*""".*"""'
 
-    # Iteration
-    var tmp_string = "<vim-removed>"
-    for item in Outline
-        # echo is_comment
-        if item =~ '.*""".*"""'
-            Outline[ii] = tmp_string
-        elseif item =~ '"""' && item !~ '.*""".*"""'
-            Outline[ii] = tmp_string
-            is_comment = !is_comment
-        elseif is_comment
-            Outline[ii] = tmp_string
-        endif
-        ii = ii + 1
-    endfor
+    ## Iteration
+    #var tmp_string = "<vim-removed>"
+    #for item in Outline
+    #    # echo is_comment
+    #    if item =~ '.*""".*"""'
+    #        Outline[ii] = tmp_string
+    #    elseif item =~ '"""' && item !~ '.*""".*"""'
+    #        Outline[ii] = tmp_string
+    #        is_comment = !is_comment
+    #    elseif is_comment
+    #        Outline[ii] = tmp_string
+    #    endif
+    #    ii = ii + 1
+    #endfor
 
-    # Note that Outline idx - line number of the original file
-    # match 1-1 being Outline = getlines(1, "$")
-    # Check if you can do it with map()
-    var line_numbers = []
-    ii = 0
-    for item in Outline
-        if item =~ pattern_class || item =~ pattern_def
-            add(line_numbers, ii + 1)
-        endif
-        ii = ii + 1
-    endfor
+    ## Note that Outline idx - line number of the original file
+    ## match 1-1 being Outline = getlines(1, "$")
+    ## Check if you can do it with map()
+    #var line_numbers = []
+    #ii = 0
+    #for item in Outline
+    #    if item =~ pattern_class || item =~ pattern_def
+    #        add(line_numbers, ii + 1)
+    #    endif
+    #    ii = ii + 1
+    #endfor
 
-    # Actually remove dosctrings
-    Outline = Outline ->filter("v:val !~ 'tmp_string'")
+    ## Actually remove dosctrings
+    #Outline = Outline ->filter("v:val !~ 'tmp_string'")
 
-    # Now you can filter by class, functions and methods.
-    if g:show_private
-        Outline = Outline ->filter("v:val =~ " .. string(pattern_class .. '\|' .. pattern_def))
-    else
-        Outline = Outline ->filter("v:val =~ " .. string(pattern_class .. '\|' .. pattern_def))
-            ->filter("v:val !~ " .. string(pattern_private_def))
-    endif
+    ## Now you can filter by class, functions and methods.
+    #if g:show_private
+    #    Outline = Outline ->filter("v:val =~ " .. string(pattern_class .. '\|' .. pattern_def))
+    #else
+    #    Outline = Outline ->filter("v:val =~ " .. string(pattern_class .. '\|' .. pattern_def))
+    #        ->filter("v:val !~ " .. string(pattern_private_def))
+    #endif
 
-    # Add a if you want to show line numbers
-    # Outline = Outline -> filter('v:val != ' .. string(lnums_regex))
+    ## Add a if you want to show line numbers
+    ## Outline = Outline -> filter('v:val != ' .. string(lnums_regex))
 
-    # Remove all the text after "(" in def myfunc(bla bla bla
-    # Outline = Outline -> filter('v:val != "(.*"')
+    ## Remove all the text after "(" in def myfunc(bla bla bla
+    ## Outline = Outline -> filter('v:val != "(.*"')
 
-    # echo Outline
-    setbufline(g:outline_buf_name, 1, Outline)
+    ## echo Outline
+    #setbufline(g:outline_buf_name, 1, Outline)
 
-    # Return line numbers
+    ## Return line numbers
 
     # ======== This shall be file dependent END ==============
 
-
+    var line_numbers = outline#PyOutlineParseBuffer(outline_win_id)
     # FINAL TOUCH
     # TODO: keep size independently of the opened windows
     # Set instructions, append after lnum 0
@@ -178,9 +183,18 @@ export def g:PyOutlineOpen(show_private: bool = 1): number
     return outline_win_id
 enddef
 
+
+augroup Outline_parse_buffer
+    au!
+    autocmd BufRead,BufNewFile *
+        \ if !exists('b:CurrentFunctionName') |
+        \   b:CurrentFunctionName = function('<SID>outline#PyOutlineParseBufferFallback') |
+        \ endif
+augroup END
+
 augroup Outline_autochange
     au!
-    autocmd BufWinEnter *.py if myfunctions#PyOutlineIsOpen() != -1
-                \| myfunctions#PyOutlineOpen(g:show_private) | endif
-    autocmd! BufWinLeave myfunctions#PyOutlineClose()
+    autocmd BufWinEnter *.py if outline#PyOutlineIsOpen() != -1
+                \| outline#PyOutlineOpen(g:show_private) | endif
+    autocmd! BufWinLeave outline#PyOutlineClose()
 augroup END

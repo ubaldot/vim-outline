@@ -1,10 +1,16 @@
+vim9script
 
-    # ======== This shall be file dependent BEGIN ===============
-    # TODO: create a function in ftplugin: # https://vi.stackexchange.com/questions/11231/is-it-possible-to-create-a-function-with-the-same-name-for-different-filetypes
-    #
-    # Input should be the window ID
-    # Output the line numbers for the jumps
-    #
+# ======== This shall be file dependent BEGIN ===============
+
+
+
+# TODO: create a function in ftplugin: # https://vi.stackexchange.com/questions/11231/is-it-possible-to-create-a-function-with-the-same-name-for-different-filetypes
+#
+# Input should be the window ID
+# Output the line numbers for the jumps
+
+def PyOutlineParseBuffer(outline_win_id: number): list<number>
+
     win_execute(outline_win_id, 'setlocal syntax=python')
     # var pattern_blank_line = '^\s*$'
     # var pattern_empty_line = '^$'
@@ -71,8 +77,11 @@
     # Outline = Outline -> filter('v:val != "(.*"')
 
     # echo Outline
-    setbufline(g:outline_buf_name, 1, Outline)
+        setbufline(g:outline_buf_name, 1, Outline)
 
-    # Return line numbers
+    return line numbers
+enddef
 
-    # ======== This shall be file dependent END ==============
+# ======== This shall be file dependent END ==============
+#
+b:PyOutlineParseBuffer = function('<SID>PyOutlineParseBuffer')
