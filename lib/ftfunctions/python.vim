@@ -17,6 +17,7 @@ export def ParseBuffer(outline_win_id: number): list<number>
 
     # Copy the whole calling buffer to a local variable
     var Outline = getline(1, "$")
+    insert(Outline, "# ", 0)
 
     # Remove docstrings in two steps:
     # 1) replace all the docstrings lines with tmp_string (see below)

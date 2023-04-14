@@ -11,7 +11,7 @@ vim9script
 var title = ["Go on a line and hit <enter>", "to jump to definition.", ""]
 
 # Script functions
-export def FindDef(line_numbers: list<number>)
+def FindDefinition(line_numbers: list<number>)
     # You should always go on the right spot
     # by construction. See how line_numbers is built.
     echo len(title)
@@ -23,6 +23,7 @@ export def FindDef(line_numbers: list<number>)
     normal ^
 enddef
 
+noremap <unique> <script> <Plug>FindDef :call <SID>FindDefinition(line_numbers)<cr>
 
 def OutlineClose()
     # In 2 steps:
@@ -92,17 +93,15 @@ def OutlineOpen(show_private: bool = 1): number
     else
         line_numbers = ParseBufferFallback(outline_win_id)
     endif
-
     # FINAL TOUCH
     # Set instructions, append after lnum 0
     appendbufline(winbufnr(outline_win_id), 0, title)
     cursor(len(title) + 1, 1)
-
     # # After write, set it to do non-modifiable
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
     setwinvar(win_id2win(outline_win_id), "line_numbers", line_numbers)
     # TODO Fix FindDef scope
-    win_execute(outline_win_id, 'nnoremap <buffer> <enter> :call FindDef(w:line_numbers)<cr>')
+    win_execute(outline_win_id, 'nnoremap <buffer> <enter> <Plug>FindDef(w:line_numbers)<cr>')
     return outline_win_id
 enddef
 
