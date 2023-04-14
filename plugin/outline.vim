@@ -35,7 +35,9 @@ if !exists('g:outline_size')
      g:outline_size = 0 # Use 0 to take the half of the whole space
 endif
 
-
+import "../lib/outline.vim"
+noremap <unique> <script> <Plug>Outline! :call <SID>outline.PyOutlineToggle(0)<cr>
+nnoremap <silent> <unique> <F4> <Plug>Outline!
 # Commands definition: if a key (&filetype) don't exist in the defined dicts, use a default (= "default").
 # command! ReplConsoleOpen silent :call replica#ReplOpen()
 # command! -nargs=? ReplConsoleClose silent :call replica#ReplClose(<f-args>)
