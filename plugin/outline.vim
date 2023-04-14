@@ -36,7 +36,7 @@ if !exists('g:outline_size')
 endif
 
 import "../lib/outline.vim"
-noremap <unique> <script> <Plug>Outline! :call <SID>outline.PyOutlineToggle(0)<cr>
+noremap <unique> <script> <Plug>Outline! :call <SID>outline.OutlineToggle(g:show_private)<cr>
 nnoremap <silent> <unique> <F4> <Plug>Outline!
 # Commands definition: if a key (&filetype) don't exist in the defined dicts, use a default (= "default").
 # command! ReplConsoleOpen silent :call replica#ReplOpen()
