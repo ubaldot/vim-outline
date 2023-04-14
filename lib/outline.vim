@@ -11,7 +11,7 @@ vim9script
 var title = ["Go on a line and hit <enter>", "to jump to definition.", ""]
 
 # Script functions
-def FindDef(line_numbers: list<number>)
+export def FindDef(line_numbers: list<number>)
     # You should always go on the right spot
     # by construction. See how line_numbers is built.
     echo len(title)
@@ -101,6 +101,7 @@ def OutlineOpen(show_private: bool = 1): number
     # # After write, set it to do non-modifiable
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
     setwinvar(win_id2win(outline_win_id), "line_numbers", line_numbers)
+    # TODO Fix FindDef scope
     win_execute(outline_win_id, 'nnoremap <buffer> <enter> :call FindDef(w:line_numbers)<cr>')
     return outline_win_id
 enddef
