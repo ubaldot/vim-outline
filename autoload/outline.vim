@@ -13,37 +13,38 @@ def g:PyFindDef(line_numbers: list<number>)
     # by construction. See how line_numbers is built.
     echo len(title)
     var idx = max([0, line('.') - len(title) - 1])
-    # TODO: go to ^
     wincmd p
     # win_execute(win_getid(), 'wincmd p')
     cursor(line_numbers[idx], 1)
-
-    # search(line, "w")
+    # TODO: check if you can replace Ex commands with builin functions
+    normal ^
 enddef
 
 
 export def g:PyOutlineClose()
-    # In 2 steps: 1. Close the window, 2. wipeout the buffer
-    var outline_win_id = bufwinid("^" .. g:outline_buf_name .. "$")
-    # echo "ccc"
+    # In 2 steps:
+        # 1. Close the window,
+        # 2. wipeout the buffer
+    var outline_win_id = bufwinid($"^{g:outline_buf_name}$")
 
     # Close the window
     if outline#PyOutlineIsOpen() != -1
         win_gotoid(outline#PyOutlineIsOpen())
+        # TODO check if you can replace the Ex command with a builtin function
         exe ":close"
     endif
 
     # Throw away the old Outline (that was a scratch buffer)
-    if bufexists(bufnr("^" .. g:outline_buf_name .. "$"))
+    if bufexists(bufnr($"^{g:outline_buf_name}$"))
        echom "Outline buffer deleted."
-       exe "bw " .. bufnr("^" .. g:outline_buf_name .. "$")
+       exe "bw " .. bufnr($"^{g:outline_buf_name}$")
     endif
 enddef
 
 
 export def g:PyOutlineIsOpen(): number
     # Return win_ID if open, -1 otherwise.
-    return bufwinid("^" .. g:outline_buf_name .. "$")
+    return bufwinid($"^{g:outline_buf_name}$")
 enddef
 
 export def g:PyOutlineToggle(show_private: bool)
@@ -63,13 +64,6 @@ export def g:PyOutlineOpen(show_private: bool = 1): number
     # Return the win ID or -1 if &filetype is not python.
     # TODO Refresh automatically
     # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
-    # if &filetype != "python"
-    #     echo "Filetype is not python!"
-    #     # outline#PyOutlineClose()
-    #     outline#PyOutlineParseBufferFallback(0)
-    #     return -1
-    # endif
-
     # Close previous Outline view (if any)
     outline#PyOutlineClose()
 
@@ -81,26 +75,25 @@ export def g:PyOutlineOpen(show_private: bool = 1): number
     var outline_win_nr = winnr('$')
     var outline_win_id = win_getid(outline_win_nr)
     win_execute(outline_win_id, 'wincmd L')
-    win_execute(outline_win_id, 'vertical resize ' .. g:outline_win_size)
-    win_execute(outline_win_id, 'file ' .. g:outline_buf_name)
+    win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
+    win_execute(outline_win_id, $'file {g:outline_buf_name}')
     win_execute(outline_win_id,
         \    'setlocal buftype=nofile bufhidden=hide
         \ nobuflisted noswapfile nowrap
         \ nonumber equalalways winfixwidth')
 
     # Parse the buffer and populate the window
-    var line_numbers = [0] # It does not line [] initialization
+    var line_numbers = [0] # It does not like [] initialization
     if exists('b:PyOutlineParseBuffer')
+        echo b:PyOutlineParseBuffer
         line_numbers = b:PyOutlineParseBuffer(outline_win_id)
     else
         line_numbers = PyOutlineParseBufferFallback(outline_win_id)
     endif
 
     # FINAL TOUCH
-    # TODO: keep size independently of the opened windows
     # Set instructions, append after lnum 0
     appendbufline(winbufnr(outline_win_id), 0, title)
-    # appendbufline(bufnr(g:outline_buf_name), 0, title)
     cursor(len(title) + 1, 1)
 
     # # After write, set it to do non-modifiable
@@ -110,17 +103,10 @@ export def g:PyOutlineOpen(show_private: bool = 1): number
     return outline_win_id
 enddef
 
-# augroup Outline_parse_buffer
-#     au!
-#     autocmd BufRead,BufNewFile *
-#         \ if !exists('b:PyOutlineParseBuffer') |
-#         \   b:PyOutlineParseBuffer = function('<SID>PyOutlineParseBufferFallback') |
-#         \ endif
-# augroup END
 
-augroup Outline_autochange
-    au!
-    autocmd BufWinEnter *.py if outline#PyOutlineIsOpen() != -1
-                \| outline#PyOutlineOpen(g:show_private) | endif
-    autocmd! BufWinLeave outline#PyOutlineClose()
-augroup END
+# augroup Outline_autochange
+#     au!
+#     autocmd BufWinEnter *.py if outline#PyOutlineIsOpen() != -1
+#                 \| outline#PyOutlineOpen(g:show_private) | endif
+#     autocmd! BufWinLeave outline#PyOutlineClose()
+# augroup END

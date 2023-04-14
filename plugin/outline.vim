@@ -35,7 +35,6 @@ if !exists('g:outline_size')
      g:outline_size = 0 # Use 0 to take the half of the whole space
 endif
 
-g:pippo = "pluto"
 
 # Commands definition: if a key (&filetype) don't exist in the defined dicts, use a default (= "default").
 # command! ReplConsoleOpen silent :call replica#ReplOpen()
