@@ -24,30 +24,20 @@ def GoToDefinition(Outline: list<string>)
     # We remove all the stuff after ( in the function signature, otherwise
     # the search() below will not really like it.
     var curr_line = substitute(getline('.'), '(.*', "(", "")
-    var counter = 0
-    var start_pos = 0
 
     # While loop to search for duplicated, e.g. two classes,
     # same method name (poliyprphism)
-    while start_pos < curr_line_nr - 1
-        counter += 1
-        # OBS! index() should never return a -1 value because,
-        # by construction, line is always in Outline.
-        var Outline_slice = Outline[start_pos : curr_line_nr - 1] -> substitute('(.*', "(", "")
-        echom $"Outline_slice: {Outline_slice}"
-        start_pos = index(Outline_slice, curr_line)
-        echo $"line_nr: {curr_line_nr}"
-        echo $"start_pos: {start_pos}"
-    endwhile
-    echo counter
+    var counter = len(Outline[0 : curr_line_nr - 1] -> filter('v:val =~ ' .. string(curr_line)))
+
     # TODO: check if you can replace wincmd p with some builtin function
     wincmd p
 
+    # The number of jumps needed are counted from the
+    # beginning of the file
+    cursor(1, 1)
+    echo curr_line
     for ii in range(counter)
-        # echom substitute(line, '(.*', "(", "")
-        # Hack for removing everything after ( in a function signature,
-        # otherwise search() may not like it
-        search(substitute(curr_line, '(.*', "(", ""), "cw")
+       search(curr_line, "W")
     endfor
 enddef
 
