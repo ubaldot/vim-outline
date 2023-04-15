@@ -33,6 +33,8 @@ def GoToDefinition(Outline: list<string>)
     while start_pos < line_nr - 1
         counter += 1
         start_pos = index(Outline[start_pos : line_nr - 1], line)
+        # OBS! index() should never return a -1 value because,
+        # by construction, line is always in Outline.
         if start_pos == -1
             start_pos = line('$') + 1
         endif
@@ -46,10 +48,6 @@ def GoToDefinition(Outline: list<string>)
         # otherwise search() may not like it
         search(substitute(line, '(.*', "(", ""), "cw")
     endfor
-    # win_execute(win_getid(), 'wincmd p')
-    # cursor(line_numbers[idx], 1)
-    # TODO: check if you can replace Ex commands with builin functions
-    # normal ^
 enddef
 
 
