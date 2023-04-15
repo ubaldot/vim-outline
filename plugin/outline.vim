@@ -9,51 +9,34 @@ vim9script
 # replica.vim
 # github.com/ubaldot/vim-replica
 
-# if exists('g:outline_loaded')
-#     finish
-# endif
+if exists('g:outline_loaded')
+    finish
+endif
 
 g:outline_loaded = 0
 
+# User settings
 g:outline_buf_name = "Outline"
 g:outline_win_size = 29
-g:show_private = 0
+g:outline_python_show_private = 0
 
-if !exists('g:outline_autostart')
-     g:outline_autostart = 1
+if !exists('g:outline_buf_name')
+    g:outline_buf_name = "Outline"
 endif
 
-if !exists('g:outline_alt_highlight')
-     g:outline_alt_highlight = 0
+if !exists('g:outline_win_size')
+     g:outline_win_size = 29
 endif
 
-if !exists('g:outline_direction')
-     g:outline_direction = "L"
+if !exists('g:outline_python_show_private')
+     g:outline_python_show_private = 0
 endif
 
-if !exists('g:outline_size')
-     g:outline_size = 0 # Use 0 to take the half of the whole space
-endif
 
+# Mapping
 import "../lib/outline.vim"
-noremap <unique> <script> <Plug>Outline! :call <SID>outline.OutlineToggle(g:show_private)<cr>
-nnoremap <silent> <unique> <F4> <Plug>Outline!
-# Commands definition: if a key (&filetype) don't exist in the defined dicts, use a default (= "default").
-# command! ReplConsoleOpen silent :call replica#ReplOpen()
-# command! -nargs=? ReplConsoleClose silent :call replica#ReplClose(<f-args>)
-# command! ReplConsoleToggle silent :call replica#ReplToggle()
-# command! ReplConsoleRestart silent :call replica#ReplShutoff() | replica#ReplOpen()
-# command! -nargs=? ReplConsoleShutoff silent :call replica#ReplShutoff(<f-args>)
+noremap <unique> <script> <Plug>Outline! :call <SID>outline.OutlineToggle(g:outline_python_show_private)<cr>
 
-# command! -range ReplSendLines silent :call replica#SendLines(<line1>, <line2>)
-# command! ReplSendCell silent :call replica#SendCell()
-# command! -nargs=? -complete=file ReplSendFile silent :call replica#SendFile(<f-args>)
-
-# command! ReplRemoveCells silent :call replica#RemoveCells()
-
-
-
-# if !hasmapto('<Plug>ReplSendCell') || empty(mapcheck("<c-enter>", "ni"))
-#     nnoremap <silent> <c-enter> <Cmd>ReplSendCell<cr>
-#     inoremap <silent> <c-enter> <Cmd>ReplSendCell<cr>
-# endif
+if !hasmapto("<Plug>Outline!" ) || empty(mapcheck("<F8>", "n"))
+    nnoremap <silent> <unique> <F8> <Plug>Outline!
+endif

@@ -8,13 +8,19 @@ vim9script
 # ========================================================
 
 # Script variables
-var title = ["Go on a line and hit <enter>", "to jump to definition.", ""]
+var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
 
+# TODO: add a sign function for Outline
 # Script functions
-def FindDefinition(line_numbers: list<number>)
+#
+def HighlightLine()
+    echo "TBD!"
+enddef
+
+
+def GoToDefinition(line_numbers: list<number>)
     # You should always go on the right spot
     # by construction. See how line_numbers is built.
-    echo len(title)
     var idx = max([0, line('.') - len(title) - 1])
     wincmd p
     # win_execute(win_getid(), 'wincmd p')
@@ -23,7 +29,6 @@ def FindDefinition(line_numbers: list<number>)
     normal ^
 enddef
 
-noremap <unique> <script> <Plug>FindDef :call <SID>FindDefinition(line_numbers)<cr>
 
 def OutlineClose()
     # In 2 steps:
@@ -59,19 +64,22 @@ export def OutlineToggle(show_private: bool)
     endif
 enddef
 
-def ParseBufferFallback(outline_win_id: number): list<number>
+def PopulateOutlineWindowFallback(outline_win_id: number): list<string>
     echo "In the fallback function! :D"
     return []
 enddef
 
 def OutlineOpen(show_private: bool = 1): number
     # Return the win ID or -1 if &filetype is not python.
+    # TODO Remove the show private dependency
     # TODO Refresh automatically
     # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
     # Close previous Outline view (if any)
     OutlineClose()
 
+    # =========================================
     # CREATE EMPTY WIN.
+    # =========================================
     # Create empty win from current position
     win_execute(win_getid(), 'wincmd n')
 
@@ -86,22 +94,38 @@ def OutlineOpen(show_private: bool = 1): number
         \ nobuflisted noswapfile nowrap
         \ nonumber equalalways winfixwidth')
 
+
+    # =========================================
+    # POPULATE THE EMPTY WIN.
+    # =========================================
     # Parse the buffer and populate the window
-    var line_numbers = [0] # It does not like [] initialization
-    if exists('b:ParseBuffer')
-        line_numbers = b:ParseBuffer(outline_win_id) # This is a reference to a function!
+    var Outline = [""] # It does not like [] initialization
+    if exists('b:PopulateOutlineWindow')
+        Outline = b:PopulateOutlineWindow(outline_win_id) # b:PopulateOutlineWindow is a FuncRef
     else
-        line_numbers = ParseBufferFallback(outline_win_id)
+        Outline = PopulateOutlineWindowFallback(outline_win_id)
     endif
-    # FINAL TOUCH
-    # Set instructions, append after lnum 0
+
+
+    # =========================================
+    #  A FINAL TOUCH.
+    # =========================================
+    # Set title, append after lnum 0
     appendbufline(winbufnr(outline_win_id), 0, title)
-    cursor(len(title) + 1, 1)
-    # # After write, set it to do non-modifiable
+
+    # After having populated the Outline, set it to do non-modifiable
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
-    setwinvar(win_id2win(outline_win_id), "line_numbers", line_numbers)
-    # TODO Fix FindDef scope
-    win_execute(outline_win_id, 'nnoremap <buffer> <enter> <Plug>FindDef(w:line_numbers)<cr>')
+
+    # Pass GoToDefinition function to the window, so you can call it from there
+    setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition)
+
+    # Add some sugar
+    # TODO: how to remove syntax in the title
+    win_execute(outline_win_id, 'nnoremap <buffer> j j^')
+    win_execute(outline_win_id, 'nnoremap <buffer> k k^')
+    win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
+    win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
+    win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
     return outline_win_id
 enddef
 
@@ -109,6 +133,6 @@ enddef
 # augroup Outline_autochange
 #     au!
 #     autocmd BufWinEnter *.py if outline#PyOutlineIsOpen() != -1
-#                 \| outline#PyOutlineOpen(g:show_private) | endif
+#                 \| outline#PyOutlineOpen(g:outline_python_show_private) | endif
 #     autocmd! BufWinLeave outline#PyOutlineClose()
 # augroup END
