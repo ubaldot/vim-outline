@@ -18,15 +18,38 @@ def HighlightLine()
 enddef
 
 
-def GoToDefinition(line_numbers: list<number>)
+def GoToDefinition(Outline: list<string>)
     # You should always go on the right spot
     # by construction. See how line_numbers is built.
-    var idx = max([0, line('.') - len(title) - 1])
+    var line_nr = max([1, line('.') - len(title)])
+    var line = getline('.')
+    var counter = 0
+    var start_pos = 0
+
+    # echom Outline[line_nr - 1]
+    # echom line
+    # echom line_nr
+    # echom  $"Found at pos: {index(Outline[0 : line_nr - 1], line)}"
+    while start_pos < line_nr - 1
+        counter += 1
+        start_pos = index(Outline[start_pos : line_nr - 1], line)
+        if start_pos == -1
+            start_pos = line('$') + 1
+        endif
+    endwhile
+    # echo counter
+    # var idx = max([0, line('.') - len(title) - 1])
     wincmd p
+    for ii in range(counter)
+        # echom substitute(line, '(.*', "(", "")
+        # Hack for removing everything after ( in a function signature,
+        # otherwise search() may not like it
+        search(substitute(line, '(.*', "(", ""), "cw")
+    endfor
     # win_execute(win_getid(), 'wincmd p')
-    cursor(line_numbers[idx], 1)
+    # cursor(line_numbers[idx], 1)
     # TODO: check if you can replace Ex commands with builin functions
-    normal ^
+    # normal ^
 enddef
 
 
@@ -116,8 +139,10 @@ def OutlineOpen(show_private: bool = 1): number
     # After having populated the Outline, set it to do non-modifiable
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
-    # Pass GoToDefinition function to the window, so you can call it from there
-    setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition)
+    # Set few w: local variables
+    setwinvar(win_id2win(outline_win_id), "Outline", Outline)
+    setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition) # Passing a function
+    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call w:GoToDefinition(w:Outline)<cr>')
 
     # Add some sugar
     # TODO: how to remove syntax in the title
