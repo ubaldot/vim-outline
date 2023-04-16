@@ -3,7 +3,8 @@ vim9script
 # ========================================================
 # Outline functions
 #
-# export only OutlineToggle(show_private: bool)
+# export OutlineToggle()
+# export OutlineRefresh()
 #
 # ========================================================
 
@@ -41,7 +42,7 @@ def OutlineClose()
     # In 2 steps:
         # 1. Close the window,
         # 2. wipeout the buffer
-    var outline_win_id = bufwinid($"^{g:outline_buf_name}$")
+    # var outline_win_id = bufwinid($"^{g:outline_buf_name}$")
 
     # Close the window
     if OutlineIsOpen() != -1
@@ -58,17 +59,26 @@ def OutlineClose()
 enddef
 
 
+
 def OutlineIsOpen(): number
     # Return win_ID if open, -1 otherwise.
     return bufwinid($"^{g:outline_buf_name}$")
 enddef
 
-# TODO: don't use show_private, try with args
 export def OutlineToggle()
     if OutlineIsOpen() != -1
        OutlineClose()
     else
-       OutlineOpen()
+       OutlineFill(OutlineCreateEmptyWindow())
+    endif
+enddef
+
+export def OutlineRefresh()
+    var outline_win_id = OutlineIsOpen()
+    if outline_win_id != -1
+        win_execute(outline_win_id, 'setlocal modifiable noreadonly')
+        deletebufline(winbufnr(outline_win_id), 1, line('$', outline_win_id))
+        OutlineFill(outline_win_id)
     endif
 enddef
 
@@ -77,14 +87,7 @@ def PopulateOutlineWindowFallback(outline_win_id: number): list<string>
     return []
 enddef
 
-def OutlineOpen(): number
-    # Return the win ID or -1 if &filetype is not python.
-    # TODO Remove the show private dependency
-    # TODO Refresh automatically
-    # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
-    # Close previous Outline view (if any)
-    OutlineClose()
-
+def OutlineCreateEmptyWindow(): number
     # =========================================
     # CREATE EMPTY WIN.
     # =========================================
@@ -101,7 +104,16 @@ def OutlineOpen(): number
         \    'setlocal buftype=nofile bufhidden=hide
         \ nobuflisted noswapfile nowrap
         \ nonumber equalalways winfixwidth')
+    return outline_win_id
+enddef
 
+
+def OutlineFill(outline_win_id: number)
+    # Return the win ID or -1 if &filetype is not python.
+    # TODO Refresh automatically
+    # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
+    # Close previous Outline view (if any)
+    # OutlineClose()
 
     # =========================================
     # POPULATE THE EMPTY WIN.
@@ -127,6 +139,9 @@ def OutlineOpen(): number
     # Let the Outline window to access this script by passing a function
     setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition) # Passing a function
     win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call w:GoToDefinition()<cr>')
+    if has("gui")
+        win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse> :call w:GoToDefinition()<cr>')
+    endif
 
     # Add some sugar
     # TODO: how to remove syntax in the title
@@ -135,7 +150,6 @@ def OutlineOpen(): number
     win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
     win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
     win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
-    return outline_win_id
 enddef
 
 
