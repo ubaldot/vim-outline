@@ -9,8 +9,8 @@ vim9script
 
 # Script variables
 var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
+var Outline = [""] # It does not like [] initialization
 
-# TODO: add a sign function for Outline
 # Script functions
 #
 def HighlightLine()
@@ -18,16 +18,11 @@ def HighlightLine()
 enddef
 
 
-def GoToDefinition(Outline: list<string>)
+def GoToDefinition()
 
     var curr_line_nr = max([1, line('.') - len(title)])
-    # We remove all the stuff after ( in the function signature, otherwise
-    # the search() below will not really like it.
-    var curr_line = substitute(getline('.'), '(.*', "(", "")
-
-    # While loop to search for duplicated, e.g. two classes,
-    # same method name (poliyprphism)
-    var counter = len(Outline[0 : curr_line_nr - 1] -> filter('v:val =~ ' .. string(curr_line)))
+    var curr_line = getline('.')
+    var counter = len(Outline[0 : curr_line_nr - 1] -> filter($"v:val ==# '{curr_line}'"))
 
     # TODO: check if you can replace wincmd p with some builtin function
     wincmd p
@@ -35,9 +30,9 @@ def GoToDefinition(Outline: list<string>)
     # The number of jumps needed are counted from the
     # beginning of the file
     cursor(1, 1)
-    echo curr_line
     for ii in range(counter)
-       search(curr_line, "W")
+        # the \V is needed to consider literal string and not regex
+        search($'\V{curr_line}', "W")
     endfor
 enddef
 
@@ -68,6 +63,7 @@ def OutlineIsOpen(): number
     return bufwinid($"^{g:outline_buf_name}$")
 enddef
 
+# TODO: don't use show_private, try with args
 export def OutlineToggle(show_private: bool)
     if OutlineIsOpen() != -1
        OutlineClose()
@@ -111,7 +107,6 @@ def OutlineOpen(show_private: bool = 1): number
     # POPULATE THE EMPTY WIN.
     # =========================================
     # Parse the buffer and populate the window
-    var Outline = [""] # It does not like [] initialization
     if exists('b:PopulateOutlineWindow')
         Outline = b:PopulateOutlineWindow(outline_win_id) # b:PopulateOutlineWindow is a FuncRef
     else
@@ -129,16 +124,9 @@ def OutlineOpen(show_private: bool = 1): number
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
     # Set few w: local variables
-    # Remove all the stuff after ( in the function signature, otherwise
-    # the search may have some problem.
-    # TODO: this may be too filetype specific!
-    # Outline_end_trimmed = []
-    # for item in Outline
-    #     add(Outline_end_trimmed, substitute(item, '(.*', "(", ""))
-    # endfor
-    setwinvar(win_id2win(outline_win_id), "Outline", Outline)
+    # Let the Outline window to access this script by passing a function
     setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition) # Passing a function
-    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call w:GoToDefinition(w:Outline)<cr>')
+    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call w:GoToDefinition()<cr>')
 
     # Add some sugar
     # TODO: how to remove syntax in the title
