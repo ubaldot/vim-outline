@@ -16,9 +16,6 @@ endif
 g:outline_loaded = 0
 
 # User settings
-g:outline_buf_name = "Outline"
-g:outline_win_size = 29
-g:outline_python_show_private = 0
 
 if !exists('g:outline_buf_name')
     g:outline_buf_name = "Outline"
@@ -28,14 +25,18 @@ if !exists('g:outline_win_size')
      g:outline_win_size = 29
 endif
 
-if !exists('g:outline_python_show_private')
-     g:outline_python_show_private = 0
-endif
+var outline_options_default = {
+            \ "python": [1]
+            \ }
 
+if exists('g:outline_options')
+    extend(outline_options_default, g:outline_options, "force")
+endif
+g:outline_options = outline_options_default
 
 # Mapping
 import "../lib/outline.vim"
-noremap <unique> <script> <Plug>Outline! :call <SID>outline.OutlineToggle(g:outline_python_show_private)<cr>
+noremap <unique> <script> <Plug>Outline! :call <SID>outline.OutlineToggle()<cr>
 
 if !hasmapto("<Plug>Outline!" ) || empty(mapcheck("<F8>", "n"))
     nnoremap <silent> <unique> <F8> <Plug>Outline!

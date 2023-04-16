@@ -5,7 +5,9 @@ vim9script
 # regular expressions and populate the Outline window.
 # =================================================
 
-export def PopulateOutlineWindow(outline_win_id: number): list<string>
+export def PopulateOutlineWindow(outline_win_id: number, func_options: list<any>): list<string>
+
+    var show_private = func_options[0]
 
     # ==============================================
     # SET OUTLINE WINDOW FILETYPE
@@ -55,7 +57,7 @@ export def PopulateOutlineWindow(outline_win_id: number): list<string>
 
     # Now you can filter by class, functions and methods.
     # TODO: fix this
-    if g:outline_python_show_private
+    if show_private
         Outline = Outline ->filter("v:val =~ " .. string(pattern_class .. '\|' .. pattern_def))
     else
         Outline = Outline ->filter("v:val =~ " .. string(pattern_class .. '\|' .. pattern_def))

@@ -64,11 +64,11 @@ def OutlineIsOpen(): number
 enddef
 
 # TODO: don't use show_private, try with args
-export def OutlineToggle(show_private: bool)
+export def OutlineToggle()
     if OutlineIsOpen() != -1
        OutlineClose()
     else
-       OutlineOpen(show_private)
+       OutlineOpen()
     endif
 enddef
 
@@ -77,7 +77,7 @@ def PopulateOutlineWindowFallback(outline_win_id: number): list<string>
     return []
 enddef
 
-def OutlineOpen(show_private: bool = 1): number
+def OutlineOpen(): number
     # Return the win ID or -1 if &filetype is not python.
     # TODO Remove the show private dependency
     # TODO Refresh automatically
@@ -108,7 +108,7 @@ def OutlineOpen(show_private: bool = 1): number
     # =========================================
     # Parse the buffer and populate the window
     if exists('b:PopulateOutlineWindow')
-        Outline = b:PopulateOutlineWindow(outline_win_id) # b:PopulateOutlineWindow is a FuncRef
+        Outline = b:PopulateOutlineWindow(outline_win_id, g:outline_options[&filetype]) # b:PopulateOutlineWindow is a FuncRef
     else
         Outline = PopulateOutlineWindowFallback(outline_win_id)
     endif
