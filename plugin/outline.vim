@@ -26,7 +26,8 @@ if !exists('g:outline_win_size')
 endif
 
 var outline_options_default = {
-            \ "python": [0]
+            \ "python": [0],
+            \ "vim": []
             \ }
 
 if exists('g:outline_options')

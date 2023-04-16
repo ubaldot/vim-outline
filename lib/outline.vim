@@ -14,8 +14,30 @@ var Outline = [""] # It does not like [] initialization
 
 # Script functions
 #
-def HighlightLine()
-    echo "TBD!"
+# sign define CurrentFunction text=- linehl=CursorLine
+def HighlightLine(outline_win_id: number): string
+    var curr_line = line('.')
+    var dist_min = line('$')
+    var dist = dist_min
+    var target_item = ""
+
+    # TODO Adjust better
+    for item in Outline
+        dist = curr_line - search($'\V{item}', 'cnbW')
+        if dist >= 0
+            dist_min = dist
+            target_item = item
+        endif
+    endfor
+
+    var line_nr = index(Outline, target_item) +  len(title)
+    setwinvar(win_id2win(outline_win_id), "line_nr", line_nr) # Passing a function
+    # TODO How to define a window hl group
+    # setwinvar(win_id2win(outline_win_id), "CurrentFunction", CurrentFunction) # Passing a function
+    win_execute(outline_win_id, "sign_unplace('', {'buffer': g:outline_buf_name}) ")
+    win_execute(outline_win_id, "sign_define('CurrentFunction', {'text': '*', 'linehl': 'CursorLine'})")
+    win_execute(outline_win_id, 'sign_place(w:line_nr, "", ''CurrentFunction'', g:outline_buf_name, {''lnum'': w:line_nr})')
+    return target_item
 enddef
 
 
@@ -34,6 +56,7 @@ def GoToDefinition()
     for ii in range(counter)
         # the \V is needed to consider literal string and not regex
         search($'\V{curr_line}', "W")
+        # search($'^{curr_line}$', "W")
     endfor
 enddef
 
@@ -69,7 +92,7 @@ export def OutlineToggle()
     if OutlineIsOpen() != -1
        OutlineClose()
     else
-       OutlineFill(OutlineCreateEmptyWindow())
+       OutlineFill(OutlineOpen())
     endif
 enddef
 
@@ -82,12 +105,8 @@ export def OutlineRefresh()
     endif
 enddef
 
-def PopulateOutlineWindowFallback(outline_win_id: number): list<string>
-    echo "In the fallback function! :D"
-    return []
-enddef
 
-def OutlineCreateEmptyWindow(): number
+def OutlineOpen(): number
     # =========================================
     # CREATE EMPTY WIN.
     # =========================================
@@ -122,7 +141,8 @@ def OutlineFill(outline_win_id: number)
     if exists('b:PopulateOutlineWindow')
         Outline = b:PopulateOutlineWindow(outline_win_id, g:outline_options[&filetype]) # b:PopulateOutlineWindow is a FuncRef
     else
-        Outline = PopulateOutlineWindowFallback(outline_win_id)
+        Outline = []
+        echo "Unsupported filetype!"
     endif
 
 
@@ -150,6 +170,9 @@ def OutlineFill(outline_win_id: number)
     win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
     win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
     win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
+
+    # Highlight
+    HighlightLine(outline_win_id)
 enddef
 
 
