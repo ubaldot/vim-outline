@@ -6,7 +6,7 @@ vim9script
 # =================================================
 
 export def CurrentItem(curr_item: string): string
-    return substitute(curr_item, "(.*", "", '')
+    return trim(substitute(curr_item, "(.*", "", ''))
 enddef
 
 export def PopulateOutlineWindow(outline_win_id: number, func_options: list<any>): list<string>

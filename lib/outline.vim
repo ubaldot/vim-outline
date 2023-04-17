@@ -65,8 +65,12 @@ def OutlineHighlight(): string
         win_execute(outline_win_id, 'sign_place(w:line_nr, "", ''CurrentItem'', g:outline_buf_name, {''lnum'': w:line_nr})')
     endif
 
-    # TODO: format the return type better, depending on the filtetype.
-    return b:CurrentItem(target_item)
+    if exists('b:CurrentItem')
+        echom b:CurrentItem(target_item)
+        return b:CurrentItem(target_item)
+    else
+        return ""
+    endif
 enddef
 
 
