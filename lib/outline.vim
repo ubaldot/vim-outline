@@ -16,25 +16,25 @@ var Outline = [""] # It does not like [] initialization
 # sign define CurrentFunction text=- linehl=CursorLine
 def HighlightLine(outline_win_id: number): string
     var curr_line = line('.')
-    var dist_min = line('$')
+    var dist_min = line('$') + 1
     var dist = dist_min
     var target_item = ""
 
     # TODO Adjust better
     for item in Outline
         dist = curr_line - search($'\V{item}', 'cnbW')
-        if dist >= 0
+        # OBS! Distance is always >= 0
+        if dist <= dist_min
             dist_min = dist
             target_item = item
         endif
     endfor
 
-    var line_nr = index(Outline, target_item) +  len(title)
-    setwinvar(win_id2win(outline_win_id), "line_nr", line_nr) # Passing a function
-    # TODO How to define a window hl group
-    # setwinvar(win_id2win(outline_win_id), "CurrentFunction", CurrentFunction) # Passing a function
+    var line_nr = index(Outline, target_item) + len(title) + 1
+    setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
+    # TODO Shall you define the sign every time?!
+    win_execute(outline_win_id, "sign_define('CurrentFunction', {'text': '-', 'linehl': 'CursorLine'})")
     win_execute(outline_win_id, "sign_unplace('', {'buffer': g:outline_buf_name}) ")
-    win_execute(outline_win_id, "sign_define('CurrentFunction', {'text': '*', 'linehl': 'CursorLine'})")
     win_execute(outline_win_id, 'sign_place(w:line_nr, "", ''CurrentFunction'', g:outline_buf_name, {''lnum'': w:line_nr})')
     return target_item
 enddef
@@ -145,6 +145,7 @@ export def OutlineRefresh()
 
         # Highlight
         HighlightLine(outline_win_id)
+
     endif
 enddef
 
@@ -171,6 +172,7 @@ enddef
 
 augroup Outline_autochange
     au!
+    # If Outline is opened and you are not on the Outline window itself, then update.
     autocmd BufEnter * if OutlineIsOpen() != -1 && OutlineIsOpen() != bufwinid(bufnr()) | OutlineRefresh() | endif
     # autocmd! BufWinLeave outline#PyOutlineClose()
 augroup END
