@@ -5,6 +5,10 @@ vim9script
 # regular expressions and populate the Outline window.
 # =================================================
 
+export def CurrentItem(curr_item: string): string
+    return substitute(curr_item, "(.*", "", '')
+enddef
+
 export def PopulateOutlineWindow(outline_win_id: number, func_options: list<any>): list<string>
 
     var show_private = func_options[0]

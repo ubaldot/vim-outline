@@ -66,7 +66,7 @@ def OutlineHighlight(): string
     endif
 
     # TODO: format the return type better, depending on the filtetype.
-    return target_item
+    return b:CurrentItem(target_item)
 enddef
 
 
