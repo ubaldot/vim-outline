@@ -18,7 +18,7 @@ g:outline_loaded = 1
 
 # User settings
 if !exists('g:outline_buf_name')
-    g:outline_buf_name = "Outline"
+    g:outline_buf_name = "Outline!"
 endif
 
 if !exists('g:outline_win_size')
