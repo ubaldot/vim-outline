@@ -20,7 +20,8 @@ export def PopulateOutlineWindow(outline_win_id: number, func_options: list<any>
     var pattern_def = '^\s*def'
     var pattern_map = '^\S*map'
     var pattern_comment = '^\s*#'
-    var pattern_autocmd = '^\s*autocmd'
+    var pattern_autocmd = '^\s*\(autocmd\|autocommand\)'
+    var pattern_command = '^\s*\(command\|cmd\)'
     var pattern_sign = '^\s*sign'
 
 
@@ -61,8 +62,10 @@ export def PopulateOutlineWindow(outline_win_id: number, func_options: list<any>
     # Now you can filter by class, functions and methods.
     # TODO: fix this
     Outline = Outline ->filter("v:val !~ " .. string(pattern_comment))
-        ->filter("v:val =~ " .. string(pattern_export .. '\|' .. pattern_def
-                    \ .. '\|' .. pattern_map .. '\|' .. pattern_sign .. '\|' .. pattern_autocmd))
+        ->filter("v:val =~ " .. string(pattern_export .. '\|' .. pattern_def ..
+                    \ '\|' .. pattern_map .. '\|' .. pattern_sign ..
+                    \ '\|' .. pattern_autocmd .. '\|' .. pattern_command))
+                    # \ '\|' pattern_autocommand .. '\|' .. pattern_command))
 
 
     # TODO: Add a if you want to show line numbers?

@@ -22,7 +22,7 @@ if !exists('g:outline_buf_name')
 endif
 
 if !exists('g:outline_win_size')
-     g:outline_win_size = 29
+     g:outline_win_size = 30
 endif
 
 var outline_options_default = {

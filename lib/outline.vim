@@ -17,14 +17,17 @@ var outline_win_id = 0
 # Script functions
 # sign define CurrentFunction text=- linehl=CursorLine
 def OutlineHighlight(): string
-    var curr_line = line('.')
-    var dist_min = line('$') + 1
-    var dist = dist_min
+    # Note that the maximum distance is curr_line - 0 (top) = curr_line
+    # Here the are in the caller-buffer coordinates
+    var curr_line_nr = line('.')
+    var curr_line = getline('.')
+    var dist_min = curr_line_nr
+    var dist = curr_line_nr
     var target_item = ""
 
-    # TODO Adjust better: when the search hit the top don't highlight anything
+    # OBS! You only get the closest match, but you don't know if it is a duplicate.
     for item in Outline
-        dist = curr_line - search($'\V{item}', 'cnbW')
+        dist = curr_line_nr - search($'\V{item}', 'cnbW')
         # OBS! Distance is always >= 0
         if dist <= dist_min
             dist_min = dist
@@ -32,13 +35,41 @@ def OutlineHighlight(): string
         endif
     endfor
 
-    # If the search didn't finally hit the top
-    var line_nr = index(Outline, target_item) + len(title) + 1
-    setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
+    # If the search didn't hit the top
+    # (i.e. you are at the very beginning of the file)
+    #
     # TODO Shall you define the sign every time?!
     win_execute(outline_win_id, "sign_define('CurrentFunction', {'text': '-', 'linehl': 'CursorLine'})")
+    # Remove any existing sign.
     win_execute(outline_win_id, "sign_unplace('', {'buffer': g:outline_buf_name}) ")
-    win_execute(outline_win_id, 'sign_place(w:line_nr, "", ''CurrentFunction'', g:outline_buf_name, {''lnum'': w:line_nr})')
+
+    # If the search towards the top hit 0, don't highlight anything.
+    # Otherwise, if you found a target item, check if there are duplicates,
+    # and highlight the correct one.
+    if dist_min != curr_line_nr
+        # Check if the found target_item is a duplicate through this line to line 0
+        # of the current buffer
+        var num_occurrences = len(getline(1, '$')[0 : curr_line_nr - 1]
+                    \ -> filter($"v:val ==# '{target_item}'"))
+
+        # List of indices where there are duplicates.
+        var lines = []
+        # echom "length Outline: " .. len(Outline)
+        for ii in range(0, len(Outline) - 1)
+          if Outline[ii] ==# target_item
+            add(lines, ii)
+          endif
+        endfor
+        # echom "lines: " .. string(lines)
+        var line_nr = lines[num_occurrences - 1] + len(title) + 1
+        # echo "line_nr: " .. line_nr
+
+        # # Now you can highlight
+        setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
+        win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
+        win_execute(outline_win_id, 'sign_place(w:line_nr, "", ''CurrentFunction'', g:outline_buf_name, {''lnum'': w:line_nr})')
+    endif
+
     # TODO: format the return type better, depending on the filtetype.
     return target_item
 enddef
@@ -139,6 +170,7 @@ export def OutlineRefresh()
         # =========================================
         # Set title, append after lnum 0
         appendbufline(winbufnr(outline_win_id), 0, title)
+        win_execute(outline_win_id, 'matchaddpos(''Terminal'', range(1, len(title)))')
 
         # After having populated the Outline, set it to do non-modifiable
         win_execute(outline_win_id, 'setlocal nomodifiable readonly')
@@ -154,7 +186,6 @@ export def OutlineRefresh()
         # =========================================
         # ADD SOME SUGAR
         # =========================================
-        # TODO: how to remove syntax in the title
         win_execute(outline_win_id, 'nnoremap <buffer> j j^')
         win_execute(outline_win_id, 'nnoremap <buffer> k k^')
         win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
