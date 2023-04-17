@@ -155,8 +155,9 @@ def OutlineOpen(): number
     win_execute(win_getid(), 'wincmd n')
 
     # Set stuff in the newly created window
-    var outline_win_nr = winnr('$')
-    var outline_win_id = win_getid(outline_win_nr)
+    # The last created buffer should be [No name] relative to wincd n of above
+    var outline_win_id = win_findbuf(bufnr('$'))[0]
+    # var outline_win_id = win_getid(outline_win_nr)
     win_execute(outline_win_id, 'wincmd L')
     win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
     win_execute(outline_win_id, $'file {g:outline_buf_name}')
@@ -168,8 +169,8 @@ def OutlineOpen(): number
     return outline_win_id
 enddef
 
-# augroup Outline_autochange
-#     au!
-#     autocmd BufEnter * if OutlineIsOpen() != -1 && OutlineIsOpen() != bufwinid(bufnr()) | OutlineRefresh() | endif
-#     # autocmd! BufWinLeave outline#PyOutlineClose()
-# augroup END
+augroup Outline_autochange
+    au!
+    autocmd BufEnter * if OutlineIsOpen() != -1 && OutlineIsOpen() != bufwinid(bufnr()) | OutlineRefresh() | endif
+    # autocmd! BufWinLeave outline#PyOutlineClose()
+augroup END
