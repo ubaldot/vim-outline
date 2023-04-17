@@ -15,8 +15,13 @@ var Outline = [""] # It does not like [] initialization
 var outline_win_id = 0
 
 # Script functions
-# sign define CurrentFunction text=- linehl=CursorLine
+sign define CurrentFunction text=- linehl=CursorLine
 def OutlineHighlight(): string
+
+    # Remove any existing sign.
+    win_execute(outline_win_id, "sign_unplace('', {'buffer': g:outline_buf_name}) ")
+
+    # Search the item at minimum distance with the cursor (from above)
     # Note that the maximum distance is curr_line - 0 (top) = curr_line
     # Here the are in the caller-buffer coordinates
     var curr_line_nr = line('.')
@@ -25,7 +30,8 @@ def OutlineHighlight(): string
     var dist = curr_line_nr
     var target_item = ""
 
-    # OBS! You only get the closest match, but you don't know if it is a duplicate.
+    # OBS! You only find the item at minimum distance,
+    # but you don't know if it is a duplicate.
     for item in Outline
         dist = curr_line_nr - search($'\V{item}', 'cnbW')
         # OBS! Distance is always >= 0
@@ -35,34 +41,23 @@ def OutlineHighlight(): string
         endif
     endfor
 
-    # If the search didn't hit the top
-    # (i.e. you are at the very beginning of the file)
-    #
-    # TODO Shall you define the sign every time?!
-    win_execute(outline_win_id, "sign_define('CurrentFunction', {'text': '-', 'linehl': 'CursorLine'})")
-    # Remove any existing sign.
-    win_execute(outline_win_id, "sign_unplace('', {'buffer': g:outline_buf_name}) ")
-
     # If the search towards the top hit 0, don't highlight anything.
     # Otherwise, if you found a target item, check if there are duplicates,
     # and highlight the correct one.
     if dist_min != curr_line_nr
-        # Check if the found target_item is a duplicate through this line to line 0
-        # of the current buffer
-        var num_occurrences = len(getline(1, '$')[0 : curr_line_nr - 1]
+        # Check if the found target_item is a duplicate through this line
+        # and backwards to line 1  of the current buffer
+        var num_duplicates = len(getline(1, '$')[0 : curr_line_nr - 1]
                     \ -> filter($"v:val ==# '{target_item}'"))
 
         # List of indices where there are duplicates.
         var lines = []
-        # echom "length Outline: " .. len(Outline)
         for ii in range(0, len(Outline) - 1)
           if Outline[ii] ==# target_item
             add(lines, ii)
           endif
         endfor
-        # echom "lines: " .. string(lines)
-        var line_nr = lines[num_occurrences - 1] + len(title) + 1
-        # echo "line_nr: " .. line_nr
+        var line_nr = lines[num_duplicates - 1] + len(title) + 1
 
         # # Now you can highlight
         setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
@@ -110,10 +105,10 @@ def OutlineClose()
         win_execute(outline_win_id, 'wincmd c')
     endif
 
-    # Throw away the old Outline (that was a scratch buffer)
-    if bufexists(bufnr($"^{g:outline_buf_name}$"))
-       exe "bw! " .. bufnr($"^{g:outline_buf_name}$")
-    endif
+    # # Throw away the old Outline (that was a scratch buffer)
+    # if bufexists(bufnr($"^{g:outline_buf_name}$"))
+    #    exe "bw! " .. bufnr($"^{g:outline_buf_name}$")
+    # endif
 enddef
 
 
@@ -211,7 +206,7 @@ def OutlineOpen(): number
     win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
     win_execute(outline_win_id, $'file {g:outline_buf_name}')
     win_execute(outline_win_id,
-        \    'setlocal buftype=nofile bufhidden=hide
+        \    'setlocal buftype=nofile bufhidden=wipe
         \ nobuflisted noswapfile nowrap
         \ nonumber equalalways winfixwidth')
 
