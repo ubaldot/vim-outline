@@ -15,7 +15,7 @@ var Outline = [""] # It does not like [] initialization
 var outline_win_id = 0
 
 # Script functions
-sign define CurrentFunction text=- linehl=CursorLine
+sign define CurrentItem text=- linehl=CursorLine
 def OutlineHighlight(): string
 
     # Remove any existing sign.
@@ -62,7 +62,7 @@ def OutlineHighlight(): string
         # # Now you can highlight
         setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
         win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
-        win_execute(outline_win_id, 'sign_place(w:line_nr, "", ''CurrentFunction'', g:outline_buf_name, {''lnum'': w:line_nr})')
+        win_execute(outline_win_id, 'sign_place(w:line_nr, "", ''CurrentItem'', g:outline_buf_name, {''lnum'': w:line_nr})')
     endif
 
     # TODO: format the return type better, depending on the filtetype.
@@ -153,7 +153,8 @@ export def OutlineRefresh()
         # =========================================
         # Parse the buffer and populate the window
         if exists('b:PopulateOutlineWindow')
-            Outline = b:PopulateOutlineWindow(outline_win_id, g:outline_options[&filetype]) # b:PopulateOutlineWindow is a FuncRef
+            # b:PopulateOutlineWindow is a FuncRef
+            Outline = b:PopulateOutlineWindow(outline_win_id, g:outline_options[&filetype])
         else
             Outline = []
             echo "I cannot outline buffers of this filetype."
