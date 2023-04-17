@@ -43,7 +43,12 @@ if !hasmapto("<Plug>Outline!" ) || empty(mapcheck("<F8>", "n"))
     nnoremap <silent> <unique> <F8> <Plug>Outline!
 endif
 
-noremap <unique> <script> <Plug>Refresh! :call <SID>outline.OutlineRefresh()<cr>
-if !hasmapto("<Plug>Refresh!" ) || empty(mapcheck("<F7>", "n"))
-    nnoremap <silent> <unique> <F7> <Plug>Refresh!
+noremap <unique> <script> <Plug>OutlineRefresh! :call <SID>outline.OutlineRefresh()<cr>
+if !hasmapto("<Plug>OutlineRefresh!" ) || empty(mapcheck("<F7>", "n"))
+    nnoremap <silent> <unique> <F7> <Plug>OutlineRefresh!
+endif
+
+noremap <unique> <script> <Plug>OutlineGo! :call <SID>outline.OutlineGoToOutline()()<cr>
+if !hasmapto("<Plug>OutlineGo!" ) || empty(mapcheck("<F6>", "n"))
+    nnoremap <silent> <unique> <F6> <Plug>OutlineGo!
 endif
