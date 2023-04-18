@@ -210,12 +210,9 @@ def OutlineOpen(): number
     win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
 
     # Set stuff in the newly created window
-    # The last created buffer should be [No name] relative to wincd n of above
     outline_win_id = win_findbuf(bufnr('$'))[0]
-    # var outline_win_id = win_getid(outline_win_nr)
     win_execute(outline_win_id, 'wincmd L')
     win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
-    # win_execute(outline_win_id, $'file {g:outline_buf_name}')
     win_execute(outline_win_id,
         \    'setlocal buftype=nofile bufhidden=wipe
         \ nobuflisted noswapfile nowrap
