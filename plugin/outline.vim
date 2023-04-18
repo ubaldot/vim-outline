@@ -25,15 +25,33 @@ if !exists('g:outline_win_size')
      g:outline_win_size = 30
 endif
 
-var outline_options_default = {
-            \ "python": [0],
-            \ "vim": []
+
+var outline_pattern_to_include = {
+            \ "python": ['^class', '^\s*def'],
+            \ "vim": ['^\s*export', '^\s*def', '^\S*map',
+                \ '^\s*\(autocmd\|autocommand\)', '^\s*\(command\|cmd\)',
+                \ '^\s*sign' ]
             \ }
 
-if exists('g:outline_options')
-    extend(outline_options_default, g:outline_options, "force")
+# TODO Overwrite patterns or append?
+if exists('g:outline_pattern_to_include')
+    extend(outline_pattern_to_include,
+                \ g:outline_pattern_to_include, "force")
 endif
-g:outline_options = outline_options_default
+g:outline_pattern_to_include = outline_pattern_to_include
+
+var outline_pattern_to_exclude = {
+            \ "python": ['^\s*def\s_\{-1,2}'],
+            \ "vim": ['^\s*#']
+            \ }
+
+# TODO Overwrite patterns or append?
+if exists('g:outline_pattern_to_exclude')
+    extend(outline_pattern_to_exclude,
+                \ g:outline_pattern_to_exclude, "force")
+endif
+g:outline_pattern_to_exclude = outline_pattern_to_exclude
+
 
 # Mapping
 import autoload "../lib/outline.vim"
@@ -51,4 +69,9 @@ endif
 noremap <unique> <script> <Plug>OutlineGo! :call <SID>outline.OutlineGoToOutline()()<cr>
 if !hasmapto("<Plug>OutlineGo!" ) || empty(mapcheck("<F6>", "n"))
     nnoremap <silent> <unique> <F6> <Plug>OutlineGo!
+endif
+
+# Commands
+if !exists(":Outline")
+  command Outline :call <SID>outline.OutlineToggle()
 endif

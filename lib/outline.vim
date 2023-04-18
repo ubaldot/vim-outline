@@ -14,6 +14,8 @@ var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
 var Outline = [""] # It does not like [] initialization
 var outline_win_id = 0
 
+
+
 # Script functions
 sign define CurrentItem text=- linehl=CursorLine
 def OutlineHighlight(): string
@@ -34,7 +36,7 @@ def OutlineHighlight(): string
     # but you don't know if it is a duplicate.
     for item in Outline
         dist = curr_line_nr - search($'\V{item}', 'cnbW')
-        # OBS! Distance is always >= 0
+        # OBS! dist is always >= 0
         if dist <= dist_min
             dist_min = dist
             target_item = item
@@ -45,12 +47,12 @@ def OutlineHighlight(): string
     # Otherwise, if you found a target item, check if there are duplicates,
     # and highlight the correct one.
     if dist_min != curr_line_nr
-        # Check if the found target_item is a duplicate through this line
-        # and backwards to line 1  of the current buffer
+        # Check if the found target_item is a duplicate starting from the current line
+        # and going backwards to line 1  of the current buffer
         var num_duplicates = len(getline(1, '$')[0 : curr_line_nr - 1]
                     \ -> filter($"v:val ==# '{target_item}'"))
 
-        # List of indices where there are duplicates.
+        # List of lines where there are duplicates.
         var lines = []
         for ii in range(0, len(Outline) - 1)
           if Outline[ii] ==# target_item
@@ -59,14 +61,14 @@ def OutlineHighlight(): string
         endfor
         var line_nr = lines[num_duplicates - 1] + len(title) + 1
 
-        # # Now you can highlight
+        # Now you can highlight
         setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
         win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
         win_execute(outline_win_id, 'sign_place(w:line_nr, "", ''CurrentItem'', g:outline_buf_name, {''lnum'': w:line_nr})')
     endif
 
     if exists('b:CurrentItem')
-        echom b:CurrentItem(target_item)
+        # echom b:CurrentItem(target_item)
         return b:CurrentItem(target_item)
     else
         return ""
@@ -158,7 +160,9 @@ export def OutlineRefresh()
         # Parse the buffer and populate the window
         if exists('b:PopulateOutlineWindow')
             # b:PopulateOutlineWindow is a FuncRef
-            Outline = b:PopulateOutlineWindow(outline_win_id, g:outline_options[&filetype])
+            Outline = b:PopulateOutlineWindow(outline_win_id,
+                        \ g:pattern_to_include[&filetype],
+                        \ g:pattern_to_exclude[&filetype])
         else
             Outline = []
             echo "I cannot outline buffers of this filetype."
@@ -201,7 +205,7 @@ enddef
 def OutlineOpen(): number
 
     # Create empty win from current position
-    win_execute(win_getid(), 'wincmd n')
+    win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
 
     # Set stuff in the newly created window
     # The last created buffer should be [No name] relative to wincd n of above
@@ -209,7 +213,7 @@ def OutlineOpen(): number
     # var outline_win_id = win_getid(outline_win_nr)
     win_execute(outline_win_id, 'wincmd L')
     win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
-    win_execute(outline_win_id, $'file {g:outline_buf_name}')
+    # win_execute(outline_win_id, $'file {g:outline_buf_name}')
     win_execute(outline_win_id,
         \    'setlocal buftype=nofile bufhidden=wipe
         \ nobuflisted noswapfile nowrap

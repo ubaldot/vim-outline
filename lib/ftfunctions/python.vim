@@ -9,9 +9,10 @@ export def CurrentItem(curr_item: string): string
     return trim(matchstr(curr_item, '\v\w+\s+\zs\w+'))
 enddef
 
-export def PopulateOutlineWindow(outline_win_id: number, func_options: list<any>): list<string>
-
-    var show_private = func_options[0]
+# TODO Parametrize the regex input
+export def PopulateOutlineWindow(outline_win_id: number,
+            \ pattern_to_include: list<string>,
+            \ pattern_to_exclude: list<string>): list<string>
 
     # ==============================================
     # SET OUTLINE WINDOW FILETYPE
@@ -21,18 +22,17 @@ export def PopulateOutlineWindow(outline_win_id: number, func_options: list<any>
     # ==============================================
     # PARSE CALLING BUFFER
     # ==============================================
-    var pattern_class = '^class'
-    var pattern_def = '^\s*def'
-    var pattern_private_def = '^\s*def\s_\{-1,2}'
-
-    # Copy the whole calling buffer to a local variable
+    # -----------------------------------
+    #  Copy the whole buffer
+    # -----------------------------------
     # TIP: For debugging use portions of source code and see what
     # happens, e.g. var Outline = getline(23, 98)
     var Outline = getline(1, "$")
-    # We add a "#" because parsing the first line is always problematic
-    insert(Outline, "# ", 0)
+    insert(Outline, "# ", 0) # We add a "#" because parsing the first line is always problematic
 
-    # Remove docstrings in two steps:
+    # -----------------------------------
+    #  (Added) Remove docstrings
+    # -----------------------------------
     # 1) replace all the docstrings lines with tmp_string (see below)
     # 2) filter out lines that are not tmp_string
 
@@ -59,17 +59,16 @@ export def PopulateOutlineWindow(outline_win_id: number, func_options: list<any>
     # Actually remove dosctrings
     Outline = Outline ->filter("v:val !~ 'tmp_string'")
 
-    # Now you can filter by class, functions and methods.
+    # -----------------------------------
+    # Filter user request
+    # -----------------------------------
     # TODO: fix this
-    if show_private
-        Outline = Outline ->filter("v:val =~ " .. string(pattern_class .. '\|' .. pattern_def))
-    else
-        Outline = Outline ->filter("v:val =~ " .. string(pattern_class .. '\|' .. pattern_def))
-            ->filter("v:val !~ " .. string(pattern_private_def))
-    endif
+    Outline = Outline ->filter("v:val =~ " .. string(join(pattern_to_include, ' |\ ')))
+                    \ ->filter("v:val !~ " .. string(join(pattern_to_exclude, ' |\ ')))
 
     # TODO: Add a if you want to show line numbers?
     # TODO: Remove all the text after "(" in def myfunc(bla bla bla ?
+
 
     # ==============================================
     # POPULATE WINDOW
