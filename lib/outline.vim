@@ -9,6 +9,8 @@ vim9script
 #
 # ========================================================
 
+import autoload "./quotes.vim"
+
 # Script variables
 var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
 var Outline = [""] # It does not like [] initialization
@@ -132,14 +134,8 @@ export def OutlineToggle()
 enddef
 
 
-# TODO Parametrize the regex input
-def PopulateOutlineWindow()
 
-    # ----------------------------------------------
-    # SET OUTLINE WINDOW FILETYPE
-    # ----------------------------------------------
-    # # TODO Filetyoe: move into PreProcessOutline?
-    win_execute(outline_win_id, 'setlocal syntax=python')
+def PopulateOutlineWindow()
 
     # -----------------------------------
     #  Copy the whole buffer
@@ -153,31 +149,33 @@ def PopulateOutlineWindow()
     # -----------------------------------
     # Pre-process Outline
     # -----------------------------------
+    #  OBS! Outline filetype is set here!
     # Parse the buffer and populate the window
     if exists('b:PreProcessOutline')
         # b:PreProcessOutline is a FuncRef
-        echom "sto qua eh!"
         Outline = b:PreProcessOutline(outline_win_id, Outline)
     endif
 
     # -----------------------------------
     # Filter user request
     # -----------------------------------
-    echom "filetype:" .. &filetype
-    if g:outline_include_before_exclude[&filetype]
-        Outline = Outline ->filter("v:val =~ " .. string(join(g:outline_pattern_to_include[&filetype], '\|')))
-                        \ ->filter("v:val !~ " .. string(join(g:outline_pattern_to_exclude[&filetype], '\|')))
-    else
-        Outline = Outline ->filter("v:val !~ " .. string(join(g:outline_pattern_to_exclude[&filetype], '\|')))
-                    \ ->filter("v:val =~ " .. string(join(g:outline_pattern_to_include[&filetype], '\|')))
+    # echom "filetype:" .. &filetype
+    if exists('b:FilterOutline')
+        Outline = b:FilterOutline(Outline)
     endif
 
+    # Default: if filetype is not supported, then clean up the Outline
+    if !exists('b:PreProcessOutline') && !exists('b:FilterOutline')
+        win_execute(outline_win_id, 'setlocal syntax=')
+        var idx = rand(srand()) % len(quotes.quotes)
+        Outline = quotes.quotes[idx]
+    endif
 
-    # TODO: Add a if you want to show line numbers?
     # ----------------------------------------------
     # Actually populate the window
     # ----------------------------------------------
     setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
+    # setbufline(winbufnr(outline_win_id), 1, Outline)
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
     # Highlight
@@ -194,7 +192,7 @@ export def OutlineRefresh()
         # CLEAN OUTLINE AND UNLOCK OUTLINE BUFFER
         # -----------------------------------------
         win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-        deletebufline(winbufnr(outline_win_id), 1, line('$', outline_win_id))
+        deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$', outline_win_id))
 
         # -----------------------------------------
         # POPULATE THE EMPTY WIN.
@@ -226,7 +224,7 @@ def OutlineOpen(): number
     endif
 
     # Set title, append after lnum 0
-    appendbufline(winbufnr(outline_win_id), 0, title)
+    setbufline(winbufnr(outline_win_id), 1, title)
     # Title does not follow syntax highlight but it is in black.
     win_execute(outline_win_id, 'matchaddpos(''Terminal'', range(1, len(title)))')
 
