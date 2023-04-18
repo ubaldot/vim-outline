@@ -160,9 +160,11 @@ export def OutlineRefresh()
         # Parse the buffer and populate the window
         if exists('b:PopulateOutlineWindow')
             # b:PopulateOutlineWindow is a FuncRef
+            echom "sto qua eh!"
             Outline = b:PopulateOutlineWindow(outline_win_id,
-                        \ g:pattern_to_include[&filetype],
-                        \ g:pattern_to_exclude[&filetype])
+                        \ g:outline_include_before_exclude,
+                        \ g:outline_pattern_to_include,
+                        \ g:outline_pattern_to_exclude)
         else
             Outline = []
             echo "I cannot outline buffers of this filetype."

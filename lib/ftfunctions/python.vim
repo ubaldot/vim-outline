@@ -11,8 +11,9 @@ enddef
 
 # TODO Parametrize the regex input
 export def PopulateOutlineWindow(outline_win_id: number,
-            \ pattern_to_include: list<string>,
-            \ pattern_to_exclude: list<string>): list<string>
+            \ include_before_exclude: dict<bool>,
+            \ pattern_to_include: dict<list<string>>,
+            \ pattern_to_exclude: dict<list<string>>): list<string>
 
     # ==============================================
     # SET OUTLINE WINDOW FILETYPE
@@ -31,7 +32,7 @@ export def PopulateOutlineWindow(outline_win_id: number,
     insert(Outline, "# ", 0) # We add a "#" because parsing the first line is always problematic
 
     # -----------------------------------
-    #  (Added) Remove docstrings
+    #  (Added manually) Remove docstrings
     # -----------------------------------
     # 1) replace all the docstrings lines with tmp_string (see below)
     # 2) filter out lines that are not tmp_string
@@ -62,9 +63,15 @@ export def PopulateOutlineWindow(outline_win_id: number,
     # -----------------------------------
     # Filter user request
     # -----------------------------------
-    # TODO: fix this
-    Outline = Outline ->filter("v:val =~ " .. string(join(pattern_to_include, ' |\ ')))
-                    \ ->filter("v:val !~ " .. string(join(pattern_to_exclude, ' |\ ')))
+
+    if include_before_exclude["python"]
+        Outline = Outline ->filter("v:val =~ " .. string(join(pattern_to_include["python"], '\|')))
+                        \ ->filter("v:val !~ " .. string(join(pattern_to_exclude["python"], '\|')))
+    else
+        Outline = Outline ->filter("v:val !~ " .. string(join(pattern_to_exclude["python"], '\|')))
+                    \ ->filter("v:val =~ " .. string(join(pattern_to_include["python"], '\|')))
+    endif
+
 
     # TODO: Add a if you want to show line numbers?
     # TODO: Remove all the text after "(" in def myfunc(bla bla bla ?

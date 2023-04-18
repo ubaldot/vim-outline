@@ -16,7 +16,10 @@ endif
 
 g:outline_loaded = 1
 
+
+# --------------------------
 # User settings
+# --------------------------
 if !exists('g:outline_buf_name')
     g:outline_buf_name = "Outline!"
 endif
@@ -25,35 +28,36 @@ if !exists('g:outline_win_size')
      g:outline_win_size = 30
 endif
 
+if !exists('g:outline_include_before_exclude')
+g:outline_include_before_exclude = {
+            \ "python": false,
+            \ "vim": false
+            \ }
+endif
 
-var outline_pattern_to_include = {
+# TODO Overwrite patterns or append? => Overwrite
+if !exists('g:outline_pattern_to_include')
+g:outline_pattern_to_include = {
             \ "python": ['^class', '^\s*def'],
             \ "vim": ['^\s*export', '^\s*def', '^\S*map',
                 \ '^\s*\(autocmd\|autocommand\)', '^\s*\(command\|cmd\)',
                 \ '^\s*sign' ]
             \ }
+endif
+
 
 # TODO Overwrite patterns or append?
-if exists('g:outline_pattern_to_include')
-    extend(outline_pattern_to_include,
-                \ g:outline_pattern_to_include, "force")
-endif
-g:outline_pattern_to_include = outline_pattern_to_include
-
-var outline_pattern_to_exclude = {
+if !exists('g:outline_pattern_to_exclude')
+g:outline_pattern_to_exclude = {
             \ "python": ['^\s*def\s_\{-1,2}'],
             \ "vim": ['^\s*#']
             \ }
-
-# TODO Overwrite patterns or append?
-if exists('g:outline_pattern_to_exclude')
-    extend(outline_pattern_to_exclude,
-                \ g:outline_pattern_to_exclude, "force")
 endif
-g:outline_pattern_to_exclude = outline_pattern_to_exclude
 
 
+# --------------------------
 # Mapping
+# --------------------------
 import autoload "../lib/outline.vim"
 
 noremap <unique> <script> <Plug>Outline! :call <SID>outline.OutlineToggle()<cr>
