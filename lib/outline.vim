@@ -15,11 +15,9 @@ var Outline = [""] # It does not like [] initialization
 var outline_win_id = 0
 
 
-
 # Script functions
 sign define CurrentItem text=- linehl=CursorLine
 def OutlineHighlight(): string
-
     # Remove any existing sign.
     win_execute(outline_win_id, "sign_unplace('', {'buffer': g:outline_buf_name}) ")
 
@@ -77,7 +75,6 @@ enddef
 
 
 def GoToDefinition()
-
     var curr_line_nr = max([1, line('.') - len(title)])
     var curr_line = getline('.')
     var counter = len(Outline[0 : curr_line_nr - 1] -> filter($"v:val ==# '{curr_line}'"))
@@ -97,24 +94,14 @@ def GoToDefinition()
     win_execute(outline_win_id, 'setlocal modifiable noreadonly')
     OutlineHighlight()
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
-
 enddef
 
 
 def OutlineClose()
-    # In 2 steps:
-        # 1. Close the window,
-        # 2. wipeout the buffer
-
     # Close the window
     if OutlineIsOpen()
         win_execute(outline_win_id, 'wincmd c')
     endif
-
-    # # Throw away the old Outline (that was a scratch buffer)
-    # if bufexists(bufnr($"^{g:outline_buf_name}$"))
-    #    exe "bw! " .. bufnr($"^{g:outline_buf_name}$")
-    # endif
 enddef
 
 
@@ -126,6 +113,7 @@ def OutlineIsOpen(): bool
         return false
     endif
 enddef
+
 
 export def OutlineGoToOutline()
     if OutlineIsOpen()
@@ -143,69 +131,80 @@ export def OutlineToggle()
     endif
 enddef
 
+
+# TODO Parametrize the regex input
+def PopulateOutlineWindow()
+
+    # ----------------------------------------------
+    # SET OUTLINE WINDOW FILETYPE
+    # ----------------------------------------------
+    # # TODO Filetyoe: move into PreProcessOutline?
+    win_execute(outline_win_id, 'setlocal syntax=python')
+
+    # -----------------------------------
+    #  Copy the whole buffer
+    # -----------------------------------
+    # TIP: For debugging use portions of source code and see what
+    # happens, e.g. var Outline = getline(23, 98)
+    Outline = getline(1, "$")
+    # TODO: check the comment string thing
+    insert(Outline, &commentstring, 0) # We add a comment line because parsing the first line is always problematic
+
+    # -----------------------------------
+    # Pre-process Outline
+    # -----------------------------------
+    # Parse the buffer and populate the window
+    if exists('b:PreProcessOutline')
+        # b:PreProcessOutline is a FuncRef
+        echom "sto qua eh!"
+        Outline = b:PreProcessOutline(outline_win_id, Outline)
+    endif
+
+    # -----------------------------------
+    # Filter user request
+    # -----------------------------------
+    echom "filetype:" .. &filetype
+    if g:outline_include_before_exclude[&filetype]
+        Outline = Outline ->filter("v:val =~ " .. string(join(g:outline_pattern_to_include[&filetype], '\|')))
+                        \ ->filter("v:val !~ " .. string(join(g:outline_pattern_to_exclude[&filetype], '\|')))
+    else
+        Outline = Outline ->filter("v:val !~ " .. string(join(g:outline_pattern_to_exclude[&filetype], '\|')))
+                    \ ->filter("v:val =~ " .. string(join(g:outline_pattern_to_include[&filetype], '\|')))
+    endif
+
+
+    # TODO: Add a if you want to show line numbers?
+    # ----------------------------------------------
+    # Actually populate the window
+    # ----------------------------------------------
+    setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
+    win_execute(outline_win_id, 'setlocal nomodifiable readonly')
+
+    # Highlight
+    OutlineHighlight()
+
+enddef
+
 export def OutlineRefresh()
     # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
     # If outline is open and I am not on that.
     if OutlineIsOpen() && bufwinid(bufnr()) != outline_win_id
 
-        # =========================================
+        # -----------------------------------------
         # CLEAN OUTLINE AND UNLOCK OUTLINE BUFFER
-        # =========================================
+        # -----------------------------------------
         win_execute(outline_win_id, 'setlocal modifiable noreadonly')
         deletebufline(winbufnr(outline_win_id), 1, line('$', outline_win_id))
 
-        # =========================================
+        # -----------------------------------------
         # POPULATE THE EMPTY WIN.
-        # =========================================
-        # Parse the buffer and populate the window
-        if exists('b:PopulateOutlineWindow')
-            # b:PopulateOutlineWindow is a FuncRef
-            echom "sto qua eh!"
-            Outline = b:PopulateOutlineWindow(outline_win_id,
-                        \ g:outline_include_before_exclude,
-                        \ g:outline_pattern_to_include,
-                        \ g:outline_pattern_to_exclude)
-        else
-            Outline = []
-            echo "I cannot outline buffers of this filetype."
-        endif
-
-
-        # =========================================
-        #  A FINAL TOUCH.
-        # =========================================
-        # Set title, append after lnum 0
-        appendbufline(winbufnr(outline_win_id), 0, title)
-        win_execute(outline_win_id, 'matchaddpos(''Terminal'', range(1, len(title)))')
-
-        # After having populated the Outline, set it to do non-modifiable
-        win_execute(outline_win_id, 'setlocal nomodifiable readonly')
-
-        # Set few w: local variables
-        # Let the Outline window to access this script by passing a function
-        setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition) # Passing a function
-        win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call w:GoToDefinition()<cr>')
-        if has("gui")
-            win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse> :call w:GoToDefinition()<cr>')
-        endif
-
-        # =========================================
-        # ADD SOME SUGAR
-        # =========================================
-        win_execute(outline_win_id, 'nnoremap <buffer> j j^')
-        win_execute(outline_win_id, 'nnoremap <buffer> k k^')
-        win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
-        win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
-        win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
-
-        # Highlight
-        OutlineHighlight()
+        # -----------------------------------------
+        PopulateOutlineWindow()
     endif
 enddef
 
 
 def OutlineOpen(): number
-
     # Create empty win from current position
     win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
 
@@ -218,8 +217,32 @@ def OutlineOpen(): number
         \ nobuflisted noswapfile nowrap
         \ nonumber equalalways winfixwidth')
 
+    # Set few w: local variables
+    # Let the Outline window to access this script by passing a function
+    setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition) # Passing a function
+    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call w:GoToDefinition()<cr>')
+    if has("gui")
+        win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse> :call w:GoToDefinition()<cr>')
+    endif
+
+    # Set title, append after lnum 0
+    appendbufline(winbufnr(outline_win_id), 0, title)
+    # Title does not follow syntax highlight but it is in black.
+    win_execute(outline_win_id, 'matchaddpos(''Terminal'', range(1, len(title)))')
+
+    # -----------------------------------------
+    # ADD SOME SUGAR
+    # -----------------------------------------
+    win_execute(outline_win_id, 'nnoremap <buffer> j j^')
+    win_execute(outline_win_id, 'nnoremap <buffer> k k^')
+    win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
+    win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
+    win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
+
     return outline_win_id
 enddef
+
+
 
 augroup Outline_autochange
     au!
