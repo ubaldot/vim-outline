@@ -10,7 +10,6 @@ export def CurrentItem(curr_item: string): string
     return trim(matchstr(curr_item, '\v\w+\s+\zs\w+'))
 enddef
 
-# TODO Parametrize the regex input
 export def PreProcessOutline(win_id: number, outline: list<string>): list<string>
 
     # TODO: keep here?

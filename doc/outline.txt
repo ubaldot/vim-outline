@@ -1,68 +1,52 @@
-*replica.txt*                                   REPL for Scientific applications.
+*outline.txt*                                       A trivial outline viewer.
 
-                      ______           _ _           ~
-                      | ___ \         | (_)          ~
-                      | |_/ /___ _ __ | |_  ___ __ _ ~
-                      |    // _ | '_ \| | |/ __/ _` |~
-                      | |\ |  __| |_) | | | (_| (_| |~
-                      \_| \_\___| .__/|_|_|\___\__,_|~
-                                | |                  ~
-                                |_|                  ~
-
-===============================================================================
-CONTENTS                                                     *ReplicaContents*
-
-    1. Introduction ......... |ReplicaIntroduction|
-    2. Requirements ......... |ReplicaRequirements|
-    3. Usage ................ |ReplicaUsage|
-    4. Configuration ........ |ReplicaConfiguration|
-    5. Add new languages .... |ReplicaAddLanguages|
-    6. Troubleshooting ...... |ReplicaTroubleshooting|
-    7. Contributing ......... |ReplicaContributing|
-    8. License .............. |ReplicaLicense|
+                   _                            _   _ _        ~
+                  (_)                          | | | (_)           ~
+            __   ___ _ __ ___ ______ ___  _   _| |_| |_ _ __   ___ ~
+            \ \ / / | '_ ` _ \______/ _ \| | | | __| | | '_ \ / _ \~
+             \ V /| | | | | | |    | (_) | |_| | |_| | | | | |  __/~
+              \_/ |_|_| |_| |_|     \___/ \__,_|\__|_|_|_| |_|\___|~
+                                                                   ~
 
 
 ===============================================================================
-INTRODUCTION                                         *ReplicaIntroduction*
+CONTENTS                                                     *OutlineContents*
 
-Replica allows the usage any REPL programs (Python, Julia, etc.) inside
-Vim in a seamless way.
-
-Replica supports the following key features:
-
-1. Sending lines, files and code-cells to a REPL,
-2. Code-cells highlighting.
-
-Each REPL is a jupyter-console started with a certain kernel running in a
-'terminal' buffer.  For each 'filetype' replica provides you with one
-available REPL to send text in.
-
-You can work with many REPL:s for different languages at the same time.
-Based on the current buffer 'filetype' replica will send text in the
-appropriate REPL automatically.
-
-If you are interested in contributing to the development of replica, read the
-developer documentation. See |ReplicaContributing|.
+    1. Introduction ......... |OutlineIntroduction|
+    2. Requirements ......... |OutlineRequirements|
+    3. Usage ................ |OutlineUsage|
+    4. Configuration ........ |OutlineConfiguration|
+    5. Add new languages .... |OutlineAddLanguages|
+    6. Troubleshooting ...... |OutlineTroubleshooting|
+    7. Contributing ......... |OutlineContributing|
+    8. License .............. |OutlineLicense|
 
 
 ===============================================================================
-REQUIREMENTS                                         *ReplicaRequirements*
+INTRODUCTION                                         *OutlineIntroduction*
 
-Replica is written in Vim9script, therefore you need at least Vim 9.0.
+Get your buffers outline in a side window!
 
-Furthermore, you must install jupyter console to make replica to work.
+Outline is a trivial tool that parse your buffer content through some
+user-defined regular expressions (regex) and it slam the result
+in a side window.
 
-Once you have it installed, you need to install the jupyter kernels for all
-the languages that you want to use.
-You can google to discover what are the available jupyter kernels out there
-whereas you can run jupyter kernelspec list from the command line of your
-terminal to see the list of kernels installed on your machine.
+That's all!
 
-See jupyter console docs for more information.
+If you are interested in contributing to the development of vim outline,
+take a look at |OutlineContributing|.
 
 
 ===============================================================================
-USAGE                                                     *ReplicaUsage*
+REQUIREMENTS                                         *OutlineRequirements*
+
+Outline is written in Vim9script, therefore you need at least Vim 9.0.
+
+There no requirements such as tags or LSP servers, since outline is
+entirely based on regex.
+
+===============================================================================
+USAGE                                                     *OutlineUsage*
 
 
                                                                *:ReplConsoleOpen*
@@ -142,7 +126,7 @@ USAGE                                                     *ReplicaUsage*
 
 
 ===============================================================================
-CONFIGURATION                                        *ReplicaConfiguration*
+CONFIGURATION                                        *OutlineConfiguration*
 
                                                         *g:repl_autostart*
   Type: bool
@@ -246,9 +230,9 @@ Note: this dictionary shall not be changed by the user!
 
 
 ===============================================================================
-ADD NEW LANGUAGES                                     *ReplicaAddLanguages*
+ADD NEW LANGUAGES                                     *OutlineAddLanguages*
 
-Replica is nicely extendable and to add new languages is fairly easy.
+Outline is nicely extendable and to add new languages is fairly easy.
 
 Say that a new language is associated to a certain 'filetype'.
 Then, you can add it to replica in two steps:
@@ -264,7 +248,7 @@ TODO: You may use the global ftplugin folder but it has been not tested yet.
 
 
 ===============================================================================
-TROUBLESHOOTING                                      *ReplicaTroubleshooting*
+TROUBLESHOOTING                                      *OutlineTroubleshooting*
 
 Q. My Vim became very slow!
 A. You can try to set |g:repl_alt_highlight| = 1 in your .vimrc.
@@ -301,14 +285,14 @@ Note: It does not work the other way around, i.e. if you change folder from a
 
 
 ===============================================================================
-CONTRIBUTING                                            *ReplicaContributing*
+CONTRIBUTING                                            *OutlineContributing*
 
 Contributions are most than welcome!
 Feel free to add a PR on GitHub. :)
 
 
 ===============================================================================
-LICENSE                                                    *ReplicaLicense*
+LICENSE                                                    *OutlineLicense*
 
 BSD-3Clause License.
 Copyright ©2023 Ubaldo Tiberi.

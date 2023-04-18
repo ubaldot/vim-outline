@@ -14,7 +14,7 @@ if exists('g:outline_loaded')
     finish
 endif
 
-g:outline_loaded = 1
+g:outline_loaded = true
 
 
 # --------------------------

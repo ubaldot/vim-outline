@@ -223,7 +223,7 @@ def OutlineOpen(): number
         win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse> :call w:GoToDefinition()<cr>')
     endif
 
-    # Set title, append after lnum 0
+    # Set title
     setbufline(winbufnr(outline_win_id), 1, title)
     # Title does not follow syntax highlight but it is in black.
     win_execute(outline_win_id, 'matchaddpos(''Terminal'', range(1, len(title)))')
