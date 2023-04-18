@@ -2,6 +2,7 @@ vim9script
 
 # setlocal colorcolumn=36
 
+# TODO Try to simplify this function
 def BreakLines(string: string): list<string>
     var split_string = []
     var current_line = ""
@@ -46,4 +47,19 @@ quote = "That's one small step for a man, a giant leap for mankind."
 add(quotes, BreakLines(quote))
 
 quote = "The love of money is the root of all evil."
+add(quotes, BreakLines(quote))
+
+quote = "The greatest glory in living lies not in never falling, but in rising every time we fall. -Nelson Mandela"
+add(quotes, BreakLines(quote))
+quote = "The way to get started is to quit talking and begin doing. -Walt Disney"
+add(quotes, BreakLines(quote))
+quote = "Your time is limited, so don't waste it living someone else's life. Don't be trapped by dogma – which is living with the results of other people's thinking. -Steve Jobs"
+add(quotes, BreakLines(quote))
+quote = "If life were predictable it would cease to be life, and be without flavor. -Eleanor Roosevelt"
+add(quotes, BreakLines(quote))
+quote = "If you look at what you have in life, you'll always have more. If you look at what you don't have in life, you'll never have enough. -Oprah Winfrey"
+add(quotes, BreakLines(quote))
+quote = "If you set your goals ridiculously high and it's a failure, you will fail above everyone else's success. -James Cameron"
+add(quotes, BreakLines(quote))
+quote = "Life is what happens when you're busy making other plans. -John Lennon"
 add(quotes, BreakLines(quote))
