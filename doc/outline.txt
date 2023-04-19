@@ -1,4 +1,4 @@
-*outline.txt*                                       A trivial outline viewer.
+*outline.txt*                           A trivial and imprecise outline viewer.
 
                    _                            _   _ _        ~
                   (_)                          | | | (_)           ~
@@ -14,8 +14,8 @@ CONTENTS                                                     *OutlineContents*
 
     1. Introduction ......... |OutlineIntroduction|
     2. Requirements ......... |OutlineRequirements|
-    3. Usage ................ |OutlineUsage|
-    4. Configuration ........ |OutlineConfiguration|
+    3. Configuration ........ |OutlineConfiguration|
+    4. Usage ................ |OutlineUsage|
     5. Add new languages .... |OutlineAddLanguages|
     6. Troubleshooting ...... |OutlineTroubleshooting|
     7. Contributing ......... |OutlineContributing|
@@ -23,17 +23,31 @@ CONTENTS                                                     *OutlineContents*
 
 
 ===============================================================================
-INTRODUCTION                                         *OutlineIntroduction*
+INTRODUCTION                                          *OutlineIntroduction*
 
-Get your buffers outline in a side window!
-
-Outline is a trivial tool that parse your buffer content through some
-user-defined regular expressions (regex) and it slam the result
-in a side window.
+Vim-outline parse your current buffer and it slam an outline in a scratch buffer
+opened in a side window.
 
 That's all!
 
-If you are interested in contributing to the development of vim outline,
+I wrote vim-outline mainly for myself because I had some issue when using Vista!
+with ALE and Tagbar is based on tags, which is a feature that I don't really use.
+What I needed was something easily configurable, fast and reliable that just
+support me to get my job done, no matter if it has not bells and whistles
+and the outcome is just an imprecise sketch.
+
+At that time I was working with Python, hence Python is the only supported
+language at the moment, but you can easily add other languages, see below.
+However, to make everything more cringe, if the current buffer
+filetye is not supported, then a random motivational quote picked from
+our quotes database will appear in the side window in place of an outline.
+
+Otherwise, in addition to an outline, vim-outline tells you where are you
+in the main buffer with respect to the outline through asynchronous
+highlighting, further allowing jumps by reference from the outline window
+to the calling buffer.
+
+If you are interested in contributing to the development of vim-outline,
 take a look at |OutlineContributing|.
 
 
@@ -41,89 +55,7 @@ take a look at |OutlineContributing|.
 REQUIREMENTS                                         *OutlineRequirements*
 
 Outline is written in Vim9script, therefore you need at least Vim 9.0.
-
-There no requirements such as tags or LSP servers, since outline is
-entirely based on regex.
-
-===============================================================================
-USAGE                                                     *OutlineUsage*
-
-
-                                                               *:ReplConsoleOpen*
-:ReplConsoleOpen()              Open the REPL associated to the current buffer
-                                'filetype'.
-                                The association 'filetype' - REPL type is
-                                stored in the |g:repl_kernels| dictionary.
-
-                                Example: If
-                                    1. |g:repl_kernels|['python'] = python3 and
-                                    2. |g:repl_names|['python'] = IPYTHON and
-                                    3. current buffer 'filetype' is |python| and
-                                    4. no replica python REPL is running,
-
-                                then this command start a jupyter-console with
-                                python3 kernel in a 'terminal' buffer named
-                                IPYTHON and it place it in a window in position
-                                |g:repl_direction|.
-
-                                If the REPL already exists, then it open in
-                                a window in position |g:repl_direction|.
-
-
-                                                                   *:ReplConsoleClose*
-:ReplConsoleClose([{REPL}])     Close {REPL}. The value of {REPL} must be one
-                                value specified in the |g:repl_names| dict.
-                                If no argument is passed, then it close
-                                the REPL associated to the 'filetype'
-                                of the current buffer.
-
-                                For example, if |g:repl_names|['python'] is
-                                IPYTHON and the current buffer 'filetype'
-                                is |python|, then this command with no
-                                arguments close the REPL named IPYTHON.
-
-
-                                                                    *<F2>*
-                                                               *:ReplConsoleToggle*
-:ReplConsoleToggle()            Un-hide and hide a REPL by alternating
-                                |:ReplConsoleOpen()| and |:ReplConsoleClose()| calls.
-
-
-                                                               *:ReplConsoleRestart*
-:ReplConsoleRestart()           Restart the REPL associated to the 'filetype'
-                                of the current buffer as specified in
-                                |g:repl_names|.
-
-                                                               *:ReplConsoleShutoff*
-:ReplConsoleShutoff([{REPL}])   Same as |:ReplConsoleClose| but it wipe away the
-                                REPL.
-
-                                                                    *<F9>*
-                                                               *:ReplSendLines*
-:[range]ReplSendLines()         Send the lines in [range] to the REPL specified
-                                in |g:repl_names|. If no range is given,
-                                then it sends the current line.
-
-
-                                                                  *<c-enter>*
-                                                               *:ReplSendCell*
-:ReplSendCell()                 Send the current code-cell.
-                                Cell delimiters are specified in the
-                                |g:repl_cells_delimiters| dictionary.
-
-
-                                                                    *<F5>*
-                                                               *:ReplSendFile*
-:ReplSendFile([{file}])         Send {file} to the REPL specified in
-                                |g:repl_names|.
-                                If no argument is passed, then it send the file
-                                opened in the current buffer.
-
-
-                                                          *:ReplRemoveCells*
-:ReplRemoveCells()              Remove all the cells delimiters from the current
-                                buffer.
-
+That is pretty much all. No ctags, nor LSP servers needed.
 
 ===============================================================================
 CONFIGURATION                                        *OutlineConfiguration*
@@ -228,6 +160,38 @@ Associates 'filetype' to commands that are run in the REPL when using
 |:ReplSendCell| or |:ReplSendFile| commands.
 Note: this dictionary shall not be changed by the user!
 
+
+
+===============================================================================
+USAGE                                                     *OutlineUsage*
+
+Vim-outline working principle is quite straightforward: for each filetype you
+specify a set of regex and the side-window outline is filled based
+on the parsing outcome.
+This means that you could fill the side window with whatever information you
+want: it's all depends on the regex that decide to use.
+
+The highlighting is asynchronous in the sense that it is updated only in
+response to the following events:
+
+a. Newly opened outline,
+b. Current buffer changed,
+c. Manual refresh.
+
+I was thinking to continuously update the highlighting but that would require
+calling a number of functions at every single text change: Mr huge lag is
+behind the corner!
+
+
+                                                               *:OutlineToggle*
+:OutlineToggle                  Open and close the side-window outline.
+
+                                                            *:OutlineRefresh*
+:OutlineRefresh                 Refresh the outline side-window.
+
+                                                               *:OutlineJump*
+:OutlineJump                    Jump into the outline side-window.
+                                independently of the current active buffer.
 
 ===============================================================================
 ADD NEW LANGUAGES                                     *OutlineAddLanguages*

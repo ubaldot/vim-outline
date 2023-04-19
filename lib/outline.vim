@@ -1,14 +1,6 @@
 vim9script
 
-# ========================================================
-# Outline functions
-#
-# export OutlineToggle()
-# export OutlineRefresh()
-# export OutlineGoToOutline()
-#
-# ========================================================
-
+# Imports
 import autoload "./quotes.vim"
 
 # Script variables
@@ -16,39 +8,28 @@ var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
 var Outline = [""] # It does not like [] initialization
 var outline_win_id = 0
 
-
 # Script functions
 sign define CurrentItem text=- linehl=CursorLine
-def OutlineHighlight(): string
+def OutlineHighlight()
+
+    # Enable for modification
+    win_execute(outline_win_id, 'setlocal modifiable noreadonly')
+
     # Remove any existing sign.
     win_execute(outline_win_id, "sign_unplace('', {'buffer': g:outline_buf_name}) ")
 
-    # Search the item at minimum distance with the cursor (from above)
-    # Note that the maximum distance is curr_line - 0 (top) = curr_line
-    # Here the are in the caller-buffer coordinates
-    var curr_line_nr = line('.')
-    var curr_line = getline('.')
-    var dist_min = curr_line_nr
-    var dist = curr_line_nr
-    var target_item = ""
+    # Get target item
+    const target_item = FindClosestItem()
+    echom "target_item is: " .. target_item
 
-    # OBS! You only find the item at minimum distance,
-    # but you don't know if it is a duplicate.
-    for item in Outline
-        dist = curr_line_nr - search($'\V{item}', 'cnbW')
-        # OBS! dist is always >= 0
-        if dist <= dist_min
-            dist_min = dist
-            target_item = item
-        endif
-    endfor
-
-    # If the search towards the top hit 0, don't highlight anything.
+    # If the found item is "", then don't highlight anything.
     # Otherwise, if you found a target item, check if there are duplicates,
     # and highlight the correct one.
-    if dist_min != curr_line_nr
+    if target_item != ""
+
         # Check if the found target_item is a duplicate starting from the current line
         # and going backwards to line 1  of the current buffer
+        var curr_line_nr = line('.')
         var num_duplicates = len(getline(1, '$')[0 : curr_line_nr - 1]
                     \ -> filter($"v:val ==# '{target_item}'"))
 
@@ -66,11 +47,52 @@ def OutlineHighlight(): string
         win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
         win_execute(outline_win_id, 'sign_place(w:line_nr, "", ''CurrentItem'', g:outline_buf_name, {''lnum'': w:line_nr})')
     endif
+    # Lock window modifications.
+    win_execute(outline_win_id, 'setlocal nomodifiable readonly')
+enddef
 
-    if exists('b:CurrentItem')
-        # echom b:CurrentItem(target_item)
-        return b:CurrentItem(target_item)
+def FindClosestItem(): string
+
+    OutlineUpdate()
+    # Search the item at minimum distance with the cursor (from above)
+    # Note that the maximum distance is curr_line - 0 (top) = curr_line
+    # Here the are in the caller-buffer coordinates
+    var curr_line_nr = line('.')
+    var curr_line = getline('.')
+    var dist_min = curr_line_nr
+    var dist = curr_line_nr
+    var found_item = ""
+
+    # OBS! You only find the item at minimum distance,
+    # but you don't know if it is a duplicate.
+    for item in Outline
+        dist = curr_line_nr - search($'\V{item}', 'cnbW')
+        # OBS! dist is always >= 0
+        if dist <= dist_min
+            dist_min = dist
+            found_item = item
+        endif
+    endfor
+
+    # If the search towards the top hit 0, return "".
+    # Otherwise, return found_item.
+    if dist_min != curr_line_nr
+        return found_item
     else
+        return ""
+    endif
+enddef
+
+export def OutlineGetClosestItem(): string
+    # To be used e.g. in vim-airline
+    # it makes the found_item more readable (filetype dependent)
+    if exists('b:CurrentItem')
+        OutlineUpdate()
+        # echom b:CurrentItem(target_item)
+        echo b:CurrentItem(FindClosestItem())
+        return b:CurrentItem(FindClosestItem())
+    else
+        echo "staminkia"
         return ""
     endif
 enddef
@@ -93,9 +115,7 @@ def GoToDefinition()
     endfor
 
     # Update highlighting
-    win_execute(outline_win_id, 'setlocal modifiable noreadonly')
     OutlineHighlight()
-    win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 enddef
 
 
@@ -134,8 +154,7 @@ export def OutlineToggle()
 enddef
 
 
-
-def PopulateOutlineWindow()
+def OutlineUpdate()
 
     # -----------------------------------
     #  Copy the whole buffer
@@ -143,7 +162,7 @@ def PopulateOutlineWindow()
     # TIP: For debugging use portions of source code and see what
     # happens, e.g. var Outline = getline(23, 98)
     Outline = getline(1, "$")
-    # TODO: check the comment string thing
+    # TODO: check the &commentstring thing here
     insert(Outline, &commentstring, 0) # We add a comment line because parsing the first line is always problematic
 
     # -----------------------------------
@@ -170,34 +189,29 @@ def PopulateOutlineWindow()
         var idx = rand(srand()) % len(quotes.quotes)
         Outline = quotes.quotes[idx]
     endif
-
-    # ----------------------------------------------
-    # Actually populate the window
-    # ----------------------------------------------
-    setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
-    # setbufline(winbufnr(outline_win_id), 1, Outline)
-    win_execute(outline_win_id, 'setlocal nomodifiable readonly')
-
-    # Highlight
-    OutlineHighlight()
-
 enddef
 
 export def OutlineRefresh()
+
     # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
-    # If outline is open and I am not on that.
+    # If Outline is open and I am not on Outline window.
     if OutlineIsOpen() && bufwinid(bufnr()) != outline_win_id
 
         # -----------------------------------------
-        # CLEAN OUTLINE AND UNLOCK OUTLINE BUFFER
+        # clean outline and unlock outline buffer
         # -----------------------------------------
         win_execute(outline_win_id, 'setlocal modifiable noreadonly')
         deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$', outline_win_id))
 
-        # -----------------------------------------
-        # POPULATE THE EMPTY WIN.
-        # -----------------------------------------
-        PopulateOutlineWindow()
+        # ----------------------------------------------
+        # Actually populate the window
+        # ----------------------------------------------
+        OutlineUpdate()
+        setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
+        win_execute(outline_win_id, 'setlocal nomodifiable readonly')
+
+        # Highlight
+        OutlineHighlight()
     endif
 enddef
 
@@ -245,6 +259,6 @@ enddef
 augroup Outline_autochange
     au!
     # If Outline is opened and you are not on the Outline window itself, then update.
-    autocmd BufEnter * if OutlineIsOpen() && bufwinid(bufnr()) != outline_win_id | OutlineRefresh() | endif
+    autocmd BufEnter *  OutlineRefresh()
     # autocmd! BufWinLeave outline#PyOutlineClose()
 augroup END
