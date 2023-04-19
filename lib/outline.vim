@@ -1,5 +1,10 @@
 vim9script
 
+# ========================================
+# Everything happens in the current buffer
+# with the exception of GoToDefinition()
+# ========================================
+
 # Imports
 import autoload "./quotes.vim"
 
@@ -51,7 +56,6 @@ enddef
 
 def FindClosestItem(): string
 
-    # Update()
     # Search the item at minimum distance with the cursor (from above)
     # Note that the maximum distance is curr_line - 0 (top) = curr_line
     # Here the are in the caller-buffer coordinates
@@ -92,7 +96,7 @@ def GoToDefinition()
 
     # TODO: check if you can replace wincmd p with some builtin function
     # Obs! This trigger the BufEnter event!
-    # This means that there will be an immediate Refresh()
+    # This means that there will be an immediate (wrong) RefreshWindow()
     wincmd p
 
     # The number of jumps needed are counted from the
@@ -102,26 +106,8 @@ def GoToDefinition()
         # TODO This looks for a regular expression not for the literal string! Fix it!
         search($'\V{curr_line}', "W")
     endfor
-    # You moved the cursor, so to be correct you must Refresh() again
-    Refresh()
-enddef
-
-
-def Close()
-    # Close the window
-    if IsOpen()
-        win_execute(outline_win_id, 'wincmd c')
-    endif
-enddef
-
-
-def IsOpen(): bool
-    # -1 if the buffer is not in any window.
-    if bufwinid($"^{g:outline_buf_name}$") != -1
-        return true
-    else
-        return false
-    endif
+    # You moved the cursor, so to be correct you must RefreshWindow() again
+    RefreshWindow()
 enddef
 
 
@@ -132,90 +118,11 @@ export def GoToOutline()
 enddef
 
 
-export def Toggle()
+def Close()
+    # Close the window
     if IsOpen()
-       Close()
-    else
-       Open()
-       Refresh()
+        win_execute(outline_win_id, 'wincmd c')
     endif
-enddef
-
-
-def Update()
-
-    # -----------------------------------
-    #  Copy the whole buffer
-    # -----------------------------------
-    # TIP: For debugging use portions of source code and see what
-    # happens, e.g. var Outline = getline(23, 98)
-    Outline = getline(1, "$")
-    # TODO: check the &commentstring thing here
-    insert(Outline, &commentstring, 0) # We add a comment line because parsing the first line is always problematic
-
-    # -----------------------------------
-    # Pre-process Outline
-    # -----------------------------------
-    #  OBS! Outline filetype is set here!
-    # Parse the buffer and populate the window
-    if exists('b:PreProcessOutline')
-        # b:PreProcessOutline is a FuncRef
-        Outline = b:PreProcessOutline(outline_win_id, Outline)
-    endif
-
-    # -----------------------------------
-    # Filter user request
-    # -----------------------------------
-    # echom "filetype:" .. &filetype
-    if exists('b:FilterOutline')
-        Outline = b:FilterOutline(Outline)
-    endif
-
-    # Default: if filetype is not supported, then clean up the Outline
-    if !exists('b:PreProcessOutline') && !exists('b:FilterOutline')
-        win_execute(outline_win_id, 'setlocal syntax=')
-        var idx = rand(srand()) % len(quotes.quotes)
-        Outline = quotes.quotes[idx]
-    endif
-enddef
-
-export def Refresh(): string
-
-    Update()
-    # Get target item
-    const target_item = FindClosestItem()
-
-    # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
-    # If Outline is open and I am not on Outline window.
-    if IsOpen() && bufwinid(bufnr()) != outline_win_id
-        echom "LINE: " .. line('.')
-        # -----------------------------------------
-        # clean outline and unlock outline buffer
-        # -----------------------------------------
-        win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-        deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$', outline_win_id))
-
-        # ----------------------------------------------
-        # Actually populate the window
-        # ----------------------------------------------
-        setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
-        win_execute(outline_win_id, 'setlocal nomodifiable readonly')
-
-        # Highlight
-        Highlight(target_item)
-    endif
-
-    # Return the cleaned target_item
-    if exists('b:CurrentItem')
-        Update()
-        # echom b:CurrentItem(target_item)
-        echo b:CurrentItem(FindClosestItem())
-        return b:CurrentItem(FindClosestItem())
-    else
-        echo "staminkia"
-        return ""
-    endif
-
 enddef
 
 
@@ -258,10 +165,115 @@ def Open(): number
 enddef
 
 
+def IsOpen(): bool
+    # -1 if the buffer is not in any window.
+    if bufwinid($"^{g:outline_buf_name}$") != -1
+        return true
+    else
+        return false
+    endif
+enddef
+
+
+export def Toggle()
+    if IsOpen()
+       Close()
+    else
+       Open()
+       RefreshWindow()
+    endif
+enddef
+
+
+def UpdateOutline()
+    # This function only update the Outline variable.
+
+    # -----------------------------------
+    #  Copy the whole buffer
+    # -----------------------------------
+    # TIP: For debugging use portions of source code and see what
+    # happens, e.g. var Outline = getline(23, 98)
+    Outline = getline(1, "$")
+    # TODO: check the &commentstring thing here
+    # We add a comment line because parsing the first line is always problematic
+    insert(Outline, &commentstring, 0)
+
+    # -----------------------------------
+    # Pre-process Outline
+    # -----------------------------------
+    #  OBS! Outline filetype is set here!
+    # Parse the buffer and populate the window
+    if exists('b:PreProcessOutline')
+        # b:PreProcessOutline is a FuncRef
+        Outline = b:PreProcessOutline(outline_win_id, Outline)
+    endif
+
+    # -----------------------------------
+    # Filter user request
+    # -----------------------------------
+    # echom "filetype:" .. &filetype
+    if exists('b:FilterOutline')
+        Outline = b:FilterOutline(Outline)
+    endif
+
+    # Default: if filetype is not supported, then clean up the Outline
+    if !exists('b:PreProcessOutline') && !exists('b:FilterOutline')
+        win_execute(outline_win_id, 'setlocal syntax=')
+        var idx = rand(srand()) % len(quotes.quotes)
+        Outline = quotes.quotes[idx]
+    endif
+enddef
+
+
+export def RefreshWindow(): string
+    # The function actually returns the closest item AND it
+    # refresh the side-window if needed.
+    # We place it here to do not have to export another dedicated
+    # function e.g. FindClosestItem().
+    # Also, from a user perspective, the Refresh include a bit of
+    # everything.
+
+    UpdateOutline()
+    # Get target item
+    const target_item = FindClosestItem()
+
+    # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
+    # If Outline is open and I am not on Outline window.
+    if IsOpen() && bufwinid(bufnr()) != outline_win_id
+        echom "LINE: " .. line('.')
+        # -----------------------------------------
+        # clean outline and unlock outline buffer
+        # -----------------------------------------
+        win_execute(outline_win_id, 'setlocal modifiable noreadonly')
+        deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$', outline_win_id))
+
+        # ----------------------------------------------
+        # Actually populate the window
+        # ----------------------------------------------
+        setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
+        win_execute(outline_win_id, 'setlocal nomodifiable readonly')
+
+        # Highlight
+        Highlight(target_item)
+    endif
+    # Return the cleaned target_item
+    # TODO make it work with vim-airline
+    if exists('b:CurrentItem')
+        # UpdateOutline()
+        # echom b:CurrentItem(target_item)
+        echo b:CurrentItem(FindClosestItem())
+        return b:CurrentItem(FindClosestItem())
+    else
+        echo "staminkia"
+        return ""
+    endif
+enddef
+
 
 augroup Outline_autochange
     au!
-    # If the entered buffer is not the Outline window, then Refresh.
-    autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id | :echo Refresh() | endif
+    # If the entered buffer is not the Outline window, then RefreshWindow.
+    # TODO: changing buffer with mouse requires two RefreshWindow()
+    autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id | :echo RefreshWindow() | endif
     # autocmd BufEnter * :echo line('.')
 augroup END
