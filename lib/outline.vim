@@ -254,7 +254,9 @@ export def RefreshWindow(): string
         win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
         # Highlight
-        Highlight(target_item)
+        if g:outline_enable_highlight
+            Highlight(target_item)
+        endif
     endif
     # Return the cleaned target_item
     # TODO make it work with vim-airline

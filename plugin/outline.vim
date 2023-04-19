@@ -28,6 +28,10 @@ if !exists('g:outline_win_size')
      g:outline_win_size = 30
 endif
 
+if !exists('g:outline_enable_highlight')
+     g:outline_enable_highlight = true
+endif
+
 if !exists('g:outline_include_before_exclude')
 g:outline_include_before_exclude = {
             \ "python": false,
@@ -65,7 +69,7 @@ if !hasmapto("<Plug>OutlineToggle" ) || empty(mapcheck("<F8>", "n"))
     nnoremap <silent> <unique> <F8> <Plug>OutlineToggle
 endif
 
-noremap <unique> <script> <Plug>OutlineRefresh :call <SID>outline.Refresh()<cr>
+noremap <unique> <script> <Plug>OutlineRefresh :call <SID>outline.RefreshWindow()<cr>
 if !hasmapto("<Plug>OutlineRefresh" ) || empty(mapcheck("<F7>", "n"))
     nnoremap <silent> <unique> <F7> <Plug>OutlineRefresh
 endif
