@@ -2,7 +2,7 @@ vim9script
 
 # Vim plugin to get an outline for your scripts.
 # Maintainer:	Ubaldo Tiberi
-# License: BDS-3Clause
+# License: Vim license
 
 if !has('vim9script') ||  v:version < 900
   # Needs Vim version 9.0 and above
@@ -60,10 +60,11 @@ endif
 
 
 # --------------------------
-# Mapping
+# Mappings
 # --------------------------
 import autoload "../lib/outline.vim"
 
+# noremap <unique> <script> <Plug>OutlineToggle :call <SID>outline.Toggle()<cr>
 noremap <unique> <script> <Plug>OutlineToggle :call <SID>outline.Toggle()<cr>
 if !hasmapto("<Plug>OutlineToggle" ) || empty(mapcheck("<F8>", "n"))
     nnoremap <silent> <unique> <F8> <Plug>OutlineToggle
@@ -74,14 +75,22 @@ if !hasmapto("<Plug>OutlineRefresh" ) || empty(mapcheck("<F7>", "n"))
     nnoremap <silent> <unique> <F7> <Plug>OutlineRefresh
 endif
 
-noremap <unique> <script> <Plug>OutlineGo :call <SID>outline.GoToOutline()<cr>
-if !hasmapto("<Plug>OutlineGo" ) || empty(mapcheck("<F6>", "n"))
-    nnoremap <silent> <unique> <F6> <Plug>OutlineGo
+noremap <unique> <script> <Plug>OutlineGoToOutline :call <SID>outline.GoToOutline()<cr>
+if !hasmapto("<Plug>OutlineGoToOutline" ) || empty(mapcheck("<F6>", "n"))
+    nnoremap <silent> <unique> <F6> <Plug>OutlineGoToOutline
 endif
 
-
-
+# --------------------------
 # Commands
-if !exists(":Outline")
-  command Outline :call <SID>outline.Toggle()
+# --------------------------
+if !exists(":OutlineToggle")
+  command OutlineToggle :call <SID>outline.Toggle()
+endif
+
+if !exists(":OutlineRefresh")
+  command OutlineRefresh :call <SID>outline.Refresh()
+endif
+
+if !exists(":OutlineGoToOutline")
+  command OutlineGoToOutline :call <SID>outline.GoToOutline()
 endif

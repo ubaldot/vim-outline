@@ -273,7 +273,7 @@ enddef
 
 
 augroup Outline_autochange
-    au!
+    autocmd!
     # If the entered buffer is not the Outline window, then RefreshWindow.
     # TODO: changing buffer with mouse requires two RefreshWindow()
     autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id | :echo RefreshWindow() | endif
