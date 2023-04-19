@@ -60,28 +60,24 @@ endif
 # --------------------------
 import autoload "../lib/outline.vim"
 
-noremap <unique> <script> <Plug>OutlineToggle :call <SID>outline.OutlineToggle()<cr>
+noremap <unique> <script> <Plug>OutlineToggle :call <SID>outline.Toggle()<cr>
 if !hasmapto("<Plug>OutlineToggle" ) || empty(mapcheck("<F8>", "n"))
     nnoremap <silent> <unique> <F8> <Plug>OutlineToggle
 endif
 
-noremap <unique> <script> <Plug>OutlineRefresh :call <SID>outline.OutlineRefresh()<cr>
+noremap <unique> <script> <Plug>OutlineRefresh :call <SID>outline.Refresh()<cr>
 if !hasmapto("<Plug>OutlineRefresh" ) || empty(mapcheck("<F7>", "n"))
     nnoremap <silent> <unique> <F7> <Plug>OutlineRefresh
 endif
 
-noremap <unique> <script> <Plug>OutlineGo :call <SID>outline.OutlineGoToOutline()<cr>
+noremap <unique> <script> <Plug>OutlineGo :call <SID>outline.GoToOutline()<cr>
 if !hasmapto("<Plug>OutlineGo" ) || empty(mapcheck("<F6>", "n"))
     nnoremap <silent> <unique> <F6> <Plug>OutlineGo
 endif
 
-noremap <unique> <script> <Plug>OutlineGetClosestItem :call <SID>outline.OutlineGetClosestItem()<cr>
-if !hasmapto("<Plug>OutlineGetClosestItem") || empty(mapcheck("<F12>", "n"))
-    nnoremap <silent> <unique> <F12> <Plug>OutlineGetClosestItem
-endif
 
 
 # Commands
 if !exists(":Outline")
-  command Outline :call <SID>outline.OutlineToggle()
+  command Outline :call <SID>outline.Toggle()
 endif

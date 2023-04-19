@@ -10,7 +10,7 @@ var outline_win_id = 0
 
 # Script functions
 sign define CurrentItem text=- linehl=CursorLine
-def OutlineHighlight()
+def Highlight(target_item: string)
 
     # Enable for modification
     win_execute(outline_win_id, 'setlocal modifiable noreadonly')
@@ -18,14 +18,12 @@ def OutlineHighlight()
     # Remove any existing sign.
     win_execute(outline_win_id, "sign_unplace('', {'buffer': g:outline_buf_name}) ")
 
-    # Get target item
-    const target_item = FindClosestItem()
-    echom "target_item is: " .. target_item
+    # echom "target_item is: " .. target_item
 
     # If the found item is "", then don't highlight anything.
     # Otherwise, if you found a target item, check if there are duplicates,
     # and highlight the correct one.
-    if target_item != ""
+    if target_item !=# ""
 
         # Check if the found target_item is a duplicate starting from the current line
         # and going backwards to line 1  of the current buffer
@@ -53,11 +51,12 @@ enddef
 
 def FindClosestItem(): string
 
-    OutlineUpdate()
+    # Update()
     # Search the item at minimum distance with the cursor (from above)
     # Note that the maximum distance is curr_line - 0 (top) = curr_line
     # Here the are in the caller-buffer coordinates
     var curr_line_nr = line('.')
+    # echo "curr_line_nr: " .. curr_line_nr
     var curr_line = getline('.')
     var dist_min = curr_line_nr
     var dist = curr_line_nr
@@ -83,27 +82,17 @@ def FindClosestItem(): string
     endif
 enddef
 
-export def OutlineGetClosestItem(): string
-    # To be used e.g. in vim-airline
-    # it makes the found_item more readable (filetype dependent)
-    if exists('b:CurrentItem')
-        OutlineUpdate()
-        # echom b:CurrentItem(target_item)
-        echo b:CurrentItem(FindClosestItem())
-        return b:CurrentItem(FindClosestItem())
-    else
-        echo "staminkia"
-        return ""
-    endif
-enddef
-
 
 def GoToDefinition()
+    # Search item in the Outline side-window first!
     var curr_line_nr = max([1, line('.') - len(title)])
     var curr_line = getline('.')
-    var counter = len(Outline[0 : curr_line_nr - 1] -> filter($"v:val ==# '{curr_line}'"))
+    var counter = len(Outline[0 : curr_line_nr - 1]
+                \ -> filter($"v:val ==# '{curr_line}'"))
 
     # TODO: check if you can replace wincmd p with some builtin function
+    # Obs! This trigger the BufEnter event!
+    # This means that there will be an immediate Refresh()
     wincmd p
 
     # The number of jumps needed are counted from the
@@ -113,21 +102,20 @@ def GoToDefinition()
         # TODO This looks for a regular expression not for the literal string! Fix it!
         search($'\V{curr_line}', "W")
     endfor
-
-    # Update highlighting
-    OutlineHighlight()
+    # You moved the cursor, so to be correct you must Refresh() again
+    Refresh()
 enddef
 
 
-def OutlineClose()
+def Close()
     # Close the window
-    if OutlineIsOpen()
+    if IsOpen()
         win_execute(outline_win_id, 'wincmd c')
     endif
 enddef
 
 
-def OutlineIsOpen(): bool
+def IsOpen(): bool
     # -1 if the buffer is not in any window.
     if bufwinid($"^{g:outline_buf_name}$") != -1
         return true
@@ -137,24 +125,24 @@ def OutlineIsOpen(): bool
 enddef
 
 
-export def OutlineGoToOutline()
-    if OutlineIsOpen()
+export def GoToOutline()
+    if IsOpen()
         win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
     endif
 enddef
 
 
-export def OutlineToggle()
-    if OutlineIsOpen()
-       OutlineClose()
+export def Toggle()
+    if IsOpen()
+       Close()
     else
-       OutlineOpen()
-       OutlineRefresh()
+       Open()
+       Refresh()
     endif
 enddef
 
 
-def OutlineUpdate()
+def Update()
 
     # -----------------------------------
     #  Copy the whole buffer
@@ -191,12 +179,16 @@ def OutlineUpdate()
     endif
 enddef
 
-export def OutlineRefresh()
+export def Refresh(): string
+
+    Update()
+    # Get target item
+    const target_item = FindClosestItem()
 
     # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
     # If Outline is open and I am not on Outline window.
-    if OutlineIsOpen() && bufwinid(bufnr()) != outline_win_id
-
+    if IsOpen() && bufwinid(bufnr()) != outline_win_id
+        echom "LINE: " .. line('.')
         # -----------------------------------------
         # clean outline and unlock outline buffer
         # -----------------------------------------
@@ -206,17 +198,28 @@ export def OutlineRefresh()
         # ----------------------------------------------
         # Actually populate the window
         # ----------------------------------------------
-        OutlineUpdate()
         setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
         win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
         # Highlight
-        OutlineHighlight()
+        Highlight(target_item)
     endif
+
+    # Return the cleaned target_item
+    if exists('b:CurrentItem')
+        Update()
+        # echom b:CurrentItem(target_item)
+        echo b:CurrentItem(FindClosestItem())
+        return b:CurrentItem(FindClosestItem())
+    else
+        echo "staminkia"
+        return ""
+    endif
+
 enddef
 
 
-def OutlineOpen(): number
+def Open(): number
     # Create empty win from current position
     win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
 
@@ -258,7 +261,7 @@ enddef
 
 augroup Outline_autochange
     au!
-    # If Outline is opened and you are not on the Outline window itself, then update.
-    autocmd BufEnter *  OutlineRefresh()
-    # autocmd! BufWinLeave outline#PyOutlineClose()
+    # If the entered buffer is not the Outline window, then Refresh.
+    autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id | :echo Refresh() | endif
+    # autocmd BufEnter * :echo line('.')
 augroup END
