@@ -47,7 +47,7 @@ That is pretty much all. No ctags, nor LSP servers required.
 `:OutlineToggle` to open/close a side-window that shows an outline of your
 current buffer.
 
-`:OutlineJump` to jump on the outline window.  This command is very useful
+`:OutlineJump` to jump on the outline window.  Such a command is handy 
 when you have many windows open in the same tab and you want to jump directly
 to the outline window with one key-press.
 
