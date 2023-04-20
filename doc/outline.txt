@@ -1,15 +1,14 @@
-*outline.txt*                           A trivial and imprecise outline viewer.
+*outline.txt*                         A trivial and imprecise outline viewer.
 
-                   _                            _   _ _        ~
-                  (_)                          | | | (_)           ~
-            __   ___ _ __ ___ ______ ___  _   _| |_| |_ _ __   ___ ~
-            \ \ / / | '_ ` _ \______/ _ \| | | | __| | | '_ \ / _ \~
-             \ V /| | | | | | |    | (_) | |_| | |_| | | | | |  __/~
-              \_/ |_|_| |_| |_|     \___/ \__,_|\__|_|_|_| |_|\___|~
-                                                                   ~
+               _                            _   _ _             ~
+              (_)                          | | | (_)            ~
+        __   ___ _ __ ___ ______ ___  _   _| |_| |_ _ __   ___  ~
+        \ \ / / | '_ ` _ \______/ _ \| | | | __| | | '_ \ / _ \  ~
+         \ V /| | | | | | |    | (_) | |_| | |_| | | | | |  __/  ~
+          \_/ |_|_| |_| |_|     \___/ \__,_|\__|_|_|_| |_|\___|  ~
+                                                                ~
 
-
-===============================================================================
+==============================================================================
 CONTENTS                                                     *OutlineContents*
 
     1. Introduction ................. |OutlineIntroduction|
@@ -23,43 +22,44 @@ CONTENTS                                                     *OutlineContents*
     7. License ...................... |OutlineLicense|
 
 
-===============================================================================
+==============================================================================
 INTRODUCTION                                          *OutlineIntroduction*
 
 Vim-outline parse your current buffer through a set of user-defined regex and
-it slam the result in a side window.
-That's all!
+it slam the result in a side window. That's all!
 
-Outline further provides you with the following features:
+Well, in reality it is not, in-fact Vim-outline further provides you with the
+following features:
 
     a. highlight your current position in the outline,
-    b. allow you to jumps from the outline to the corresponding
-    line in the calling buffer,
+    b. allows you to jumps from the outline to the corresponding line in the
+       calling buffer,
     c. feeds you with random motivational quote picked from our quotes
-    database if a 'filetype' is not supported. [Cringe mode ON!]
+       database if a 'filetype' is not supported. [Cringe mode ON!]
 
 At the time I was working with Python and Vim9script, hence only Python and
 Vim9Script are supported by default, but you can easily add other languages.
 See |OutlineAddNewLanguages|.
 
-I wrote vim-outline mainly for myself because I had some issue when using Vista!
-with ALE and Tagbar is based on tags, which is a feature that I don't really use.
+I wrote vim-outline mainly for myself because I had some issue when using
+Vista!  with ALE and Tagbar is based on tags, which is a feature that I don't
+really use.
 
 What I needed was something easily configurable, fast and reliable that just
-support me to get my job done, no matter if lacks bells and whistles
-and if the outcome is just an imprecise sketch of my buffer with noisy entries.
+support me to get my job done, no matter if lacks bells and whistles and if
+the outcome is just an imprecise sketch of my buffer with noisy entries.
 
-===============================================================================
+==============================================================================
 REQUIREMENTS                                         *OutlineRequirements*
 
 Outline is written in Vim9script, therefore you need at least Vim 9.0.
 That is pretty much all. No ctags, nor LSP servers required.
 
-===============================================================================
+==============================================================================
 USAGE                                                     *OutlineUsage*
 
-Run |:OutlineToggle| to open/close a side-window that shows an outline of
-your current buffer.
+Run |:OutlineToggle| to open/close a side-window that shows an outline of your
+current buffer.
 
 Run |:OutlineJump| to jump on the outline window.
 This command is very useful when you have many windows open in the same tab
@@ -69,8 +69,8 @@ Run |:OutlineRefresh| to update both the outline and the highlighting.
 Note: The refresh is asynchronous, meaning that the outline is automatically
 updated only in response to the following events:
 
-a. Newly opened outline,
-b. Another buffer is entered(*),
+    a. Newly opened outline,
+    b. Another buffer is entered(*),
 
 In all the other cases, you have to refresh it manually through
 |:OutlineRefresh|.
@@ -78,9 +78,8 @@ I was thinking to continuously update the highlighting but that would require
 calling a number of functions at every single text change: Mr huge lag is
 behind the corner!
 
-(*) This won't apply if a buffer is entered through mouse click.
-If you enter a buffer through mouse click, then you have to refresh the
-outline manually.
+(*) This won't apply if a buffer is entered through mouse click.  If you enter
+a buffer through mouse click, then you have to refresh the outline manually.
 
 You are not satisfied with the result?
 
@@ -88,89 +87,80 @@ No worries! Feel free to configure outline with your own regular expressions
 by adjusting the dictionaries |g:outline_pattern_to_include| and
 |g:outline_pattern_to_exclude|. See |OutlineConfiguration| for more info.
 
-===============================================================================
+==============================================================================
 COMMANDS                                                     *OutlineCommands*
 
                                                                *:OutlineToggle*
-:OutlineToggle                  Open and close the side-window outline.
+:OutlineToggle               Open and close the side-window outline.
 
                                                             *:OutlineRefresh*
-:OutlineRefresh                 Refresh the outline side-window.
+:OutlineRefresh              Refresh the outline side-window.
 
                                                                *:OutlineJump*
-:OutlineJump                    Jump into the outline side-window
-                                independently of the current buffer.
+:OutlineJump                 Jump into the outline side-window independently
+                             of the current buffer.
 
-===============================================================================
+==============================================================================
 MAPPINGS                                                *OutlineMappings*
 
 <F8>   or   <Plug>OutlineToggle
-    Open and close the side-window outline.
+Open and close the side-window outline.
 
 <F7>   or   <Plug>OutlineRefresh
-    Refresh the outline side-window.
+Refresh the outline side-window.
 
 <F6>   or   <Plug>OutlineGoToOutline
-    Jump into the outline side-window independently of the current buffer.
+Jump into the outline side-window independently of the current buffer.
 
-===============================================================================
+==============================================================================
 CONFIGURATION                                        *OutlineConfiguration*
 
-Vim-outline working principle is quite straightforward: for each 'filetype' you
-specify a set of regex and a side-window outline is filled based
-on the parsing outcome.
-This means that you could fill the side window with whatever information you
-want: it's all depends on the regex that decide to use.
+Vim-outline working principle is quite straightforward: for each 'filetype'
+you specify a set of regex and a side-window outline is filled based on the
+parsing outcome.  This means that you could fill the side window with whatever
+information you want: it's all depends on the regex that decide to use.
 
                                                         *g:outline_buf_name*
-  Type: 'string'
-  Default: "Outline!"
-
+Type: 'string'
+Default: "Outline!"
 Name of the Outline buffer.
 
                                                         *g:outline_win_size*
-  Type: 'number'
-  Default: 30
-
+Type: 'number'
+Default: 30
 Size of the outline window in number of columns unit.
 
                                                 *g:outline_enable_highlight*
-  Type: 'bool'
-  Default: true
-
+Type: 'bool'
+Default: true
 Enable (true) or disable (false) the highlighting.
 
                                             *g:outline_include_before_exclude*
-  Type: 'dict'<'filetype', 'bool'>
-  Default:{
-            \ "python": false,
+Type: 'dict'<'filetype', 'bool'>
+Default:{"python": false,
             \ "vim": false}
-
-Determine the execution order of the patterns defined in |g:outline_pattern_to_include|
-and |g:outline_pattern_to_exclude| when parsing a buffer for generating an outline.
+Determine the execution order of the patterns defined in
+|g:outline_pattern_to_include| and |g:outline_pattern_to_exclude| when parsing
+a buffer for generating an outline.
 
                                             *g:outline_pattern_to_include*
-  Type: 'dict'<'filetype', 'list'<'string'>>
-  Default:{
-            \ "python": ['^class', '^\s*def'],
-            \ "vim": ['^\s*export', '^\s*def', '^\S*map',
-                \ '^\s*\(autocmd\|autocommand\)', '^\s*\(command\|cmd\)',
-                \ '^\s*sign' ]
-            \ }
-
+Type: 'dict'<'filetype', 'list'<'string'>>
+Default:{ \ "python": ['^class', '^\s*def'],
+               "vim": ['^\s*export', '^\s*def',
+                      \ '^\S*map','^\s*\(autocmd\|autocommand\)',
+                      \ '^\s*\(command\|cmd\)',
+                      \ '^\s*sign' ]}
 Patterns to include when parsing a buffer to generate an outline.
 Note: the default values will be overwritten!
 
                                             *g:outline_pattern_to_exclude*
-  Type: 'dict'<'filetype', 'list'<'string'>>
-  Default:{
-            \ "python": ['^\s*def\s_\{-1,2}'],
-            \ "vim": ['^\s*#']}
-
+Type: 'dict'<'filetype', 'list'<'string'>>
+Default:{ "python": ['^\s*def\s_\{-1,2}'],
+         \ "vim": ['^\s*#']}
 Patterns to exclude when parsing a buffer to generate an outline.
 Note: the default values will be overwritten!
 
-===============================================================================
+==============================================================================
 ADD NEW LANGUAGES                                       *OutlineNewLanguages*
 
 To add a new language, you have to perform the following steps:
@@ -179,30 +169,30 @@ To add a new language, you have to perform the following steps:
     hard-coded 'filetype' information.
     b. Duplicate an existing file in /lib/ftfunctions and update it by
     changing the hard-coded 'filetype' information.
-    c. Update the dictionaries |g:outline_pattern_to_include| and
-    |g:outline_pattern_to_exclude| with new regex.
+    c. Update the dictionaries |g:outline_pattern_to_include|
+    and |g:outline_pattern_to_exclude| with new regex.
     d. Test if it works!
 
 Note: the regex defined in the |g:outline_pattern_to_include| and
-|g:outline_pattern_to_exclude| scan the buffer line-by-line and it
-may be difficult to write regex when you have to, for example,
-remove blocks of lines (think for example to Python docstrings).
+|g:outline_pattern_to_exclude| scan the buffer line-by-line and it may be
+difficult to write regex when you have to, for example, remove blocks of lines
+(think for example to Python docstrings).
 In that case, it is possible to pre-process the buffer content through the
-PreProcessOutline function. See /lib/ftplugin/python.vim for an example of how
-to use such a function.
+PreProcessOutline function.  See /lib/ftplugin/python.vim for an example of
+how to use such a function.
 
-===============================================================================
+==============================================================================
 CONTRIBUTING                                            *OutlineContributing*
 
 Contributions are more than welcome!
 
 The most obvious contribution is to add a new language. See
-|OutlineAddNewLanguages|.
-There are plenty TODO in the source code. Feel free to address any of them.
+|OutlineAddNewLanguages|.  There are plenty TODO in the source code.
+Feel free to address any of them.
 
 Another nice contribution could be to add quotes in the quotes.vim file! :D
 
-===============================================================================
+==============================================================================
 LICENSE                                                    *OutlineLicense*
 
 Vim License.
