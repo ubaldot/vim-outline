@@ -22,7 +22,7 @@ Vim9Script are supported by default, but you can easily add other languages.
 See `:h OutlineAddNewLanguages`.
 
 <p align="center">
-<img src="/OutlineDemo.gif" width="50%" height="50%">
+<img src="/OutlineDemo.gif" width="60%" height="60%">
 </p>
 
 
