@@ -21,13 +21,10 @@ At the time I was working with Python and Vim9script, hence only Python and
 Vim9Script are supported by default, but you can easily add other languages.
 See `:h OutlineAddNewLanguages`.
 
-[//]: <> <p align="center">
-[//]: <> <img src="/OutlineDemo.gif"  width="500" height="400">
-[//]: <> </p>
-
 <p align="center">
-<img src="/OutlineDemo.gif">
+<img src="/OutlineDemo.gif"  width="500" height="400">
 </p>
+
 
 I wrote vim-outline mainly for myself because I had some issue when using
 Vista! with ALE and Tagbar is based on tags, which is a feature that I don't
