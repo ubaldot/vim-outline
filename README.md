@@ -1,6 +1,10 @@
 # vim-outline
 A simple outline sketcher for Vim.
 
+<p align="center">
+<img src="/OutlineDemo.gif" width="60%" height="60%">
+</p>
+
 ## Introduction
 Vim-outline parse your current buffer through a set of
 user-defined regex and it slam the result in a side-window.
@@ -20,11 +24,6 @@ following features:
 At the time I was working with Python and Vim9script, hence only Python and
 Vim9Script are supported by default, but you can easily add other languages.
 See `:h OutlineAddNewLanguages`.
-
-<p align="center">
-<img src="/OutlineDemo.gif" width="60%" height="60%">
-</p>
-
 
 I wrote vim-outline mainly for myself because I had some issue when using
 Vista! with ALE and Tagbar is based on tags, which is a feature that I don't
