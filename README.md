@@ -3,19 +3,17 @@ A simple outline sketcher for Vim.
 
 ## Introduction
 Vim-outline parse your current buffer through a set of user-defined regex and 
-it slam an outline in a side window. 
+it slam the result in a side window. 
 
 That's all!
 
 Vim-outline further provides you with the following features:
 
-1. tells you where you are in the main buffer with respect to the outline
-through highlighting,
-2. allows you to jumps from every outline line to the corresponding
+1. highlight your current position in the outline,
+2. allows you to jumps from the outline to the corresponding
 line in the calling buffer,
-3. a random motivational quote picked from our quotes database will
-appear in the side window in place of an outline if a 'filetype' is not
-supported.
+3. feeds you with random motivational quote picked from our quotes database 
+if a *filetype* is not supported. [Cringe mode ON!] 
 
 At the time I was working with Python and Vim9script, hence only Python and
 Vim9Script are supported by default, but you can easily add other languages.
@@ -31,7 +29,7 @@ and if the outcome is just an imprecise sketch of my buffer with noisy entries.
 Use any plugin manager or the builtin Vim plugin manager. 
 
 ## Requirements
-Outline is written in Vim9script, therefore you need at least Vim 9.0.
+Vim-outline is written in *Vim9script*, therefore you need at least *Vim 9.0*.
 That is pretty much all. No ctags, nor LSP servers required.
 
 ## Usage
@@ -45,12 +43,11 @@ This command is very useful when you have many windows open in the same tab
 and you want to jump directly to the outline window with one key-press.
 
 `:OutlineRefresh` to update both the outline and the highlighting.
-> Note: The refresh is asynchronous, meaning that the outline is updated only in
+> Note: The refresh is asynchronous, meaning that the outline is automatically updated only in
 > response to the following events:
 >
 > 1. Newly opened outline,
 > 2. Another buffer is entered,
-> 3. Manual refresh.
 > 
 > In all the other cases, you have to refresh it manually through `:OutlineRefresh`.
 > See `:h OutlineUsage` for more info.
@@ -62,9 +59,9 @@ and you want to jump directly to the outline window with one key-press.
     nnoremap <silent> <F6> <Plug>OutlineGoToOutline
 
 ## Configuration
-For each filetype you can define some regex to be used to parse the current buffer and then to create an outline.
+For each filetype you can define some regex to be used to parse the current buffer 
+through the following dictionaries:
 
-You can specify the regex through the following dictionaries:
 ```
 # Default values
 g:outline_pattern_to_include = {
@@ -86,17 +83,17 @@ g:outline_include_before_exclude = {
 ```
 > Note: default values are overwritten by user values!
 
-You also have some few other tweaking variables:
+You also have few other tweaking variables:
 ```
 # Defaul values
 g:outline_buf_name = "Outline!"
 g:outline_win_size = 30
 g:outline_enable_highlight = true
 ```
+See `:h OutlineConfiguration` for more info.
+
 To see the current setting of a variable run `:echo g:<variable_name>`, for example `:echo g:outline_pattern_to_exclude`. 
-
-See `:h OutlineConfiguration` for more info. 
-
+ 
 ## Help
 `:h outline.txt` 
 
