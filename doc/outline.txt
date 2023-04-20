@@ -12,176 +12,87 @@
 ===============================================================================
 CONTENTS                                                     *OutlineContents*
 
-    1. Introduction ......... |OutlineIntroduction|
-    2. Requirements ......... |OutlineRequirements|
-    3. Configuration ........ |OutlineConfiguration|
-    4. Usage ................ |OutlineUsage|
-    5. Add new languages .... |OutlineAddLanguages|
-    6. Troubleshooting ...... |OutlineTroubleshooting|
-    7. Contributing ......... |OutlineContributing|
-    8. License .............. |OutlineLicense|
+    1. Introduction ................. |OutlineIntroduction|
+    2. Requirements ................. |OutlineRequirements|
+    3. Usage ........................ |OutlineUsage|
+        3.1 Commands ................ |OutlineCommands|
+        3.2 Mappings ................ |OutlineMappings|
+    4. Configuration ................ |OutlineConfiguration|
+    5. Add new languages ............ |OutlineNewLanguages|
+    6. Contributing ................. |OutlineContributing|
+    7. License ...................... |OutlineLicense|
 
 
 ===============================================================================
 INTRODUCTION                                          *OutlineIntroduction*
 
 Vim-outline parse your current buffer and it slam an outline in a scratch buffer
-opened in a side window.
-
-That's all!
+opened in a side window. That's all!
 
 I wrote vim-outline mainly for myself because I had some issue when using Vista!
 with ALE and Tagbar is based on tags, which is a feature that I don't really use.
+
 What I needed was something easily configurable, fast and reliable that just
-support me to get my job done, no matter if it has not bells and whistles
-and the outcome is just an imprecise sketch.
+support me to get my job done, no matter if lacks bells and whistles
+and if the outcome is just an imprecise sketch of my buffer with noisy entries.
 
-At that time I was working with Python, hence Python is the only supported
-language at the moment, but you can easily add other languages, see below.
-However, to make everything more cringe, if the current buffer
-filetye is not supported, then a random motivational quote picked from
-our quotes database will appear in the side window in place of an outline.
+Outline further provides you with the following features:
 
-Otherwise, in addition to an outline, vim-outline tells you where are you
-in the main buffer with respect to the outline through asynchronous
-highlighting, further allowing jumps by reference from the outline window
-to the calling buffer.
+    a. tells you where you are in the main buffer with respect to the outline
+    through highlighting,
+    b. it allow you to jumps from every outline line to the corresponding
+    line in the calling buffer,
+    c. a random motivational quote picked from our quotes database will
+    appear in the side window in place of an outline if a 'filetype' is not
+    supported.
 
-If you are interested in contributing to the development of vim-outline,
-take a look at |OutlineContributing|.
-
+At the time I was working with Python and Vim9script, hence only Python and
+Vim9Script are supported by default, but you can easily add other languages.
+See |OutlineContributing|.
 
 ===============================================================================
 REQUIREMENTS                                         *OutlineRequirements*
 
 Outline is written in Vim9script, therefore you need at least Vim 9.0.
-That is pretty much all. No ctags, nor LSP servers needed.
-
-===============================================================================
-CONFIGURATION                                        *OutlineConfiguration*
-
-                                                        *g:repl_autostart*
-  Type: bool
-  Default: false
-
-If true, automatically open the REPL at 'BufWinEnter'.
-
-                                                        *g:repl_tmp_filename*
-  Type: 'string'
-  Default: `tempname()`
-
-The temp file that is used when using the command |:ReplSendCell| and |:ReplSendFile|.
-Note: this dictionary shall not be changed by the user!
-
-
-
-                                                        *g:repl_alt_highlight*
-  Type: 0 or 1.
-  Default: 0.
-
-Alternative way of highlighting code-cells.
-Note: If you are experiencing sluggish behavior with the normal settings,
-you could try to set it to 1.
-
-
-                                                        *g:repl_direction*
-  Type: HJKL.
-  Default: L.
-
-The location of the REPL window.
-
-
-                                                        *g:repl_size*
-  Type: non-negative number.
-  Default: 0.
-
-Size of the REPL window in lines or columns number.
-If |g:repl_direction| = "J" or "K" then it sets the number of lines,
-otherwise it sets the number of columns.
-If the value is 0, then the window will take as much space as possible.
-
-
-
-                                                        *g:repl_kernels*
-  Type: 'dict'<'filetype', jupyter kernel>
-  Default: {
-            \ "python": "python3",
-            \ "julia": "julia-1.8",
-            \ "default": "terminal"}
-
-Associates 'filetype' to jupyter kernels.
-You can override existing key-values.
-For example, to use the kernel julia-2.0 when working with julia
-'filetype' you can use:    >
-
-    g:repl_kernels['julia': "julia-2.0"]
-<
-To see the list of installed jupyter kernels run jupyter kernelspec list
-from your terminal.
-Note: to add a new language in replica you need to do a bit more work than
-just editing this dictionary. See |replica-add-language| for more information.
-
-
-                                                     *g:repl_cells_delimiters*
-  Type: 'dict'<'filetype', 'string'>
-  Default: {
-            \ "python": "# %%",
-            \ "julia": "# %%",
-            \ "default": "#--"}
-
-Associates 'filetype' to cell delimiters.
-You can change the cell delimiter associated to a 'filetype' simply by
-changing the value associated to such a 'filetype' key.
-For example:
->
-    g:repl_cells_delimiters['python': "#%%"]
-<
-
-                                                     *g:repl_names*
-  Type: 'dict'<'filetype', 'string'>
-  Default:{
-            \ "python": "IPYTHON",
-            \ "julia": "JULIA",
-            \ "default": "TERMINAL"}
-
-
-Associates 'filetype' to 'terminal' buffer names.
-Note: this dictionary shall not be changed by the user!
-
-
-                                                     *g:repl_run_commands*
-  Type: 'dict'<'filetype', 'string'>
-  Default:{
-            \ "python": "run -i " .. |g:repl_tmp_filename|,
-            \ "julia": 'include("' .. |g:repl_tmp_filename| .. '")',
-            \ "default": "sh " .. |g:repl_tmp_filename|}
-
-Associates 'filetype' to commands that are run in the REPL when using
-|:ReplSendCell| or |:ReplSendFile| commands.
-Note: this dictionary shall not be changed by the user!
-
-
+That is pretty much all. No ctags, nor LSP servers required.
 
 ===============================================================================
 USAGE                                                     *OutlineUsage*
 
-Vim-outline working principle is quite straightforward: for each filetype you
-specify a set of regex and the side-window outline is filled based
-on the parsing outcome.
-This means that you could fill the side window with whatever information you
-want: it's all depends on the regex that decide to use.
+Run |:OutlineToggle| to open/close a side-window that shows an outline of
+your current buffer.
 
-The highlighting is asynchronous in the sense that it is updated only in
+Run |:OutlineJump| to jump on the outline window, select a line and
+hit '<enter>' to jump back to the corresponding line in the calling buffer.
+This command is very useful when you have many windows open in the same tab
+and you want to jump directly to the outline window with one key-press.
+
+Run |:OutlineRefresh| to update both the outline and the highlighting.
+Note: The refresh is asynchronous, meaning that the outline is updated only in
 response to the following events:
 
 a. Newly opened outline,
-b. Current buffer changed,
+b. Another buffer is entered(*),
 c. Manual refresh.
 
+In all the other cases, you have to refresh it manually through
+|:OutlineRefresh|.
 I was thinking to continuously update the highlighting but that would require
 calling a number of functions at every single text change: Mr huge lag is
 behind the corner!
 
+(*) This won't apply if a buffer is entered through mouse click.
+If you enter a buffer through mouse click, then you have to refresh the
+outline manually.
+
+You are not satisfied with the result?
+
+No worries! Feel free to configure outline with your own regular expressions
+by adjusting the dictionaries |g:outline_pattern_to_include| and
+|g:outline_pattern_to_exclude|. See |OutlineConfiguration| for more info.
+
+===============================================================================
+COMMANDS                                                     *OutlineCommands*
 
                                                                *:OutlineToggle*
 :OutlineToggle                  Open and close the side-window outline.
@@ -190,75 +101,112 @@ behind the corner!
 :OutlineRefresh                 Refresh the outline side-window.
 
                                                                *:OutlineJump*
-:OutlineJump                    Jump into the outline side-window.
-                                independently of the current active buffer.
+:OutlineJump                    Jump into the outline side-window
+                                independently of the current buffer.
 
 ===============================================================================
-ADD NEW LANGUAGES                                     *OutlineAddLanguages*
+MAPPINGS                                                *OutlineMappings*
 
-Outline is nicely extendable and to add new languages is fairly easy.
+<F8>   or   <Plug>OutlineToggle
+    Open and close the side-window outline.
 
-Say that a new language is associated to a certain 'filetype'.
-Then, you can add it to replica in two steps:
+<F7>   or   <Plug>OutlineRefresh
+    Refresh the outline side-window.
 
-    1. Add a new key-value pair to the |g:repl_kernels|, |g:repl_names|,
-    |g:repl_cells_delimiters| and |g:repl_run_commands| dictionaries.
-    2. Create a new 'filetype'.vim file in vim-replica/ftplugin and copy/paste
-    the content of an existing 'filetype'.vim in the same folder in the newly
-    created file. Adjust the file content accordingly.
-
-Done!
-TODO: You may use the global ftplugin folder but it has been not tested yet.
-
+<F6>   or   <Plug>OutlineGoToOutline
+    Jump into the outline side-window independently of the current buffer.
 
 ===============================================================================
-TROUBLESHOOTING                                      *OutlineTroubleshooting*
+CONFIGURATION                                        *OutlineConfiguration*
 
-Q. My Vim became very slow!
-A. You can try to set |g:repl_alt_highlight| = 1 in your .vimrc.
+Vim-outline working principle is quite straightforward: for each 'filetype' you
+specify a set of regex and a side-window outline is filled based
+on the parsing outcome.
+This means that you could fill the side window with whatever information you
+want: it's all depends on the regex that decide to use.
 
-Q. Is it possible to copy from a REPL to a buffer?
-A. Yes! If you <c-w>N in your REPL, then it becomes just an ordinary buffer.
-There you can yank everything you want.
-To re-enable the REPL just press i with the cursor located on the REPL window.
+                                                        *g:outline_buf_name*
+  Type: 'string'
+  Default: "Outline!"
 
-Q. Is it possible to automatically change the REPL folder when I change
-Vim folder?
-A. Yes, but you need to define your own function, something like
->
-    def ChangeTerminalDir()
-        for ii in term_list()
-            if bufname(ii) == "JULIA"
-               term_sendkeys(ii, 'cd("' .. getcwd() .. '")' .. "\n")
-            else
-               term_sendkeys(ii, "cd " .. getcwd() .. "\n")
-            endif
-        endfor
-    enddef
+Name of the Outline buffer.
 
-    augroup DIRCHANGE
-        au!
-        autocmd DirChanged global ChangeTerminalDir()
-    augroup END
-<
-This will automatically change folder to all the open 'terminal' buffers.
-Note: depending on the REPL, you may need a different command to
-change folder.
-Note: It does not work the other way around, i.e. if you change folder from a
-'terminal' buffer the Vim current folder won't be changed.
+                                                        *g:outline_win_size*
+  Type: 'number'
+  Default: 30
 
+Size of the outline window in number of columns unit.
+
+                                                *g:outline_enable_highlight*
+  Type: 'bool'
+  Default: true
+
+Enable (true) or disable (false) the highlighting.
+
+                                            *g:outline_include_before_exclude*
+  Type: 'dict'<'filetype', 'bool'>
+  Default:{
+            \ "python": false,
+            \ "vim": false}
+
+Determine the execution order of the patterns defined in |g:outline_pattern_to_include|
+and |g:outline_pattern_to_exclude| when parsing a buffer for generating an outline.
+
+                                            *g:outline_pattern_to_include*
+  Type: 'dict'<'filetype', 'list'<'string'>>
+  Default:{
+            \ "python": ['^class', '^\s*def'],
+            \ "vim": ['^\s*export', '^\s*def', '^\S*map',
+                \ '^\s*\(autocmd\|autocommand\)', '^\s*\(command\|cmd\)',
+                \ '^\s*sign' ]
+            \ }
+
+Patterns to include when parsing a buffer to generate an outline.
+Note: the default values will be overwritten!
+
+                                            *g:outline_pattern_to_exclude*
+  Type: 'dict'<'filetype', 'list'<'string'>>
+  Default:{
+            \ "python": ['^\s*def\s_\{-1,2}'],
+            \ "vim": ['^\s*#']}
+
+Patterns to exclude when parsing a buffer to generate an outline.
+Note: the default values will be overwritten!
+
+===============================================================================
+ADD NEW LANGUAGES                                       *OutlineNewLanguages*
+
+To add a new language, you have to perform the following steps:
+
+    a. Duplicate an existing file in /ftplugin and update it by changing the
+    hard-coded 'filetype' information.
+    b. Duplicate an existing file in /lib/ftfunctions and update it by
+    changing the hard-coded 'filetype' information.
+    c. Update the dictionaries |g:outline_pattern_to_include| and
+    |g:outline_pattern_to_exclude| with new regex.
+    d. Test if it works!
+
+Note: the regex defined in the |g:outline_pattern_to_include| and
+|g:outline_pattern_to_exclude| scan the buffer line-by-line and it
+may be difficult to write regex when you have to, for example,
+remove blocks of lines (think for example to Python docstrings).
+In that case, it is possible to pre-process the buffer content through the
+PreProcessOutline function. See /lib/ftplugin/python.vim for an example of how
+to use such a function.
 
 ===============================================================================
 CONTRIBUTING                                            *OutlineContributing*
 
-Contributions are most than welcome!
-Feel free to add a PR on GitHub. :)
+Contributions are more than welcome!
 
+The most obvious contribution is to add a new language. See
+|OutlineAddNewLanguages|.
+Another nice contribution could be to add quotes in the quotes.vim file! :D
 
 ===============================================================================
 LICENSE                                                    *OutlineLicense*
 
-BSD-3Clause License.
+Vim License.
 Copyright ©2023 Ubaldo Tiberi.
 
 vim:tw=78:et:ft=help:norl:

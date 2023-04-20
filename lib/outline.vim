@@ -211,7 +211,6 @@ def UpdateOutline()
     # -----------------------------------
     # Filter user request
     # -----------------------------------
-    # echom "filetype:" .. &filetype
     if exists('b:FilterOutline')
         Outline = b:FilterOutline(Outline)
     endif
@@ -240,7 +239,7 @@ export def RefreshWindow(): string
     # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
     # If Outline is open and I am not on Outline window.
     if IsOpen() && bufwinid(bufnr()) != outline_win_id
-        echom "LINE: " .. line('.')
+        # echom "LINE: " .. line('.')
         # -----------------------------------------
         # clean outline and unlock outline buffer
         # -----------------------------------------
@@ -261,12 +260,9 @@ export def RefreshWindow(): string
     # Return the cleaned target_item
     # TODO make it work with vim-airline
     if exists('b:CurrentItem')
-        # UpdateOutline()
-        # echom b:CurrentItem(target_item)
         echo b:CurrentItem(FindClosestItem())
         return b:CurrentItem(FindClosestItem())
     else
-        echo "staminkia"
         return ""
     endif
 enddef
@@ -275,7 +271,8 @@ enddef
 augroup Outline_autochange
     autocmd!
     # If the entered buffer is not the Outline window, then RefreshWindow.
-    # TODO: changing buffer with mouse requires two RefreshWindow()
+    # TODO: changing buffer with mouse it is tricky because it triggers two events: BufEnter + CursorMove
+    # Hence, you miss the current line when you enter the buffer.
     autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id | :echo RefreshWindow() | endif
     # autocmd BufEnter * :echo line('.')
 augroup END

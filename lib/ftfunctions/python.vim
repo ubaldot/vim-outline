@@ -7,7 +7,8 @@ vim9script
 
 # TODO: Remove? This should go airline. Is it filetype dependent?
 export def CurrentItem(curr_item: string): string
-    return trim(matchstr(curr_item, '\v\w+\s+\zs\w+'))
+    return trim(matchstr(curr_item, '(.*'))
+    # return trim(matchstr(curr_item, '\v\w+\s+\zs\w+'))
 enddef
 
 export def PreProcessOutline(win_id: number, outline: list<string>): list<string>
