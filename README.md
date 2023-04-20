@@ -1,4 +1,5 @@
-# vim-outline A simple outline sketcher for Vim.
+# vim-outline
+A simple outline sketcher for Vim.
 
 ## Introduction
 Vim-outline parse your current buffer through a set of
