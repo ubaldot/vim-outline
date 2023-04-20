@@ -16,9 +16,12 @@ following features:
 3. feeds you with random motivational quote picked from our database if
    a *filetype* is not supported. [Cringe mode ON!]
 
+
 At the time I was working with Python and Vim9script, hence only Python and
 Vim9Script are supported by default, but you can easily add other languages.
 See `:h OutlineAddNewLanguages`.
+
+<img src="https://github.com/ubaldot/vim-outline/OutlineDemo.gif" height="450">
 
 I wrote vim-outline mainly for myself because I had some issue when using
 Vista! with ALE and Tagbar is based on tags, which is a feature that I don't
