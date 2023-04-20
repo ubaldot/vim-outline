@@ -49,7 +49,6 @@ g:outline_pattern_to_include = {
             \ }
 endif
 
-
 # TODO Overwrite patterns or append?
 if !exists('g:outline_pattern_to_exclude')
 g:outline_pattern_to_exclude = {

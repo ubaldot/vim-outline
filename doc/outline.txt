@@ -26,8 +26,21 @@ CONTENTS                                                     *OutlineContents*
 ===============================================================================
 INTRODUCTION                                          *OutlineIntroduction*
 
-Vim-outline parse your current buffer and it slam an outline in a scratch buffer
-opened in a side window. That's all!
+Vim-outline parse your current buffer through a set of user-defined regex and
+it slam the result in a side window.
+That's all!
+
+Outline further provides you with the following features:
+
+    a. highlight your current position in the outline,
+    b. allow you to jumps from the outline to the corresponding
+    line in the calling buffer,
+    c. feeds you with random motivational quote picked from our quotes
+    database if a 'filetype' is not supported. [Cringe mode ON!]
+
+At the time I was working with Python and Vim9script, hence only Python and
+Vim9Script are supported by default, but you can easily add other languages.
+See |OutlineAddNewLanguages|.
 
 I wrote vim-outline mainly for myself because I had some issue when using Vista!
 with ALE and Tagbar is based on tags, which is a feature that I don't really use.
@@ -35,20 +48,6 @@ with ALE and Tagbar is based on tags, which is a feature that I don't really use
 What I needed was something easily configurable, fast and reliable that just
 support me to get my job done, no matter if lacks bells and whistles
 and if the outcome is just an imprecise sketch of my buffer with noisy entries.
-
-Outline further provides you with the following features:
-
-    a. tells you where you are in the main buffer with respect to the outline
-    through highlighting,
-    b. it allow you to jumps from every outline line to the corresponding
-    line in the calling buffer,
-    c. a random motivational quote picked from our quotes database will
-    appear in the side window in place of an outline if a 'filetype' is not
-    supported.
-
-At the time I was working with Python and Vim9script, hence only Python and
-Vim9Script are supported by default, but you can easily add other languages.
-See |OutlineContributing|.
 
 ===============================================================================
 REQUIREMENTS                                         *OutlineRequirements*
@@ -68,12 +67,11 @@ This command is very useful when you have many windows open in the same tab
 and you want to jump directly to the outline window with one key-press.
 
 Run |:OutlineRefresh| to update both the outline and the highlighting.
-Note: The refresh is asynchronous, meaning that the outline is updated only in
-response to the following events:
+Note: The refresh is asynchronous, meaning that the outline is automatically
+updated only in response to the following events:
 
 a. Newly opened outline,
 b. Another buffer is entered(*),
-c. Manual refresh.
 
 In all the other cases, you have to refresh it manually through
 |:OutlineRefresh|.
@@ -201,6 +199,8 @@ Contributions are more than welcome!
 
 The most obvious contribution is to add a new language. See
 |OutlineAddNewLanguages|.
+There are plenty TODO in the source code. Feel free to address any of them.
+
 Another nice contribution could be to add quotes in the quotes.vim file! :D
 
 ===============================================================================
