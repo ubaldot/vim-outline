@@ -9,9 +9,9 @@ That's all!
 
 Vim-outline further provides you with the following features:
 
-1. tell you where you are in the main buffer with respect to the outline
+1. tells you where you are in the main buffer with respect to the outline
 through highlighting,
-2. allow you to jumps from every outline line to the corresponding
+2. allows you to jumps from every outline line to the corresponding
 line in the calling buffer,
 3. a random motivational quote picked from our quotes database will
 appear in the side window in place of an outline if a 'filetype' is not
