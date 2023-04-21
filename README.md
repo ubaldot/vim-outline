@@ -28,9 +28,10 @@ I wrote vim-outline mainly for myself because I had some issue when using
 Vista! with ALE and Tagbar require ctags, which is a tool that I don't
 have installed (I know, I should).
 
-What I needed was something self-contained (i.e. no-dependencies), easily configurable,
-fast and reliable that just support me to get my job done, no matter if lacks bells and
-whistles and if the outcome is just an imprecise sketch with noisy entries.
+What I needed was a self-contained tool (i.e. no-dependencies), which is
+easily configurable, fast and reliable and that would just support me to get
+my job done, no matter if lacks bells and whistles and if the outcome
+is just an imprecise sketch with noisy entries.
 
 ## Installation
 Use any plugin manager or the builtin Vim plugin manager.

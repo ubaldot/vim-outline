@@ -192,7 +192,10 @@ The most obvious contribution is to add a new language. See
 |OutlineAddNewLanguages|.  There are plenty TODO in the source code.
 Feel free to address any of them.
 
-Another nice contribution could be to add quotes in the quotes.vim file! :D
+Another nice contribution could be to add quotes in the quotes.vim file!
+
+And finally, last, but not least, feel free to correct my poor
+English grammar! :D
 
 ==============================================================================
 LICENSE                                                    *OutlineLicense*
