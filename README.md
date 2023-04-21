@@ -15,7 +15,7 @@ Well, in reality it is not, in-fact Vim-outline further provides you with the
 following features:
 
 1. locate your current position with respect to the outline,
-2. jump from outline lines to the corresponding buffer lines,
+2. jump from outline entries to the corresponding buffer lines,
 3. feed you with random motivational quote if a *filetype* is not supported.
    [Cringe mode ON!]
 
