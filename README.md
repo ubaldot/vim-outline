@@ -17,8 +17,8 @@ following features:
 1. locate your current position with respect to the outline,
 2. jump from the outline to the corresponding line in the
    buffer you are editing,
-3. feed you with random motivational quote picked from our database if
-   a *filetype* is not supported. [Cringe mode ON!]
+3. feed you with random motivational quote if a *filetype* is not supported.
+   [Cringe mode ON!]
 
 
 At the time I was working with Python and Vim9script, hence only Python and
@@ -27,7 +27,7 @@ See `:h OutlineAddNewLanguages`.
 
 I wrote vim-outline mainly for myself because I had some issue when using
 Vista! with ALE and Tagbar require ctags, which is a tool that I don't
-have installed.
+have installed (I know, I should).
 
 What I needed was something self-contained (i.e. no-dependencies), easily configurable,
 fast and reliable that just support me to get my job done, no matter if lacks bells and
@@ -52,6 +52,15 @@ to the outline window with one key-press.
 `:OutlineRefresh` update outline & locate yourself.
 
 
+#### Mappings
+```
+# Default mappings
+nnoremap <silent> <F8> <Plug>OutlineToggle
+nnoremap <silent> <F7> <Plug>OutlineRefresh
+nnoremap <silent> <F6> <Plug>OutlineGoToOutline
+```
+
+
 > **Note**
 > The refresh is asynchronous, meaning that outline & localization are
 > automatically updated only in response to the following events:
@@ -63,13 +72,6 @@ to the outline window with one key-press.
 > `:OutlineRefresh`.  See `:h OutlineUsage` for more info.
 
 
-#### Mappings
-```
-# Default mappings
-nnoremap <silent> <F8> <Plug>OutlineToggle
-nnoremap <silent> <F7> <Plug>OutlineRefresh
-nnoremap <silent> <F6> <Plug>OutlineGoToOutline
-```
 
 ## Configuration
 For each filetype you can define some regex to be used to parse the
@@ -87,9 +89,6 @@ g:outline_include_before_exclude = {"python": false, "vim": false}
 ```
 
 
-> **Warning**
-> Default values are overwritten by user values!
-
 
 You also have few other tweaking variables:
 ``` # Default values
@@ -99,8 +98,10 @@ g:outline_enable_highlight = true
 ```
 See `:h OutlineConfiguration` for more info.
 
-To see the current setting of a variable run `:echo g:<variable_name>`, for
-example `:echo g:outline_pattern_to_exclude`.
+> **Warning**
+> The default values are overwritten by user values!
+> To see the current setting of a variable run `:echo g:<variable_name>`, for
+> example `:echo g:outline_pattern_to_exclude`.
 
 ## Help
 `:h outline.txt`
