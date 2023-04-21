@@ -14,10 +14,10 @@ That's all!
 Well, in reality it is not, in-fact Vim-outline further provides you with the
 following features:
 
-1. highlight your current position in the outline,
-2. allows you to jumps from the outline to the corresponding line in the
-   calling buffer,
-3. feeds you with random motivational quote picked from our database if
+1. locate your current position with respect to the outline,
+2. jump from the outline to the corresponding line in the
+   buffer you are editing,
+3. feed you with random motivational quote picked from our database if
    a *filetype* is not supported. [Cringe mode ON!]
 
 
@@ -26,13 +26,12 @@ Vim9Script are supported by default, but you can easily add other languages.
 See `:h OutlineAddNewLanguages`.
 
 I wrote vim-outline mainly for myself because I had some issue when using
-Vista! with ALE and Tagbar is based on tags, which is a feature that I don't
-really use.
+Vista! with ALE and Tagbar require ctags, which is a tool that I don't
+have installed.
 
-What I needed was something easily configurable, fast and
-reliable that just support me to get my job done, no matter if lacks bells and
-whistles and if the outcome is just an imprecise sketch of my buffer with
-noisy entries.
+What I needed was something self-contained (i.e. no-dependencies), easily configurable,
+fast and reliable that just support me to get my job done, no matter if lacks bells and
+whistles and if the outcome is just an imprecise sketch with noisy entries.
 
 ## Installation
 Use any plugin manager or the builtin Vim plugin manager.
@@ -43,17 +42,18 @@ That is pretty much all. No ctags, nor LSP servers required.
 
 ## Usage
 #### Commands
-`:OutlineToggle` to open/close a side-window that shows an outline of your
+`:OutlineToggle` open/close a side-window that shows an outline of your
 current buffer.
 
-`:OutlineJump` to jump on the outline window.  Such a command is handy 
+`:OutlineJump` jump on the outline window.  Such a command is handy
 when you have many windows open in the same tab and you want to jump directly
 to the outline window with one key-press.
 
-`:OutlineRefresh` to update both the outline and the highlighting.
+`:OutlineRefresh` update outline & locate yourself.
 
-> Note: The refresh is asynchronous, meaning that the outline is automatically
-> updated only in response to the following events:
+> **Note**
+> The refresh is asynchronous, meaning that outline & localization are
+> automatically updated only in response to the following events:
 >
 > 1. Newly opened outline,
 > 2. Another buffer is entered,
@@ -83,7 +83,9 @@ g:outline_pattern_to_exclude = {"python": ['^\s*def\s_\{-1,2}'], "vim": ['^\s*#'
 
 g:outline_include_before_exclude = {"python": false, "vim": false}
 ```
-> Note: default values are overwritten by user values!
+
+> **Warning**
+> Default values are overwritten by user values!
 
 You also have few other tweaking variables:
 ``` # Default values
