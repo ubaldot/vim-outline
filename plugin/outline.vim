@@ -63,18 +63,22 @@ endif
 # --------------------------
 import autoload "../lib/outline.vim"
 
-# noremap <unique> <script> <Plug>OutlineToggle :call <SID>outline.Toggle()<cr>
-noremap <unique> <script> <Plug>OutlineToggle :call <SID>outline.Toggle()<cr>
+# noremap <unique> <script> <Plug>OutlineToggle
+# \ :call <SID>outline.Toggle()<cr>
+noremap <unique> <script> <Plug>OutlineToggle
+            \ :call <SID>outline.Toggle()<cr>
 if !hasmapto("<Plug>OutlineToggle" ) || empty(mapcheck("<F8>", "n"))
     nnoremap <silent> <unique> <F8> <Plug>OutlineToggle
 endif
 
-noremap <unique> <script> <Plug>OutlineRefresh :call <SID>outline.RefreshWindow()<cr>
+noremap <unique> <script> <Plug>OutlineRefresh
+            \ :call <SID>outline.RefreshWindow()<cr>
 if !hasmapto("<Plug>OutlineRefresh" ) || empty(mapcheck("<leader>l", "n"))
     nnoremap <silent> <unique> <leader>l <Plug>OutlineRefresh
 endif
 
-noremap <unique> <script> <Plug>OutlineGoToOutline :call <SID>outline.GoToOutline()<cr>
+noremap <unique> <script> <Plug>OutlineGoToOutline
+            \ :call <SID>outline.GoToOutline()<cr>
 if !hasmapto("<Plug>OutlineGoToOutline" ) || empty(mapcheck("<leader>o", "n"))
     nnoremap <silent> <unique> <leader>o <Plug>OutlineGoToOutline
 endif

@@ -21,7 +21,8 @@ def Highlight(target_item: string)
     win_execute(outline_win_id, 'setlocal modifiable noreadonly')
 
     # Remove any existing sign.
-    win_execute(outline_win_id, "sign_unplace('', {'buffer': g:outline_buf_name}) ")
+    win_execute(outline_win_id, "sign_unplace('', {'buffer':
+                \ g:outline_buf_name}) ")
 
     # echom "target_item is: " .. target_item
 
@@ -29,8 +30,8 @@ def Highlight(target_item: string)
     # Otherwise, if you found a target item, check if there are duplicates,
     # and highlight the correct one.
     if target_item !=# ""
-
-        # Check if the found target_item is a duplicate starting from the current line
+        # Check if the found target_item is a duplicate starting from the
+        # current line
         # and going backwards to line 1  of the current buffer
         var curr_line_nr = line('.')
         var num_duplicates = len(getline(1, '$')[0 : curr_line_nr - 1]
@@ -48,7 +49,9 @@ def Highlight(target_item: string)
         # Now you can highlight
         setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
         win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
-        win_execute(outline_win_id, 'sign_place(w:line_nr, "", ''CurrentItem'', g:outline_buf_name, {''lnum'': w:line_nr})')
+        win_execute(outline_win_id, 'sign_place(w:line_nr, "",
+                    \ ''CurrentItem'', g:outline_buf_name, {''lnum'':
+                    \ w:line_nr})')
     endif
     # Lock window modifications.
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
@@ -103,7 +106,8 @@ def GoToDefinition()
     # beginning of the file
     cursor(1, 1)
     for ii in range(counter)
-        # TODO This looks for a regular expression not for the literal string! Fix it!
+        # TODO This looks for a regular expression not for the literal string!
+        # Fix it!
         search($'\V{curr_line}', "W")
     endfor
     # You moved the cursor, so to be correct you must RefreshWindow() again
@@ -141,16 +145,20 @@ def Open(): number
 
     # Set few w: local variables
     # Let the Outline window to access this script by passing a function
-    setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition) # Passing a function
-    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call w:GoToDefinition()<cr>')
+    # Passing a function
+    setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition)
+    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call
+                \ w:GoToDefinition()<cr>')
     if has("gui")
-        win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse> :call w:GoToDefinition()<cr>')
+        win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse>
+                    \ :call w:GoToDefinition()<cr>')
     endif
 
     # Set title
     setbufline(winbufnr(outline_win_id), 1, title)
     # Title does not follow syntax highlight but it is in black.
-    win_execute(outline_win_id, 'matchaddpos(''Terminal'', range(1, len(title)))')
+    win_execute(outline_win_id, 'matchaddpos(''Terminal'', range(1,
+                \ len(title)))')
 
     # -----------------------------------------
     # ADD SOME SUGAR
@@ -162,9 +170,6 @@ def Open(): number
     win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
 
     return outline_win_id
-enddef
-
-def Cazzo()
 enddef
 
 def IsOpen(): bool
@@ -197,7 +202,8 @@ def UpdateOutline()
     # happens, e.g. var Outline = getline(23, 98)
     Outline = getline(1, "$")
     # TODO: check the &commentstring thing here
-    # We add a comment line because parsing the first line is always problematic
+    # We add a comment line because parsing the first line is always
+    # problematic
     insert(Outline, &commentstring, 0)
 
     # -----------------------------------
@@ -207,7 +213,7 @@ def UpdateOutline()
     # Parse the buffer and populate the window
     if exists('b:PreProcessOutline')
         # b:PreProcessOutline is a FuncRef
-        Outline = b:PreProcessOutline(outline_win_id, Outline)
+        Outline = b:PreProcessOutline(Outline)
     endif
 
     # -----------------------------------
@@ -238,7 +244,8 @@ export def RefreshWindow(): string
     # Get target item
     const target_item = FindClosestItem()
 
-    # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't have this feature!
+    # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't
+    # have this feature!
     # If Outline is open and I am not on Outline window.
     if IsOpen() && bufwinid(bufnr()) != outline_win_id
         # echom "LINE: " .. line('.')
@@ -246,12 +253,16 @@ export def RefreshWindow(): string
         # clean outline and unlock outline buffer
         # -----------------------------------------
         win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-        deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$', outline_win_id))
+        deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$',
+                    \ outline_win_id))
 
         # ----------------------------------------------
         # Actually populate the window
         # ----------------------------------------------
         setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
+        # Set outline syntax the same as the caller buffer syntax.
+        echom &syntax
+        win_execute(outline_win_id, 'setlocal syntax=' .. &syntax)
         win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
         # Highlight
@@ -273,8 +284,11 @@ enddef
 augroup Outline_autochange
     autocmd!
     # If the entered buffer is not the Outline window, then RefreshWindow.
-    # TODO: changing buffer with mouse it is tricky because it triggers two events: BufEnter + CursorMove
+    # TODO: changing buffer with mouse it is tricky because it triggers two
+    # events: BufEnter + CursorMove
     # Hence, you miss the current line when you enter the buffer.
-    autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id | :call RefreshWindow() | endif
+    autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id
+                \| :call RefreshWindow() |
+                \ endif
     # autocmd BufEnter * :echo line('.')
 augroup END

@@ -11,10 +11,7 @@ export def CurrentItem(curr_item: string): string
     # return trim(matchstr(curr_item, '\v\w+\s+\zs\w+'))
 enddef
 
-export def PreProcessOutline(win_id: number, outline: list<string>): list<string>
-
-    # TODO: keep here?
-    win_execute(win_id, 'setlocal syntax=python')
+export def PreProcessOutline(outline: list<string>): list<string>
 
     # Docstrings removal
     # Init
@@ -24,7 +21,7 @@ export def PreProcessOutline(win_id: number, outline: list<string>): list<string
     # Iteration
     # Most likely the user won't have the value of tmp_string
     # in any of his python comment or docstrings
-    var tmp_string = "<hshnnTejwqik93la,AMNDNJFJKK3N2MNMAKPD+03mn2nhkalpdpk3nsla>"
+    var tmp_string = "<hshnnTejwqik93la,AMK3N2MNMAKPD+03mn2nhkalpdpk3nsla>"
     for item in outline
         if item =~ '.*""".*"""' # Regular expression for finding docstrings
             outline[ii] = tmp_string
@@ -45,11 +42,17 @@ enddef
 # TODO This is the same in every function, it only changes the filetype.
 export def FilterOutline(outline: list<string>): list<string>
     if g:outline_include_before_exclude["python"]
-        return outline ->filter("v:val =~ " .. string(join(g:outline_pattern_to_include["python"], '\|')))
-                        \ ->filter("v:val !~ " .. string(join(g:outline_pattern_to_exclude["python"], '\|')))
+        return outline
+                \ ->filter("v:val =~ "
+                \ .. string(join(g:outline_pattern_to_include["python"], '\|')))
+                \ ->filter("v:val !~ "
+                \ .. string(join(g:outline_pattern_to_exclude["python"], '\|')))
     else
-        return outline ->filter("v:val !~ " .. string(join(g:outline_pattern_to_exclude["python"], '\|')))
-                    \ ->filter("v:val =~ " .. string(join(g:outline_pattern_to_include["python"], '\|')))
+        return outline
+                    \ ->filter("v:val !~ "
+                    \ .. string(join(g:outline_pattern_to_exclude["python"], '\|')))
+                    \ ->filter("v:val =~ "
+                    \ .. string(join(g:outline_pattern_to_include["python"], '\|')))
     endif
     # TODO: Add a if you want to show line numbers?
 enddef
