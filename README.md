@@ -51,6 +51,7 @@ to the outline window with one key-press.
 
 `:OutlineRefresh` update outline & locate yourself.
 
+
 > **Note**
 > The refresh is asynchronous, meaning that outline & localization are
 > automatically updated only in response to the following events:
@@ -60,6 +61,7 @@ to the outline window with one key-press.
 >
 > In all the other cases, you have to refresh it manually through
 > `:OutlineRefresh`.  See `:h OutlineUsage` for more info.
+
 
 #### Mappings
 ```
@@ -84,8 +86,10 @@ g:outline_pattern_to_exclude = {"python": ['^\s*def\s_\{-1,2}'], "vim": ['^\s*#'
 g:outline_include_before_exclude = {"python": false, "vim": false}
 ```
 
+
 > **Warning**
 > Default values are overwritten by user values!
+
 
 You also have few other tweaking variables:
 ``` # Default values
