@@ -260,7 +260,7 @@ export def RefreshWindow(): string
     # Return the cleaned target_item
     # TODO make it work with vim-airline
     if exists('b:CurrentItem')
-        echo b:CurrentItem(FindClosestItem())
+        # echo b:CurrentItem(FindClosestItem())
         return b:CurrentItem(FindClosestItem())
     else
         return ""
@@ -273,6 +273,6 @@ augroup Outline_autochange
     # If the entered buffer is not the Outline window, then RefreshWindow.
     # TODO: changing buffer with mouse it is tricky because it triggers two events: BufEnter + CursorMove
     # Hence, you miss the current line when you enter the buffer.
-    autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id | :echo RefreshWindow() | endif
+    autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id | :call RefreshWindow() | endif
     # autocmd BufEnter * :echo line('.')
 augroup END

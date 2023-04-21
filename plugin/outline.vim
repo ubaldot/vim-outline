@@ -70,13 +70,13 @@ if !hasmapto("<Plug>OutlineToggle" ) || empty(mapcheck("<F8>", "n"))
 endif
 
 noremap <unique> <script> <Plug>OutlineRefresh :call <SID>outline.RefreshWindow()<cr>
-if !hasmapto("<Plug>OutlineRefresh" ) || empty(mapcheck("<F7>", "n"))
-    nnoremap <silent> <unique> <F7> <Plug>OutlineRefresh
+if !hasmapto("<Plug>OutlineRefresh" ) || empty(mapcheck("<leader>l", "n"))
+    nnoremap <silent> <unique> <leader>l <Plug>OutlineRefresh
 endif
 
 noremap <unique> <script> <Plug>OutlineGoToOutline :call <SID>outline.GoToOutline()<cr>
-if !hasmapto("<Plug>OutlineGoToOutline" ) || empty(mapcheck("<F6>", "n"))
-    nnoremap <silent> <unique> <F6> <Plug>OutlineGoToOutline
+if !hasmapto("<Plug>OutlineGoToOutline" ) || empty(mapcheck("<leader>o", "n"))
+    nnoremap <silent> <unique> <leader>o <Plug>OutlineGoToOutline
 endif
 
 # --------------------------

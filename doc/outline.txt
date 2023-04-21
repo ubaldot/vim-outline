@@ -31,10 +31,10 @@ it slam the result in a side window. That's all!
 Well, in reality it is not, in-fact Vim-outline further provides you with the
 following features:
 
-    a. highlight your current position in the outline,
-    b. allows you to jumps from the outline to the corresponding line in the
+    a. locate your current position with respect to the outline,
+    b. allow you to jump from the outline to the corresponding line in the
        calling buffer,
-    c. feeds you with random motivational quote picked from our quotes
+    c. feed you with random motivational quote picked from our quotes
        database if a 'filetype' is not supported. [Cringe mode ON!]
 
 At the time I was working with Python and Vim9script, hence only Python and
@@ -66,14 +66,16 @@ This command is very useful when you have many windows open in the same tab
 and you want to jump directly to the outline window with one key-press.
 
 Run |:OutlineRefresh| to update both the outline and the highlighting.
-Note: The refresh is asynchronous, meaning that the outline is automatically
-updated only in response to the following events:
 
-    a. Newly opened outline,
-    b. Another buffer is entered(*),
+Note: The refresh is asynchronous. This means that you have to manually
+run `:OutlineRefresh` to update both the outline and the localization while
+you are editing your file.
+However, outline & localization are automatically updated in response to
+the following events:
 
-In all the other cases, you have to refresh it manually through
-|:OutlineRefresh|.
+    1. Newly opened outline,
+    2. Another buffer is entered.
+
 I was thinking to continuously update the highlighting but that would require
 calling a number of functions at every single text change: Mr huge lag is
 behind the corner!
@@ -106,10 +108,10 @@ MAPPINGS                                                *OutlineMappings*
 <F8>   or   <Plug>OutlineToggle
 Open and close the side-window outline.
 
-<F7>   or   <Plug>OutlineRefresh
-Refresh the outline side-window.
+<leader>l   or   <Plug>OutlineRefresh
+Refresh the outline side-window and the localization.
 
-<F6>   or   <Plug>OutlineGoToOutline
+<leader>o   or   <Plug>OutlineGoToOutline
 Jump into the outline side-window independently of the current buffer.
 
 ==============================================================================
