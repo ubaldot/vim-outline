@@ -211,6 +211,7 @@ def UpdateOutline()
     # -----------------------------------
     #  OBS! Outline filetype is set here!
     # Parse the buffer and populate the window
+    # TODO Parametrize this by looking at at list of func_ref
     if exists('b:PreProcessOutline')
         # b:PreProcessOutline is a FuncRef
         Outline = b:PreProcessOutline(Outline)
