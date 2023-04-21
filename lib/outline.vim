@@ -137,7 +137,7 @@ def Open(): number
     win_execute(outline_win_id,
         \    'setlocal buftype=nofile bufhidden=wipe
         \ nobuflisted noswapfile nowrap
-        \ nonumber equalalways winfixwidth')
+        \ nonumber norelativenumber equalalways winfixwidth')
 
     # Set few w: local variables
     # Let the Outline window to access this script by passing a function
@@ -164,6 +164,8 @@ def Open(): number
     return outline_win_id
 enddef
 
+def Cazzo()
+enddef
 
 def IsOpen(): bool
     # -1 if the buffer is not in any window.
