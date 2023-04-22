@@ -19,7 +19,8 @@ CONTENTS                                                     *OutlineContents*
     4. Configuration ................ |OutlineConfiguration|
     5. Add new languages ............ |OutlineNewLanguages|
     6. Contributing ................. |OutlineContributing|
-    7. License ...................... |OutlineLicense|
+    7. Frequently-asked questions ... |OutlineFAQ|
+    8. License ...................... |OutlineLicense|
 
 
 ==============================================================================
@@ -165,6 +166,8 @@ Note: the default values will be overwritten!
 ==============================================================================
 ADD NEW LANGUAGES                                       *OutlineNewLanguages*
 
+*THIS IS FOR DEVELOPERS!*
+
 To add a new language, you have to perform the following steps:
 
     a. Duplicate an existing file in /ftplugin and update it by changing the
@@ -180,8 +183,45 @@ Note: the regex defined in the |g:outline_pattern_to_include| and
 difficult to write regex when you have to, for example, remove blocks of lines
 (think for example to Python docstrings).
 In that case, it is possible to pre-process the buffer content through the
-PreProcessOutline function.  See /lib/ftplugin/python.vim for an example of
+OutlinePreProcessInternal function.  See /lib/ftplugin/python.vim for an example of
 how to use such a function.
+
+==============================================================================
+FREQUENTLY ASKED QUESTIONS                                     *OutlineFAQ*
+
+Q. Can I use vim-outline for some language that is not supported yet?
+A. Yes, it should work with a very ugly hack. I hope it won't bother you too
+much!
+
+As an example, I'll show you how to hack it for .cpp files, but the
+same principle should apply, mutatis-mutandis, to any other filetype.
+
+#### Step 1
+Create a cpp.vim file in .vim/ftplugin with the following content
+
+>
+    vim9script
+
+    def FilterOutline(outline: list<string>): list<string>
+        return outline ->filter("v:val =~ "
+        \ .. string(join(g:outline_pattern_to_include["cpp"], '|')))
+    enddef
+
+    b:FilterOutline = FilterOutline
+>
+
+#### Step 2
+Add the following to your .vimrc
+>
+    extend(g:outline_pattern_to_include, {"cpp": ['<KEEP-ME!>']})
+>
+
+#### Step 3
+Comment each line that you want to keep in the outline with // <KEEP-ME!>
+
+At this point, call :OutlineToggle (or hit <F8> if you are using the
+default mapping) and see what happens.
+Jumps and localization functions should work automatically.
 
 ==============================================================================
 CONTRIBUTING                                            *OutlineContributing*
