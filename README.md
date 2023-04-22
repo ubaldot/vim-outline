@@ -104,7 +104,7 @@ See `:h OutlineConfiguration` for more info.
 > example `:echo g:outline_pattern_to_exclude`.
 
 
-## Can I use it now for languages that are not supported yet?
+## Can I use it for languages that are not supported yet?
 Yes, it *should* work with a very ugly hack. I hope it won't bother you too
 much!
 As an example, I'll show you how to hack vim-outline for `.cpp` files, but the
