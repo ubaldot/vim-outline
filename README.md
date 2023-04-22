@@ -133,7 +133,8 @@ extend(g:outline_pattern_to_include, {"cpp": ['<KEEP-ME!>']})
 #### Step 3
 Comment each line that you want to keep in the outline with `// <KEEP-ME!>`
 
-At this point, call `:OutlineToggle` (or hit `<F8>` ) and see what happens.
+At this point, call `:OutlineToggle` (or hit `<F8>` if you are using the
+default mapping) and see what happens.
 Jumps and localization functions should work automatically.
 
 
