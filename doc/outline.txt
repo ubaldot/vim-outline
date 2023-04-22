@@ -17,6 +17,7 @@ CONTENTS                                                     *OutlineContents*
         3.1 Commands ................ |OutlineCommands|
         3.2 Mappings ................ |OutlineMappings|
     4. Configuration ................ |OutlineConfiguration|
+        4.1 Advanced Configuration .. |OutlineAdvancedConfiguration|
     5. Add new languages ............ |OutlineNewLanguages|
     6. Contributing ................. |OutlineContributing|
     7. License ...................... |OutlineLicense|
@@ -163,17 +164,65 @@ Patterns to exclude when parsing a buffer to generate an outline.
 Note: the default values will be overwritten!
 
 ==============================================================================
+ADVANCED CONFIGURATION                          *OutlineAdvancedConfiguration*
+
+                                                    *b:OutlinePreProcess*
+If parsing a buffer with just with regex it may not be enough or it may lead
+to very complex and unreadable regex, then you can pre-process your outline
+through a custom function before filtering it through regex.
+
+Think for example when you want to remove doc-strings from a python document:
+the ideal would be to pre-process the source code through simple conditionals
+to remove docstrings first, and then to filter the resulting code without
+docstrings through regex.  In-fact removing docstrings line-by-line only
+through regex may lead to very complex expressions.
+
+For this reason, you can define a pre-processing function that will be applied
+before the regex filters. The definition of such a function happens in two
+steps:
+
+    1. Create a |Funcref| named |b:OutlinePreProcess| in the corresponding
+       .vim file in ./ftplugin folder. The associated function takes the
+       current outline as unique argument and it returns the processed
+       outline.  Both function arg and return type must list<string>.
+    2. Implement the corresponding function somewhere.
+
+The choice of defining the |Funcref| in the files in ./ftplugin folder is
+dictated by that the parsing process strictly depends on the buffer
+'filetype'.
+
+Example for python files.
+-------------------------
+Inside ./ftplugin/python.vim file add the following
+>
+    def MyFunction(outline: list<string>): list<string>.
+        # Do something with outline
+        return processed_outline
+    enddef
+
+    b:OutlinePreProcess = MyFunction
+<
+or, if you want to define your function elsewhere, you can define something
+like the following:
+>
+    import '../lib/myfunctions.vim'
+
+    b:OutlinePreProcess = myfunctions.MyFunction
+<
+See :h import for more info about the latter example.
+
+==============================================================================
 ADD NEW LANGUAGES                                       *OutlineNewLanguages*
 
 To add a new language, you have to perform the following steps:
 
-    a. Duplicate an existing file in /ftplugin and update it by changing the
+    1. Duplicate an existing file in /ftplugin and update it by changing the
     hard-coded 'filetype' information.
-    b. Duplicate an existing file in /lib/ftfunctions and update it by
+    2. Duplicate an existing file in /lib/ftfunctions and update it by
     changing the hard-coded 'filetype' information.
-    c. Update the dictionaries |g:outline_pattern_to_include|
-    and |g:outline_pattern_to_exclude| with new regex.
-    d. Test if it works!
+    3. Update the dictionaries |g:outline_pattern_to_include| and
+    |g:outline_pattern_to_exclude| with new regex.
+    4. Test if it works!
 
 Note: the regex defined in the |g:outline_pattern_to_include| and
 |g:outline_pattern_to_exclude| scan the buffer line-by-line and it may be

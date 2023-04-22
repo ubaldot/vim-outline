@@ -15,7 +15,7 @@ var outline_win_id = 0
 
 # Script functions
 sign define CurrentItem text=- linehl=CursorLine
-def Highlight(target_item: string)
+def Locate(target_item: string)
 
     # Enable for modification
     win_execute(outline_win_id, 'setlocal modifiable noreadonly')
@@ -209,13 +209,19 @@ def UpdateOutline()
     # -----------------------------------
     # Pre-process Outline
     # -----------------------------------
-    #  OBS! Outline filetype is set here!
-    # Parse the buffer and populate the window
-    # TODO Parametrize this by looking at at list of func_ref
-    if exists('b:PreProcessOutline')
+    # User-defined pre-process function
+    # TODO This after the internal pre-process?
+    if exists('b:OutlinePreProcess')
         # b:PreProcessOutline is a FuncRef
-        Outline = b:PreProcessOutline(Outline)
+        Outline = b:OutlinePreProcess(Outline)
     endif
+
+    # Parse the buffer and populate the window
+    if exists('b:OutlinePreProcessInternal')
+        # b:PreProcessOutline is a FuncRef
+        Outline = b:OutlinePreProcessInternal(Outline)
+    endif
+
 
     # -----------------------------------
     # Filter user request
@@ -262,13 +268,12 @@ export def RefreshWindow(): string
         # ----------------------------------------------
         setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
         # Set outline syntax the same as the caller buffer syntax.
-        echom &syntax
         win_execute(outline_win_id, 'setlocal syntax=' .. &syntax)
         win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
-        # Highlight
+        # Locate
         if g:outline_enable_highlight
-            Highlight(target_item)
+            Locate(target_item)
         endif
     endif
     # Return the cleaned target_item

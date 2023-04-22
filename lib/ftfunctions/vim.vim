@@ -10,10 +10,6 @@ export def CurrentItem(curr_item: string): string
     return trim(substitute(curr_item, "(.*", "", ''))
 enddef
 
-export def PreProcessOutline(outline: list<string>): list<string>
-    return outline
-enddef
-
 # TODO This is the same in every function, it only changes the filetype.
 export def FilterOutline(outline: list<string>): list<string>
     if g:outline_include_before_exclude["vim"]
