@@ -103,6 +103,40 @@ See `:h OutlineConfiguration` for more info.
 > To see the current setting of a variable run `:echo g:<variable_name>`, for
 > example `:echo g:outline_pattern_to_exclude`.
 
+
+## Can I use it now for languages that are not supported yet?
+Yes, it *should* work with a very ugly hack. I hope it won't bother you too
+much!
+As an example, I'll show you how to hack vim-outline for `.cpp` files, but the
+same principle should apply, *mutatis-mutandis*, to any other filetype.
+
+#### Step 1
+Create a `cpp.vim` file in `.vim/ftplugin` with the following content
+
+```
+vim9script
+
+def FilterOutline(outline: list<string>): list<string>
+    return outline ->filter("v:val =~ "
+    \ .. string(join(g:outline_pattern_to_include["cpp"], '|')))
+enddef
+
+b:FilterOutline = FilterOutline
+```
+
+#### Step 2
+Add the following to your `.vimrc`
+```
+extend(g:outline_pattern_to_include, {"cpp": ['<KEEP-ME!>']})
+```
+
+#### Step 3
+Comment each line that you want to keep in the outline with `// <KEEP-ME!>`
+
+At this point, call `:OutlineToggle` (or hit `<F8>` ) and see what happens.
+Jumps and localization functions should work automatically.
+
+
 ## Help
 `:h outline.txt`
 
