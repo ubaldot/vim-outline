@@ -107,7 +107,7 @@ See `:h OutlineConfiguration` for more info.
 ## Can I use it for languages that are not supported yet?
 Yes, it *should* work with a very ugly hack. I hope it won't bother you too
 much!
-As an example, I'll show you how to hack vim-outline for `.cpp` files, but the
+As an example, I'll show you how to hack it for `.cpp` files, but the
 same principle should apply, *mutatis-mutandis*, to any other filetype.
 
 #### Step 1
