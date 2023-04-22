@@ -56,8 +56,8 @@ to the outline window with one key-press.
 ```
 # Default mappings
 nnoremap <silent> <F8> <Plug>OutlineToggle
-nnoremap <silent> <F7> <Plug>OutlineRefresh
-nnoremap <silent> <F6> <Plug>OutlineGoToOutline
+nnoremap <silent> <leader>l <Plug>OutlineRefresh
+nnoremap <silent> <leader>o <Plug>OutlineGoToOutline
 ```
 
 
