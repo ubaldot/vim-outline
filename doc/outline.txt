@@ -194,7 +194,7 @@ You have a /ftplugin/myfiletype.vim with the following content
 >
    def MyFunc(outline: list<string>): list<string>
        # do something
-   return modified_outline
+       return modified_outline
 
    b:OutlinePreProcess = MyFunc
 <
@@ -207,12 +207,13 @@ ADD NEW LANGUAGES                                       *OutlineNewLanguages*
 
 To add a new language, you have to perform the following steps:
 
-    a. Duplicate an existing file in /ftplugin and update it by changing the
+    a. Duplicate any existing file in /ftplugin and update it by changing the
     hard-coded 'filetype' information.
-    b. Duplicate an existing file in /lib/ftfunctions and update it by
+    b. Duplicate any existing file in /lib/ftfunctions and update it by
     changing the hard-coded 'filetype' information.
-    c. Update the dictionaries |g:outline_pattern_to_include|
-    and |g:outline_pattern_to_exclude| with new regex.
+    c. Update the dictionaries |g:outline_pattern_to_include|,
+    |g:outline_pattern_to_exclude| and |g:outline_include_before_exclude| with
+    new regex.
     d. Test if it works!
 
 Note: the regex defined in the |g:outline_pattern_to_include| and
@@ -221,8 +222,7 @@ difficult to write regex when you have to, for example, remove blocks of lines
 (think for example to Python docstrings).
 In that case, it is possible to pre-process the buffer content through the
 OutlinePreProcessInternal function.  See /lib/ftplugin/python.vim for an
-example of
-how to use such a function.
+example of how to use such a function.
 
 ==============================================================================
 FREQUENTLY ASKED QUESTIONS                                     *OutlineFAQ*
