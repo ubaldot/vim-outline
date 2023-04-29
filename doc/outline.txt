@@ -32,10 +32,10 @@ it slam the result in a side window. That's all!
 Well, in reality it is not, in-fact Vim-outline further provides you with the
 following features:
 
-    a. locate your current position with respect to the outline,
-    b. allow you to jump from the outline to the corresponding line in the
+    a. Locate your current position with respect to the outline,
+    b. Allow you to jump from the outline to the corresponding line in the
        calling buffer,
-    c. feed you with random motivational quote picked from our quotes
+    c. Feed you with random motivational quote picked from our quotes
        database if a 'filetype' is not supported. [Cringe mode ON!]
 
 At the time I was working with Python and Vim9script, hence only Python and
@@ -43,7 +43,7 @@ Vim9Script are supported by default, but you can easily add other languages.
 See |OutlineAddNewLanguages|.
 
 I wrote vim-outline mainly for myself because I had some issue when using
-Vista!  with ALE and Tagbar is based on tags, which is a feature that I don't
+Vista! with ALE and Tagbar is based on tags, which is a feature that I don't
 really use.
 
 What I needed was something easily configurable, fast and reliable that just
@@ -164,7 +164,7 @@ Default:{ \ "python": ['^class', '^\s*def'],
                "vim": ['^\s*export', '^\s*def',
                       \ '^\S*map','^\s*\(autocmd\|autocommand\)',
                       \ '^\s*\(command\|cmd\)',
-                      \ '^\s*sign' ]}
+                      \ '^\s*sign ' ]}
 Patterns to include when parsing a buffer to generate an outline.
 Note: the default values will be overwritten!
 
@@ -177,7 +177,7 @@ Note: the default values will be overwritten!
 
                                                 *b:OutlinePreProcess*
 Type: 'Funcref'
-Default: None
+Default:
 
 The function pointed by such a 'Funcref' manipulate the current buffer before
 applying the regex defined in |g:outline_pattern_to_include| and
@@ -202,8 +202,6 @@ You have a /ftplugin/myfiletype.vim with the following content
 
 ==============================================================================
 ADD NEW LANGUAGES                                       *OutlineNewLanguages*
-
-*THIS IS FOR DEVELOPERS!*
 
 To add a new language, you have to perform the following steps:
 
@@ -257,7 +255,7 @@ Add the following to your |vimrc|.
 #### Step 3
 Comment each line that you want to keep in the outline with // <KEEP-ME!>
 
-At this point, call :OutlineToggle (or hit <F8> if you are using the
+At this point, call |:OutlineToggle| (or hit <F8> if you are using the
 default mapping) and see what happens.
 Jumps and localization functions should work automatically.
 
