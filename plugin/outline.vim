@@ -45,7 +45,7 @@ g:outline_pattern_to_include = {
             \ "python": ['^class', '^\s*def'],
             \ "vim": ['^\s*export', '^\s*def', '^\S*map',
                 \ '^\s*\(autocmd\|autocommand\)', '^\s*\(command\|cmd\)',
-                \ '^\s*sign' ]
+                \ '^\s*sign ' ]
             \ }
 endif
 

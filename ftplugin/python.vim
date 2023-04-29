@@ -34,3 +34,6 @@ import autoload "../lib/ftfunctions/python.vim"
 b:OutlinePreProcessInternal = OutlinePreProcessInternal
 b:FilterOutline = python.FilterOutline
 b:CurrentItem = python.CurrentItem
+
+# OBS! b:OutlinePreProcess (user-defined) shall be placed in the main
+# /ftplugin folder

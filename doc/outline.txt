@@ -85,10 +85,22 @@ behind the corner!
 a buffer through mouse click, then you have to refresh the outline manually.
 
 You are not satisfied with the result?
-
 No worries! Feel free to configure outline with your own regular expressions
 by adjusting the dictionaries |g:outline_pattern_to_include| and
-|g:outline_pattern_to_exclude|. See |OutlineConfiguration| for more info.
+|g:outline_pattern_to_exclude|.
+
+Still not satisfied?
+If the sole utilization of regex is not enough for parsing your file, then you
+can use a generic function named |b:OutlinePreProcess| to pre-process the
+content of your buffer  before filtering it through the regex defined in
+|g:outline_pattern_to_include| and |g:outline_pattern_to_exclude|.
+Such a function must exist only for vim-outline supported 'filetype's.
+See |OutlineConfiguration| for more info.
+
+It is still to hard to get a decent outline. Is there any brute-force
+method that one can use?
+Yes, you can use a brute-force method to outline only the lines that you
+explicitly mark. Take a look at |OutlineFAQ| to discover how to do that.
 
 ==============================================================================
 COMMANDS                                                     *OutlineCommands*
@@ -163,6 +175,31 @@ Default:{ "python": ['^\s*def\s_\{-1,2}'],
 Patterns to exclude when parsing a buffer to generate an outline.
 Note: the default values will be overwritten!
 
+                                                *b:OutlinePreProcess*
+Type: 'Funcref'
+Default: None
+
+The function pointed by such a 'Funcref' manipulate the current buffer before
+applying the regex defined in |g:outline_pattern_to_include| and
+|g:outline_pattern_to_exclude| and must meet the following requirements:
+
+    1. Accept one input argument that is the current
+       buffer lines expressed as a list of strings and return an outline as a
+       list of strings,
+    2. Exist only for the vim-outline supported 'filetype', and therefore you
+       may define it some /ftplugin folder.
+
+Example
+You have a /ftplugin/myfiletype.vim with the following content
+>
+   def MyFunc(outline: list<string>): list<string>
+       # do something
+   return modified_outline
+
+   b:OutlinePreProcess = MyFunc
+<
+
+
 ==============================================================================
 ADD NEW LANGUAGES                                       *OutlineNewLanguages*
 
@@ -183,7 +220,8 @@ Note: the regex defined in the |g:outline_pattern_to_include| and
 difficult to write regex when you have to, for example, remove blocks of lines
 (think for example to Python docstrings).
 In that case, it is possible to pre-process the buffer content through the
-OutlinePreProcessInternal function.  See /lib/ftplugin/python.vim for an example of
+OutlinePreProcessInternal function.  See /lib/ftplugin/python.vim for an
+example of
 how to use such a function.
 
 ==============================================================================
@@ -211,7 +249,7 @@ Create a cpp.vim file in .vim/ftplugin with the following content
 >
 
 #### Step 2
-Add the following to your .vimrc
+Add the following to your |vimrc|.
 >
     extend(g:outline_pattern_to_include, {"cpp": ['<KEEP-ME!>']})
 >

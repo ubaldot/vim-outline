@@ -12,6 +12,7 @@ OutlineMappings	outline.txt	/*OutlineMappings*
 OutlineNewLanguages	outline.txt	/*OutlineNewLanguages*
 OutlineRequirements	outline.txt	/*OutlineRequirements*
 OutlineUsage	outline.txt	/*OutlineUsage*
+b:OutlinePreProcess	outline.txt	/*b:OutlinePreProcess*
 g:outline_buf_name	outline.txt	/*g:outline_buf_name*
 g:outline_enable_highlight	outline.txt	/*g:outline_enable_highlight*
 g:outline_include_before_exclude	outline.txt	/*g:outline_include_before_exclude*

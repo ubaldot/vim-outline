@@ -211,7 +211,7 @@ def UpdateOutline()
     # -----------------------------------
     # User-defined pre-process function
     # TODO This after the internal pre-process?
-    if exists('b:OutlinePreProcess')
+    if exists('b:OutlinePreProcess') && index(keys(g:outline_include_before_exclude), &filetype) != -1
         # b:PreProcessOutline is a FuncRef
         Outline = b:OutlinePreProcess(Outline)
     endif
