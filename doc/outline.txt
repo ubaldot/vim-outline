@@ -26,24 +26,24 @@ CONTENTS                                                     *OutlineContents*
 ==============================================================================
 INTRODUCTION                                          *OutlineIntroduction*
 
-Vim-outline parse your current buffer through a set of user-defined regex and
+Vim-outline parse the current buffer through a set of user-defined regex and
 it slam the result in a side window. That's all!
 
 Well, in reality it is not, in-fact Vim-outline further provides you with the
 following features:
 
-    a. locate your current position with respect to the outline,
-    b. allow you to jump from the outline to the corresponding line in the
-       calling buffer,
-    c. feed you with random motivational quote picked from our quotes
+    a. Locate your current position with respect to the outline,
+    b. Allow you to jump from the outline entries to the corresponding line in
+       the calling buffer,
+    c. Feed you with random motivational quote picked from our quotes
        database if a 'filetype' is not supported. [Cringe mode ON!]
 
 At the time I was working with Python and Vim9script, hence only Python and
-Vim9Script are supported by default, but you can easily add other languages.
-See |OutlineAddNewLanguages|.
+Vim9Script are the only language supported at the moment, but you
+can easily add other languages. See |OutlineAddNewLanguages|.
 
 I wrote vim-outline mainly for myself because I had some issue when using
-Vista!  with ALE and Tagbar is based on tags, which is a feature that I don't
+Vista with ALE and Tagbar is based on tags, which is a feature that I don't
 really use.
 
 What I needed was something easily configurable, fast and reliable that just
@@ -59,18 +59,18 @@ That is pretty much all. No ctags, nor LSP servers required.
 ==============================================================================
 USAGE                                                     *OutlineUsage*
 
-Run |:OutlineToggle| to open/close a side-window that shows an outline of your
+Run |:OutlineToggle| to open/close a side-window with an outline of your
 current buffer.
 
 Run |:OutlineJump| to jump on the outline window.
-This command is very useful when you have many windows open in the same tab
+This command comes handy when you have many windows open in the same tab
 and you want to jump directly to the outline window with one key-press.
 
 Run |:OutlineRefresh| to update both the outline and the highlighting.
 
 Note: The refresh is asynchronous. This means that you have to manually
-run `:OutlineRefresh` to update both the outline and the localization while
-you are editing your file.
+run `:OutlineRefresh` to update outline & localization while you are editing
+your file.
 However, outline & localization are automatically updated in response to
 the following events:
 
@@ -78,17 +78,27 @@ the following events:
     2. Another buffer is entered.
 
 I was thinking to continuously update the highlighting but that would require
-calling a number of functions at every single text change: Mr huge lag is
+calling a number of functions at every single text change: Mr laggy is just
 behind the corner!
 
 (*) This won't apply if a buffer is entered through mouse click.  If you enter
 a buffer through mouse click, then you have to refresh the outline manually.
 
 You are not satisfied with the result?
-
 No worries! Feel free to configure outline with your own regular expressions
-by adjusting the dictionaries |g:outline_pattern_to_include| and
-|g:outline_pattern_to_exclude|. See |OutlineConfiguration| for more info.
+by adjusting the dictionaries |g:outline_pattern_to_include|,
+|g:outline_include_before_exclude| and |g:outline_pattern_to_exclude|.
+
+Still not satisfied?
+If the sole utilization of regex won't give you satisfactory outlines, you
+can use a function to pre-process your buffer before filtering it through the
+regex defined in |g:outline_pattern_to_include| and
+|g:outline_pattern_to_exclude|. See |b:OutlinePreProcess| for more info.
+
+It is still to hard to get a decent outline. Is there any brute-force
+method that one can use?
+Yes, you can use a brute-force method to outline only the lines that you
+explicitly mark. Take a look at |OutlineFAQ| to discover how to do that.
 
 ==============================================================================
 COMMANDS                                                     *OutlineCommands*
@@ -119,9 +129,8 @@ Jump into the outline side-window independently of the current buffer.
 CONFIGURATION                                        *OutlineConfiguration*
 
 Vim-outline working principle is quite straightforward: for each 'filetype'
-you specify a set of regex and a side-window outline is filled based on the
-parsing outcome.  This means that you could fill the side window with whatever
-information you want: it's all depends on the regex that decide to use.
+you specify a set of regex and an outline will be displayed in a side-window
+upon call from the user.
 
                                                         *g:outline_buf_name*
 Type: 'string'
@@ -152,7 +161,7 @@ Default:{ \ "python": ['^class', '^\s*def'],
                "vim": ['^\s*export', '^\s*def',
                       \ '^\S*map','^\s*\(autocmd\|autocommand\)',
                       \ '^\s*\(command\|cmd\)',
-                      \ '^\s*sign' ]}
+                      \ '^\s*sign ' ]}
 Patterns to include when parsing a buffer to generate an outline.
 Note: the default values will be overwritten!
 
@@ -163,6 +172,34 @@ Default:{ "python": ['^\s*def\s_\{-1,2}'],
 Patterns to exclude when parsing a buffer to generate an outline.
 Note: the default values will be overwritten!
 
+                                                *b:OutlinePreProcess*
+Type: 'Funcref'
+Default:
+
+The function pointed by such a 'Funcref' manipulate the current buffer before
+applying the regex defined in |g:outline_pattern_to_include| and
+|g:outline_pattern_to_exclude| and must meet the following requirements:
+
+    1. Accept one input argument that is the current
+       buffer lines expressed as a list of strings and return an outline as a
+       list of strings,
+    2. Exist only for the vim-outline supported 'filetype', and therefore you
+       have to define it some /ftplugin folder.
+
+Example
+You have a /ftplugin/myfiletype.vim with the following content
+>
+   def MyFunc(outline: list<string>): list<string>
+       # do something
+       return modified_outline
+
+   b:OutlinePreProcess = MyFunc
+<
+the modified_outline list will be filtered through the specified regex.
+This allow the user to not rely only on regex but it provides the opportunity
+of using conditionals, iterations, etc. for parsing the current buffer before
+using regex.
+
 ==============================================================================
 ADD NEW LANGUAGES                                       *OutlineNewLanguages*
 
@@ -170,12 +207,13 @@ ADD NEW LANGUAGES                                       *OutlineNewLanguages*
 
 To add a new language, you have to perform the following steps:
 
-    a. Duplicate an existing file in /ftplugin and update it by changing the
+    a. Duplicate any existing file in /ftplugin and update it by changing the
     hard-coded 'filetype' information.
-    b. Duplicate an existing file in /lib/ftfunctions and update it by
+    b. Duplicate any existing file in /lib/ftfunctions and update it by
     changing the hard-coded 'filetype' information.
-    c. Update the dictionaries |g:outline_pattern_to_include|
-    and |g:outline_pattern_to_exclude| with new regex.
+    c. Update the dictionaries |g:outline_pattern_to_include|,
+    |g:outline_pattern_to_exclude| and |g:outline_include_before_exclude| with
+    new regex.
     d. Test if it works!
 
 Note: the regex defined in the |g:outline_pattern_to_include| and
@@ -183,8 +221,53 @@ Note: the regex defined in the |g:outline_pattern_to_include| and
 difficult to write regex when you have to, for example, remove blocks of lines
 (think for example to Python docstrings).
 In that case, it is possible to pre-process the buffer content through the
+<<<<<<< HEAD
 OutlinePreProcessInternal function.  See /lib/ftplugin/python.vim for an example of
 how to use such a function.
+=======
+OutlinePreProcessInternal function other than the one(s) referred by
+|b:OutlinePreProcess|. Both the functions serve for the same purposes, but
+while the former is for internal use and shall not be exposed to the user, the
+latter can be freely used by the user. See /lib/ftplugin/python.vim for an
+example of how to use OutlinePreProcessInternal.
+
+==============================================================================
+FREQUENTLY ASKED QUESTIONS                                     *OutlineFAQ*
+
+Q. Can I use vim-outline for some language that is not supported yet?
+A. Yes, it should work with a very ugly hack. I hope it won't bother you too
+much!
+
+As an example, I'll show you how to hack it for .cpp files, but the
+same principle should apply, mutatis-mutandis, to any other filetype.
+
+#### Step 1
+Create a cpp.vim file in .vim/ftplugin with the following content
+
+>
+    vim9script
+
+    def FilterOutline(outline: list<string>): list<string>
+        return outline ->filter("v:val =~ "
+        \ .. string(join(g:outline_pattern_to_include["cpp"], '|')))
+    enddef
+
+    b:FilterOutline = FilterOutline
+>
+
+#### Step 2
+Add the following to your |vimrc|.
+>
+    extend(g:outline_pattern_to_include, {"cpp": ['<KEEP-ME!>']})
+>
+
+#### Step 3
+Comment each line that you want to keep in the outline with // <KEEP-ME!>
+
+At this point, call |:OutlineToggle| (or hit <F8> if you are using the
+default mapping) and see what happens.
+Jumps and localization functions should work automatically.
+>>>>>>> develop
 
 ==============================================================================
 FREQUENTLY ASKED QUESTIONS                                     *OutlineFAQ*
