@@ -112,7 +112,7 @@ See `:h OutlineConfiguration` for more info.
 
 
 ## Can I use it for languages that are not supported yet?
-Yes, it *should* work... with a very ugly hack. <br>
+Yes, it *should* work... with a little hack. <br>
 I hope it won't bother you too
 much!<br>
 
