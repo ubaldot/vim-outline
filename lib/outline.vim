@@ -24,15 +24,12 @@ def Locate(target_item: string)
     win_execute(outline_win_id, "sign_unplace('', {'buffer':
                 \ g:outline_buf_name}) ")
 
-    # echom "target_item is: " .. target_item
-
     # If the found item is "", then don't highlight anything.
     # Otherwise, if you found a target item, check if there are duplicates,
     # and highlight the correct one.
     if target_item !=# ""
         # Check if the found target_item is a duplicate starting from the
-        # current line
-        # and going backwards to line 1  of the current buffer
+        # current line going backwards to line 1  of the current buffer
         var curr_line_nr = line('.')
         var num_duplicates = len(getline(1, '$')[0 : curr_line_nr - 1]
                     \ -> filter($"v:val ==# '{target_item}'"))
@@ -60,16 +57,15 @@ enddef
 def FindClosestItem(): string
 
     # Search the item at minimum distance with the cursor (from above)
-    # Note that the maximum distance is curr_line - 0 (top) = curr_line
+    # Note that the maximum distance is curr_line - 0 = curr_line
     # Here the are in the caller-buffer coordinates
     var curr_line_nr = line('.')
-    # echo "curr_line_nr: " .. curr_line_nr
     var curr_line = getline('.')
     var dist_min = curr_line_nr
     var dist = curr_line_nr
     var found_item = ""
 
-    # OBS! You only find the item at minimum distance,
+    # OBS! You only find the item at minimum distance here,
     # but you don't know if it is a duplicate.
     for item in Outline
         dist = curr_line_nr - search($'\V{item}', 'cnbW')
@@ -102,12 +98,11 @@ def GoToDefinition()
     # This means that there will be an immediate (wrong) RefreshWindow()
     wincmd p
 
-    # The number of jumps needed are counted from the
+    # The number of jumps needed to reach the target item are counted from the
     # beginning of the file
     cursor(1, 1)
     for ii in range(counter)
         # TODO This looks for a regular expression not for the literal string!
-        # Fix it!
         search($'\V{curr_line}', "W")
     endfor
     # You moved the cursor, so to be correct you must RefreshWindow() again
@@ -124,7 +119,6 @@ enddef
 
 
 def Close()
-    # Close the window
     if IsOpen()
         win_execute(outline_win_id, 'wincmd c')
     endif
@@ -146,7 +140,6 @@ def Open(): number
 
     # Set few w: local variables
     # Let the Outline window to access this script by passing a function
-    # Passing a function
     setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition)
     win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call
                 \ w:GoToDefinition()<cr>')
@@ -161,9 +154,7 @@ def Open(): number
     win_execute(outline_win_id, 'matchaddpos(''Terminal'', range(1,
                 \ len(title)))')
 
-    # -----------------------------------------
-    # ADD SOME SUGAR
-    # -----------------------------------------
+    # Add some sugar
     win_execute(outline_win_id, 'nnoremap <buffer> j j^')
     win_execute(outline_win_id, 'nnoremap <buffer> k k^')
     win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
@@ -174,7 +165,6 @@ def Open(): number
 enddef
 
 def IsOpen(): bool
-    # 0 if the outline is not in any window
     if win_id2win(outline_win_id) > 0
         return true
     else
@@ -242,13 +232,6 @@ enddef
 
 
 export def RefreshWindow(): string
-    # The function actually returns the closest item AND it
-    # refresh the side-window if needed.
-    # We place it here to do not have to export another dedicated
-    # function e.g. FindClosestItem().
-    # Also, from a user perspective, the Refresh include a bit of
-    # everything.
-
     if bufnr() != winbufnr(outline_win_id)
         UpdateOutline()
         # Get target item
@@ -294,12 +277,9 @@ enddef
 
 augroup Outline_autochange
     autocmd!
-    # If the entered buffer is not the Outline window, then RefreshWindow.
     # TODO: changing buffer with mouse it is tricky because it triggers two
     # events: BufEnter + CursorMove
     # Hence, you miss the current line when you enter the buffer.
     autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id
-                \| :call RefreshWindow() |
-                \ endif
-    # autocmd BufEnter * :echo line('.')
+                \| :call RefreshWindow() | endif
 augroup END
