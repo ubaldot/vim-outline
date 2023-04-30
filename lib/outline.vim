@@ -174,8 +174,8 @@ def Open(): number
 enddef
 
 def IsOpen(): bool
-    # -1 if the buffer is not in any window.
-    if bufwinid($"^{g:outline_buf_name}$") != -1
+    # 0 if the outline is not in any window
+    if win_id2win(outline_win_id) > 0
         return true
     else
         return false
@@ -185,8 +185,10 @@ enddef
 
 export def Toggle()
     if IsOpen()
+        echom "is open"
        Close()
     else
+        echom "is closed"
        Open()
        RefreshWindow()
        GoToOutline()
@@ -214,13 +216,13 @@ def UpdateOutline()
     # User-defined pre-process function
     # TODO Is it better to call it after the internal pre-process?
     if exists('b:OutlinePreProcess') && index(keys(g:outline_include_before_exclude), &filetype) != -1
-        # b:PreProcessOutline is a FuncRef
+        # b:PreProcessOutline is a Funcref
         Outline = b:OutlinePreProcess(Outline)
     endif
 
     # Parse the buffer and populate the window
     if exists('b:OutlinePreProcessInternal')
-        # b:PreProcessOutline is a FuncRef
+        # b:PreProcessOutline is a Funcref
         Outline = b:OutlinePreProcessInternal(Outline)
     endif
 
