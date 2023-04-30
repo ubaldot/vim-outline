@@ -117,6 +117,7 @@ enddef
 
 export def GoToOutline()
     if IsOpen()
+        RefreshWindow()
         win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
     endif
 enddef
@@ -188,6 +189,7 @@ export def Toggle()
     else
        Open()
        RefreshWindow()
+       GoToOutline()
     endif
 enddef
 
@@ -247,43 +249,46 @@ export def RefreshWindow(): string
     # Also, from a user perspective, the Refresh include a bit of
     # everything.
 
-    UpdateOutline()
-    # Get target item
-    const target_item = FindClosestItem()
+    if bufnr() != winbufnr(outline_win_id)
+        UpdateOutline()
+        # Get target item
+        const target_item = FindClosestItem()
 
-    # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't
-    # have this feature!
-    # If Outline is open and I am not on Outline window.
-    if IsOpen() && bufwinid(bufnr()) != outline_win_id
-        # echom "LINE: " .. line('.')
-        # -----------------------------------------
-        # clean outline and unlock outline buffer
-        # -----------------------------------------
-        win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-        deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$',
-                    \ outline_win_id))
+        # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't
+        # have this feature!
+        # If Outline is open and I am not on Outline window.
+        if IsOpen() && bufwinid(bufnr()) != outline_win_id
+            # echom "LINE: " .. line('.')
+            # -----------------------------------------
+            # clean outline and unlock outline buffer
+            # -----------------------------------------
+            win_execute(outline_win_id, 'setlocal modifiable noreadonly')
+            deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$',
+                        \ outline_win_id))
 
-        # ----------------------------------------------
-        # Actually populate the window
-        # ----------------------------------------------
-        setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
-        # Set outline syntax the same as the caller buffer syntax.
-        win_execute(outline_win_id, 'setlocal syntax=' .. &syntax)
-        win_execute(outline_win_id, 'setlocal nomodifiable readonly')
+            # ----------------------------------------------
+            # Actually populate the window
+            # ----------------------------------------------
+            setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
+            # Set outline syntax the same as the caller buffer syntax.
+            win_execute(outline_win_id, 'setlocal syntax=' .. &syntax)
+            win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
-        # Locate
-        if g:outline_enable_highlight
-            Locate(target_item)
+            # Locate
+            if g:outline_enable_highlight
+                Locate(target_item)
+            endif
+        endif
+        # Return the cleaned target_item
+        # TODO make it work with vim-airline
+        if exists('b:CurrentItem')
+            # echo b:CurrentItem(FindClosestItem())
+            return b:CurrentItem(FindClosestItem())
+        else
+            return ""
         endif
     endif
-    # Return the cleaned target_item
-    # TODO make it work with vim-airline
-    if exists('b:CurrentItem')
-        # echo b:CurrentItem(FindClosestItem())
-        return b:CurrentItem(FindClosestItem())
-    else
         return ""
-    endif
 enddef
 
 

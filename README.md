@@ -11,16 +11,16 @@ user-defined regex and it slam the result in a side-window.
 
 That's all!
 
-Well, in reality it is not, in-fact Vim-outline further provides you with the
+Well, in reality is not, in-fact Vim-outline further provides you with the
 following features:
 
-1. locate your current position with respect to the outline,
+1. locate your current position on the outline,
 2. jump from outline entries to the corresponding buffer lines,
 3. feed you with random motivational quote if a *filetype* is not supported.
    [Cringe mode ON!]
 
 
-At the time I was working with Python and Vim9script, hence only Python and
+At the time I was working with Python and Vim9script, hence Python and
 Vim9Script are supported by default, but you can easily add other languages.
 See `:h OutlineAddNewLanguages`.
 
@@ -29,9 +29,12 @@ Vista! with ALE and Tagbar require ctags, which is a tool that I don't
 have installed (I know, I should).
 
 What I needed was a self-contained tool (i.e. no-dependencies), which is
-easily configurable, fast and reliable and that would just support me to get
+easily configurable, fast and reliable and that would support me to get
 my job done, no matter if lacks bells and whistles and if the outcome
-is just an imprecise sketch with noisy entries.
+is an imprecise sketch with noisy entries.
+
+If you work with Data Science you may also want to take a look at
+[vim-replica](https://github.com/ubaldot/vim-replica).
 
 ## Installation
 Use any plugin manager or the builtin Vim plugin manager.
@@ -46,7 +49,8 @@ That is pretty much all. No ctags, nor LSP servers required.
 current buffer.
 
 `:OutlineJump` jump on the outline window.  Such a command is handy
-when you have many windows open in the same tab and you want to jump directly
+when you have different windows open in the same tab and you want to jump
+directly
 to the outline window with one key-press.
 
 `:OutlineRefresh` update outline & locate yourself.
@@ -81,16 +85,18 @@ current buffer through the following dictionaries:
 g:outline_pattern_to_include = {"python": ['^class', '^\s*def'],
                                 \  "vim": ['^\s*export', '^\s*def', '^\S*map',
                                 \           '^\s*\(autocmd\|autocommand\)',
-                                \           '^\s*\(command\|cmd\)', '^\s*sign' ]}
+                                \           '^\s*\(command\|cmd\)', '^\s*sign'
+                                ]}
 
-g:outline_pattern_to_exclude = {"python": ['^\s*def\s_\{-1,2}'], "vim": ['^\s*#'] }
+g:outline_pattern_to_exclude = {"python": ['^\s*def\s_\{-1,2}'], "vim":
+['^\s*#'] }
 
 g:outline_include_before_exclude = {"python": false, "vim": false}
 ```
 
 
 
-You also have few other tweaking variables:
+You also have other tweaking variables:
 ``` # Default values
 g:outline_buf_name = "Outline!"
 g:outline_win_size = 30
