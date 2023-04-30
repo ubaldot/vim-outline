@@ -6,8 +6,7 @@ A simple outline sketcher for Vim.
 </p>
 
 ## Introduction
-Vim-outline parse your current buffer through a set of
-user-defined regex or parsing functions and slam the result in a
+Vim-outline parse your current buffer and slam an outline in a
 side-window.
 
 That's all!
