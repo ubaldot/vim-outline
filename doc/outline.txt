@@ -26,8 +26,8 @@ CONTENTS                                                     *OutlineContents*
 ==============================================================================
 INTRODUCTION                                          *OutlineIntroduction*
 
-Vim-outline parse the current buffer through a set of user-defined regex and
-it slam the result in a side window. That's all!
+Vim-outline parse the current buffer through a set of user-defined regex or
+parsing functions and slam the result in a side window. That's all!
 
 Well, in reality it is not, in-fact Vim-outline further provides you with the
 following features:

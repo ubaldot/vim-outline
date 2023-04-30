@@ -7,16 +7,17 @@ A simple outline sketcher for Vim.
 
 ## Introduction
 Vim-outline parse your current buffer through a set of
-user-defined regex and it slam the result in a side-window.
+user-defined regex or parsing functions and slam the result in a
+side-window.
 
 That's all!
 
 Well, in reality is not, in-fact Vim-outline further provides you with the
 following features:
 
-1. locate your current position on the outline,
-2. jump from outline entries to the corresponding buffer lines,
-3. feed you with random motivational quote if a *filetype* is not supported.
+1. Locate your current position on the outline,
+2. Jump from outline entries to the corresponding buffer lines,
+3. Feed you with random motivational quote if a *filetype* is not supported.
    [Cringe mode ON!]
 
 
@@ -111,8 +112,10 @@ See `:h OutlineConfiguration` for more info.
 
 
 ## Can I use it for languages that are not supported yet?
-Yes, it *should* work with a very ugly hack. I hope it won't bother you too
-much!
+Yes, it *should* work... with a very ugly hack. <br>
+I hope it won't bother you too
+much!<br>
+
 As an example, I'll show you how to hack it for `.cpp` files, but the
 same principle should apply, *mutatis-mutandis*, to any other filetype.
 
