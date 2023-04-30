@@ -38,7 +38,6 @@ g:outline_include_before_exclude = {
             \ }
 endif
 
-# TODO Overwrite patterns or append? => Overwrite
 if !exists('g:outline_pattern_to_include')
 g:outline_pattern_to_include = {
             \ "python": ['^class', '^\s*def'],
@@ -48,7 +47,6 @@ g:outline_pattern_to_include = {
             \ }
 endif
 
-# TODO Overwrite patterns or append?
 if !exists('g:outline_pattern_to_exclude')
 g:outline_pattern_to_exclude = {
             \ "python": ['^\s*def\s_\{-1,2}'],

@@ -212,7 +212,7 @@ def UpdateOutline()
     # Pre-process Outline
     # -----------------------------------
     # User-defined pre-process function
-    # TODO This after the internal pre-process?
+    # TODO Is it better to call it after the internal pre-process?
     if exists('b:OutlinePreProcess') && index(keys(g:outline_include_before_exclude), &filetype) != -1
         # b:PreProcessOutline is a FuncRef
         Outline = b:OutlinePreProcess(Outline)
