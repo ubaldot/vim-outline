@@ -185,10 +185,8 @@ enddef
 
 export def Toggle()
     if IsOpen()
-        echom "is open"
        Close()
     else
-        echom "is closed"
        Open()
        RefreshWindow()
        GoToOutline()
