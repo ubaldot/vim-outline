@@ -14,7 +14,7 @@ var Outline = [""] # It does not like [] initialization
 var outline_win_id = 0
 
 # Script functions
-sign define CurrentItem text=- linehl=CursorLine
+sign define CurrentItem linehl=CursorLine
 def Locate(target_item: string)
 
     # Enable for modification
