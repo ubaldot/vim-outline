@@ -87,32 +87,35 @@ enddef
 
 
 def GoToDefinition()
-    # Search item in the Outline side-window first!
-    var curr_line_nr = max([1, line('.') - len(title)])
     var curr_line = getline('.')
-    var counter = len(Outline[0 : curr_line_nr - 1]
-                \ -> filter($"v:val ==# '{curr_line}'"))
-
-    # TODO: check if you can replace wincmd p with some builtin function
-    # Obs! This trigger the BufEnter event!
-    # This means that there will be an immediate (wrong) RefreshWindow()
-    wincmd p
-
-    # The number of jumps needed to reach the target item are counted from the
-    # beginning of the file
-    cursor(1, 1)
-    for ii in range(counter)
-        # TODO This looks for a regular expression not for the literal string!
-        search($'\V{curr_line}', "W")
-    endfor
-    # You moved the cursor, so to be correct you must RefreshWindow() again
-    RefreshWindow()
+    var prev_windid = get(w:, 'PreWinId', 0)
+    if len(curr_line) > 0 && prev_windid != 0
+        if win_gotoid(prev_windid)
+            var i = 1
+            while i <= line('$')
+                if getline(i) == curr_line
+                    break
+                else
+                    i += 1
+                endif
+            endwhile
+            normal! m`
+            exe ':' .. i
+            if i > line('$')
+                echom 'Wrn: [Outline] Content of prev window seems changed'
+            endif
+        else
+            echom 'Err: [Outline] Not found prev window'
+        endif
+    else
+        echom 'Err: [Outline] No or Not a suitable target to process'
+    endif
 enddef
 
 
 export def GoToOutline()
     if IsOpen()
-        RefreshWindow()
+        # RefreshWindow()
         win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
     endif
 enddef
@@ -127,16 +130,14 @@ enddef
 
 def Open(): number
     # Create empty win from current position
-    win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
+    win_execute(win_getid(), $':rightbelow :{g:outline_win_size}vsplit {g:outline_buf_name}')
 
     # Set stuff in the newly created window
     outline_win_id = win_findbuf(bufnr('$'))[0]
-    win_execute(outline_win_id, 'wincmd L')
-    win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
     win_execute(outline_win_id,
         \    'setlocal buftype=nofile bufhidden=wipe
         \ nobuflisted noswapfile nowrap
-        \ nonumber norelativenumber equalalways winfixwidth')
+        \ nonumber norelativenumber winfixwidth')
 
     # Set few w: local variables
     # Let the Outline window to access this script by passing a function
@@ -160,6 +161,8 @@ def Open(): number
     win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
     win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
     win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
+
+    win_execute(outline_win_id, 'w:PreWinId = ' .. win_getid())
 
     return outline_win_id
 enddef
@@ -231,6 +234,7 @@ def UpdateOutline()
 enddef
 
 
+# TODO: probably Quite Slow if >8000 lines! required to refine!
 export def RefreshWindow(): string
     if bufnr() != winbufnr(outline_win_id)
         UpdateOutline()
@@ -277,9 +281,5 @@ enddef
 
 augroup Outline_autochange
     autocmd!
-    # TODO: changing buffer with mouse it is tricky because it triggers two
-    # events: BufEnter + CursorMove
-    # Hence, you miss the current line when you enter the buffer.
-    autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id
-                \| :call RefreshWindow() | endif
+    autocmd winleave * if bufwinid(bufnr()) == outline_win_id | q | endif
 augroup END
