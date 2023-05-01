@@ -2,6 +2,7 @@ vim9script
 
 # Vim plugin to get an outline for your scripts.
 # Maintainer:	Ubaldo Tiberi
+# GetLatestVimScripts: 6068 1 :AutoInstall: replica.vim
 # License: Vim license
 
 if !has('vim9script') ||  v:version < 900
