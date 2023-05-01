@@ -151,7 +151,7 @@ def Open(): number
     # Set title
     setbufline(winbufnr(outline_win_id), 1, title)
     # Title does not follow syntax highlight but it is in black.
-    win_execute(outline_win_id, 'matchaddpos(''Terminal'', range(1,
+    win_execute(outline_win_id, 'matchaddpos(''Question'', range(1,
                 \ len(title)))')
 
     # Add some sugar
