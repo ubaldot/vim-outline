@@ -62,7 +62,7 @@ USAGE                                                     *OutlineUsage*
 Run |:OutlineToggle| to open/close a side-window with an outline of your
 current buffer.
 
-Run |:OutlineJump| to jump on the outline window.
+Run |:OutlineGoToOutline| to jump on the outline window.
 This command comes handy when you have many windows open in the same tab
 and you want to jump directly to the outline window with one key-press.
 
@@ -103,14 +103,14 @@ explicitly mark. Take a look at |OutlineFAQ| to discover how to do that.
 ==============================================================================
 COMMANDS                                                     *OutlineCommands*
 
-                                                               *:OutlineToggle*
+                                                        *:OutlineToggle*
 :OutlineToggle               Open and close the side-window outline.
 
-                                                            *:OutlineRefresh*
+                                                        *:OutlineRefresh*
 :OutlineRefresh              Refresh the outline side-window.
 
-                                                               *:OutlineJump*
-:OutlineJump                 Jump into the outline side-window independently
+                                                        *:OutlineGoToOutline*
+:OutlineGoToOutline          Jump into the outline side-window independently
                              of the current buffer.
 
 ==============================================================================
