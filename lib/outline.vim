@@ -13,10 +13,10 @@ var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
 var Outline = [""] # It does not like [] initialization
 var outline_win_id = 0
 
-# Script functions
 sign define CurrentItem linehl=CursorLine
-def Locate(target_item: string)
 
+# Script functions
+def Locate(target_item: string)
     # Enable for modification
     win_execute(outline_win_id, 'setlocal modifiable noreadonly')
     # Remove any existing sign.
@@ -54,7 +54,6 @@ def Locate(target_item: string)
 enddef
 
 def FindClosestItem(): string
-
     # Search the item at minimum distance with the cursor (from above)
     # Note that the maximum distance is curr_line - 0 = curr_line
     # Here the are in the caller-buffer coordinates
@@ -88,9 +87,9 @@ enddef
 def GoToDefinition()
     # Search item in the Outline side-window first!
     var curr_line_nr = max([1, line('.') - len(title)])
-    var curr_line = getline('.')
+    var target_item = getline('.')
     var counter = len(Outline[0 : curr_line_nr - 1]
-                \ -> filter($"v:val ==# '{curr_line}'"))
+                \ -> filter($"v:val ==# '{target_item}'"))
 
     # TODO: check if you can replace wincmd p with some builtin function
     # OBS! This will trigger a BufEnter event! Watch out if you use some
@@ -102,11 +101,11 @@ def GoToDefinition()
     cursor(1, 1)
     for ii in range(counter)
         # TODO This looks for a regular expression not for the literal string!
-        search($'\V{curr_line}', "W")
+        search($'\V{target_item}', "W")
     endfor
     # You moved the cursor, so to be correct you must RefreshWindow() again
     if !g:outline_autoclose
-        RefreshWindow()
+        Locate(target_item)
     endif
 enddef
 
@@ -127,15 +126,13 @@ enddef
 
 
 def Open(): number
-    # Create empty win from current position
-    # win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
+    # Create empty win from current position only without populating it and
+    # give it a name
     win_execute(win_getid(), $':rightbelow :{g:outline_win_size}
                 \ vsplit {g:outline_buf_name}')
 
-    # Set stuff in the newly created window
+    # Set local options in the newly created window
     outline_win_id = win_findbuf(bufnr('$'))[0]
-    # win_execute(outline_win_id, 'wincmd L')
-    # win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
     win_execute(outline_win_id,
                 \    'setlocal buftype=nofile bufhidden=wipe
                 \ nobuflisted noswapfile nowrap
@@ -151,9 +148,8 @@ def Open(): number
                     \ :call w:GoToDefinition()<cr>')
     endif
 
-    # Set title
+    # Set title (Title does not follow syntax highlight but it is in black)
     setbufline(winbufnr(outline_win_id), 1, title)
-    # Title does not follow syntax highlight but it is in black.
     win_execute(outline_win_id, 'matchaddpos(''Question'',
                 \ range(1, len(title)))')
 
@@ -163,8 +159,6 @@ def Open(): number
     win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
     win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
     win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
-    # TODO: Not sure where this is used
-    setwinvar(win_id2win(outline_win_id), "outline_win_id", outline_win_id)
 
     return outline_win_id
 enddef
@@ -183,7 +177,6 @@ export def Toggle()
         Close()
     else
         Open()
-        # RefreshWindow()
         GoToOutline()
     endif
 enddef
@@ -191,7 +184,6 @@ enddef
 
 def UpdateOutline()
     # This function only update the Outline variable.
-
     # -----------------------------------
     #  Copy the whole buffer
     # -----------------------------------
@@ -238,22 +230,17 @@ enddef
 
 
 export def RefreshWindow(): string
-    # You are allowed to change ONLY the Outline buffer content,
-    # not user buffer contents!
-    # If for some reason the outline window is displaying another buffer, you
-    # may overwrite THAT buffer.
+    # It does not make sense to you refresh the outline buffer if the current
+    # buffer is the outline itself.
     if bufnr() != winbufnr(outline_win_id)
-            \ && winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
         UpdateOutline()
-        # Get target item
-        const target_item = FindClosestItem()
-
-        # TODO Lock window content. Consider using w:buffer OBS! NERD tree
-        # don't
-        # have this feature!
-        # If Outline is open and I am not on Outline window.
+        # If Outline is open AND I am not on Outline window AND what is shown
+        # in the outline window is the Outline buffer.
+        # The last condition is very important because you are allowed to
+        # change ONLY the Outline buffer content, not any other buffer
+        # contents that may be in the outline window!
         if IsOpen() && bufwinid(bufnr()) != outline_win_id
-            # echom "LINE: " .. line('.')
+                    \ && winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
             # -----------------------------------------
             # clean outline and unlock outline buffer
             # -----------------------------------------
@@ -271,7 +258,7 @@ export def RefreshWindow(): string
 
             # Locate
             if g:outline_enable_highlight
-                Locate(target_item)
+                Locate(FindClosestItem())
             endif
         endif
         # Return the cleaned target_item
