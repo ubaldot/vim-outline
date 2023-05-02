@@ -17,16 +17,17 @@ sign define CurrentItem linehl=CursorLine
 
 # Script functions
 def Locate(target_item: string)
-    # Highlight target_item in the outline window
+    # Highlight target_item (aka closest item) in the outline window
     win_execute(outline_win_id, 'setlocal modifiable noreadonly')
     win_execute(outline_win_id, "sign_unplace('', {'buffer':
                 \ g:outline_buf_name}) ")
 
-    # If target_item != "", then check if there are duplicates,
+    # If you have a valid target_item, then check if there are duplicates,
     # and highlight the correct one.
     if target_item !=# ""
-        # Check if the found target_item is a duplicate starting from the
-        # current line going backwards to line 1 in the current buffer
+        # Check first if the found target_item is a duplicate starting from
+        # the current line and going backwards to line 1 in the current
+        # buffer.
         var curr_line_nr = line('.')
         var num_duplicates = len(getline(1, '$')[0 : curr_line_nr - 1]
                     \ -> filter($"v:val ==# '{target_item}'"))
@@ -40,28 +41,29 @@ def Locate(target_item: string)
         endfor
         var line_nr = lines[num_duplicates - 1] + len(title) + 1
 
-        # Now you can highlight
+        # Now you know what you should highlight
         setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
         win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
         win_execute(outline_win_id, 'sign_place(w:line_nr, "",
                     \ ''CurrentItem'', g:outline_buf_name, {''lnum'':
                     \ w:line_nr})')
     endif
+    # Lock window
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 enddef
 
 def FindClosestItem(): string
     # Search the item at minimum distance with the cursor (from above)
     # Note that the maximum distance is curr_line - 0 = curr_line
-    # Here the are in the caller-buffer coordinates
+    # Here we are in the caller-buffer coordinates
     var curr_line_nr = line('.')
     var curr_line = getline('.')
     var dist_min = curr_line_nr
     var dist = curr_line_nr
     var found_item = ""
 
-    # OBS! You only find the item at minimum distance here,
-    # but you don't know if it is a duplicate.
+    # OBS! You only find the item at minimum distance,
+    # but you don't know if there is any duplicate of such an item.
     for item in Outline
         dist = curr_line_nr - search($'\V{item}', 'cnbW')
         # OBS! dist is always >= 0
@@ -82,17 +84,17 @@ enddef
 
 
 def GoToDefinition()
-    # Search item in the Outline side-window first!
+    # In two steps:
+    # 1. Search selected item in the Outline (including duplicates),
     var curr_line_nr = max([1, line('.') - len(title)])
     var target_item = getline('.')
+    # counter keeps track of the number of duplicated until this line.
     var counter = len(Outline[0 : curr_line_nr - 1]
                 \ -> filter($"v:val ==# '{target_item}'"))
 
+    # 2. Jump back to the main buffer and search for the selected item.
     # TODO: check if you can replace wincmd p with some builtin function
-    # OBS! This will trigger a BufEnter event! Watch out if you use some
-    # autocommand based on BufEnter.
     wincmd p
-
     # The number of jumps needed to reach the target item are counted from the
     # beginning of the file
     cursor(1, 1)
@@ -109,9 +111,6 @@ enddef
 
 export def GoToOutline()
     if IsOpen()
-        # You must refresh the outline window before jumping into it
-        # because once there, you won't be able to refresh
-        RefreshWindow()
         win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
     endif
 enddef
@@ -119,7 +118,12 @@ enddef
 
 def Close()
     if IsOpen()
+        wincmd p
         win_execute(outline_win_id, 'wincmd c')
+        # In case there are erroneously other Outline windows open
+        for wind in win_findbuf(bufnr($'^{g:outline_buf_name}$'))
+            win_execute(wind, 'wincmd c')
+        endfor
     endif
 enddef
 
@@ -176,6 +180,7 @@ export def Toggle()
         Close()
     else
         Open()
+        RefreshWindow()
         GoToOutline()
     endif
 enddef
@@ -185,8 +190,9 @@ def UpdateOutline(): string
     # This function only update the Outline script variable, even if the
     # outline window is closed.
     # If the current buffer is the outline itself then it does not make sense
-    # to update the outline. Also check the current buffer has supported
-    # filetype
+    # to update the outline.
+
+    # If supported filetype
     if has_key(g:outline_include_before_exclude, &filetype)
                 \ && bufnr() != winbufnr(outline_win_id)
         # -----------------------------------
@@ -239,47 +245,46 @@ enddef
 
 export def RefreshWindow()
     UpdateOutline()
-    # If Outline is open AND what is shown in the outline window is the
-    # Outline buffer.
-    # The last condition is very important because if it does not hold true,
-    # then you would overwrite a user buffer with an outline.
-    # The guy may be very annoyed!
-    if IsOpen() && winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
-        # -----------------------------------------
-        # clean outline and unlock outline buffer
-        # -----------------------------------------
-        win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-        deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$',
-                    \ outline_win_id))
+    # To refresh a window such a window must be obviously open
+    if IsOpen()
+        # If what is shown in the outline window is the Outline buffer, then
+        # overwrite it. If it is shown a user-buffer DON'T overwrite it!
+        if winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
+            # -----------------------------------------
+            # clean outline and unlock outline buffer
+            # -----------------------------------------
+            win_execute(outline_win_id, 'setlocal modifiable noreadonly')
+            deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$',
+                        \ outline_win_id))
 
-        # ----------------------------------------------
-        # Actually populate the window
-        # ----------------------------------------------
-        setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
-        # Set outline syntax the same as the caller buffer syntax.
-        win_execute(outline_win_id, 'setlocal syntax=' .. &syntax)
-        win_execute(outline_win_id, 'setlocal nomodifiable readonly')
+            # ----------------------------------------------
+            # Actually populate the window
+            # ----------------------------------------------
+            setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
+            # Set outline syntax the same as the caller buffer syntax.
+            win_execute(outline_win_id, 'setlocal syntax=' .. &syntax)
+            win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
-        # Locate
-        if g:outline_enable_highlight
-            Locate(FindClosestItem())
+            # Locate
+            if g:outline_enable_highlight
+                Locate(FindClosestItem())
+            endif
+        # TODO: you may have a nasty recursion here that slow down everything.
+        # You may consider throwing an error message instead.
+        elseif  winbufnr(outline_win_id) != bufnr(g:outline_buf_name)
+            # Close()
+            # Open()
+            # RefreshWindow()
+            echoerr "Previous outline content has gone!"
+                        \ .. " Close and re-open the outline window to "
+                        \ .. "re-create a new one."
         endif
-        # Outline win is open but Outline buffer is not there.
-    elseif IsOpen() && winbufnr(outline_win_id) != bufnr(g:outline_buf_name)
-        Close()
-        Open()
-        GoToOutline()
     endif
 enddef
 
 
 augroup Outline_autochange
     autocmd!
-    # TODO: changing buffer with mouse it is tricky because it triggers two
-    # events: BufEnter + CursorMove
-    # Hence, you miss the current line when you enter the buffer.
-    # autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id
-    #             \| :call RefreshWindow() | endif
     autocmd WinLeave * if bufwinid(bufnr()) == outline_win_id
                 \ && g:outline_autoclose | q | endif
 augroup END

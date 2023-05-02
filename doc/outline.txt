@@ -26,16 +26,16 @@ CONTENTS                                                     *OutlineContents*
 ==============================================================================
 INTRODUCTION                                          *OutlineIntroduction*
 
-Vim-outline parse the current buffer through a set of user-defined regex or
-parsing functions and slam the result in a side window. That's all!
+Vim-outline parse the current buffer through a set of user-defined regex
+and/or parsing functions and slam the result in a side window.
+That's all!
 
 Well, in reality it is not, in-fact Vim-outline further provides you with the
 following features:
 
     a. Locate your current position with respect to the outline,
-    b. Allow you to jump from the outline entries to the corresponding line in
-       the calling buffer,
-    c. Feed you with random motivational quote picked from our quotes
+    b. Jump from outline entries to the corresponding buffer lines,
+    c. Feed you with random motivational quotes picked from our quotes
        database if a 'filetype' is not supported. [Cringe mode ON!]
 
 At the time I was working with Python and Vim9script, hence only Python and
@@ -65,11 +65,13 @@ current buffer.
 Run |:OutlineGoToOutline| to jump on the outline window.
 This command comes handy when you have many windows open in the same tab
 and you want to jump directly to the outline window with one key-press.
+It is suggested that you run |:OutlineRefresh| before jumping on the outline
+window.
 
 Run |:OutlineRefresh| to update both the outline and the highlighting.
 
 Note: The refresh is asynchronous. This means that you have to manually
-run `:OutlineRefresh` to update outline & localization while you are editing
+run |:OutlineRefresh| to update outline & localization while you are editing
 your file.
 However, outline & localization are automatically updated in response to a
 newly opened Outline window.
@@ -77,9 +79,6 @@ newly opened Outline window.
 I was thinking to continuously update the highlighting but that would require
 calling a number of functions at every single text change: Mr laggy is just
 behind the corner!
-
-(*) This won't apply if a buffer is entered through mouse click.  If you enter
-a buffer through mouse click, then you have to refresh the outline manually.
 
 You are not satisfied with the result?
 No worries! Feel free to configure outline with your own regular expressions
@@ -108,7 +107,8 @@ COMMANDS                                                     *OutlineCommands*
 
                                                         *:OutlineGoToOutline*
 :OutlineGoToOutline          Jump into the outline side-window independently
-                             of the current buffer.
+                             of the current buffer. You should refresh your
+                             outline before using this command.
 
 ==============================================================================
 MAPPINGS                                                *OutlineMappings*
@@ -137,7 +137,8 @@ Name of the Outline buffer.
                                                         *g:outline_autoclose*
 Type: 'bool'
 Default: true
-If true, automatically close the outline window.
+If true, automatically close the outline window when you leave it.
+
                                                         *g:outline_win_size*
 Type: 'number'
 Default: 30
