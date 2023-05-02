@@ -130,8 +130,8 @@ def Open(): number
     outline_win_id = win_findbuf(bufnr('$'))[0]
 
     # Set some stuff in the newly created window
-    win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
     win_execute(outline_win_id, 'wincmd L')
+    win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
     win_execute(outline_win_id,
                 \    'setlocal buftype=nofile bufhidden=wipe
                 \ nobuflisted noswapfile nowrap
@@ -226,26 +226,25 @@ def UpdateOutline(): string
 
         # TODO make it work with vim-airline
         return b:CurrentItem(FindClosestItem())
-    else
+    elseif !has_key(g:outline_include_before_exclude, &filetype)
         # If filetype is not supported, then clean up the Outline
-        # and put a motivational quote
-        win_execute(outline_win_id, 'setlocal syntax=')
+        # and put a motivational quote in Outline variable.
         var idx = rand(srand()) % len(quotes.quotes)
         Outline = quotes.quotes[idx]
         return ""
     endif
+    return ""
 enddef
 
 
 export def RefreshWindow()
     UpdateOutline()
-    # If Outline is open AND Outline is not the current buffer AND what is
-    # shown in the outline window is the Outline buffer.
-    # The last condition is very important because you may risk to overwrite a
-    # some user buffer if it is shown in place of the Outline buffer in the
-    # outline window. DON'T DO THAT!
-    if IsOpen() && bufwinid(bufnr()) != outline_win_id
-                \ && winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
+    # If Outline is open AND what is shown in the outline window is the
+    # Outline buffer.
+    # The last condition is very important because if it does not hold true,
+    # then you would overwrite a user buffer with an outline.
+    # The guy may be very annoyed!
+    if IsOpen() && winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
         # -----------------------------------------
         # clean outline and unlock outline buffer
         # -----------------------------------------
@@ -265,6 +264,11 @@ export def RefreshWindow()
         if g:outline_enable_highlight
             Locate(FindClosestItem())
         endif
+        # Outline win is open but Outline buffer is not there.
+    elseif IsOpen() && winbufnr(outline_win_id) != bufnr(g:outline_buf_name)
+        Close()
+        Open()
+        GoToOutline()
     endif
 enddef
 

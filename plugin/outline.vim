@@ -93,7 +93,7 @@ if !exists(":OutlineToggle")
 endif
 
 if !exists(":OutlineRefresh")
-  command OutlineRefresh :call <SID>outline.Refresh()
+  command OutlineRefresh :call <SID>outline.RefreshWindow()
 endif
 
 if !exists(":OutlineGoToOutline")
