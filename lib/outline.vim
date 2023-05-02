@@ -17,18 +17,16 @@ sign define CurrentItem linehl=CursorLine
 
 # Script functions
 def Locate(target_item: string)
-    # Enable for modification
+    # Highlight target_item in the outline window
     win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-    # Remove any existing sign.
     win_execute(outline_win_id, "sign_unplace('', {'buffer':
                 \ g:outline_buf_name}) ")
 
-    # If the found item is "", then don't highlight anything.
-    # Otherwise, if you found a target item, check if there are duplicates,
+    # If target_item != "", then check if there are duplicates,
     # and highlight the correct one.
     if target_item !=# ""
         # Check if the found target_item is a duplicate starting from the
-        # current line going backwards to line 1  of the current buffer
+        # current line going backwards to line 1 in the current buffer
         var curr_line_nr = line('.')
         var num_duplicates = len(getline(1, '$')[0 : curr_line_nr - 1]
                     \ -> filter($"v:val ==# '{target_item}'"))
@@ -49,7 +47,6 @@ def Locate(target_item: string)
                     \ ''CurrentItem'', g:outline_buf_name, {''lnum'':
                     \ w:line_nr})')
     endif
-    # Lock window modifications.
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 enddef
 
@@ -103,7 +100,7 @@ def GoToDefinition()
         # TODO This looks for a regular expression not for the literal string!
         search($'\V{target_item}', "W")
     endfor
-    # You moved the cursor, so to be correct you must RefreshWindow() again
+
     if !g:outline_autoclose
         Locate(target_item)
     endif
@@ -112,6 +109,8 @@ enddef
 
 export def GoToOutline()
     if IsOpen()
+        # You must refresh the outline window before jumping into it
+        # because once there, you won't be able to refresh
         RefreshWindow()
         win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
     endif
@@ -126,13 +125,13 @@ enddef
 
 
 def Open(): number
-    # Create empty win from current position only without populating it and
-    # give it a name
-    win_execute(win_getid(), $':rightbelow :{g:outline_win_size}
-                \ vsplit {g:outline_buf_name}')
-
-    # Set local options in the newly created window
+    # Create empty win from current buffer and give it a name
+    win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
     outline_win_id = win_findbuf(bufnr('$'))[0]
+
+    # Set some stuff in the newly created window
+    win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
+    win_execute(outline_win_id, 'wincmd L')
     win_execute(outline_win_id,
                 \    'setlocal buftype=nofile bufhidden=wipe
                 \ nobuflisted noswapfile nowrap
@@ -148,7 +147,7 @@ def Open(): number
                     \ :call w:GoToDefinition()<cr>')
     endif
 
-    # Set title (Title does not follow syntax highlight but it is in black)
+    # Set title
     setbufline(winbufnr(outline_win_id), 1, title)
     win_execute(outline_win_id, 'matchaddpos(''Question'',
                 \ range(1, len(title)))')
@@ -182,95 +181,91 @@ export def Toggle()
 enddef
 
 
-def UpdateOutline()
-    # This function only update the Outline variable.
-    # -----------------------------------
-    #  Copy the whole buffer
-    # -----------------------------------
-    # TIP: For debugging use portions of source code and see what
-    # happens, e.g. var Outline = getline(23, 98)
-    Outline = getline(1, "$")
-    # TODO: check the &commentstring thing here
-    # We add a comment line because parsing the first line is always
-    # problematic
-    insert(Outline, &commentstring, 0)
+def UpdateOutline(): string
+    # This function only update the Outline script variable, even if the
+    # outline window is closed.
+    # If the current buffer is the outline itself then it does not make sense
+    # to update the outline. Also check the current buffer has supported
+    # filetype
+    if has_key(g:outline_include_before_exclude, &filetype)
+                \ && bufnr() != winbufnr(outline_win_id)
+        # -----------------------------------
+        #  Copy the whole buffer
+        # -----------------------------------
+        # TIP: For debugging use portions of source code and see what
+        # happens, e.g. var Outline = getline(23, 98)
+        Outline = getline(1, "$")
+        # We add a comment line because parsing the first line is always
+        # problematic
+        insert(Outline, &commentstring, 0)
 
-    # -----------------------------------
-    # Pre-process Outline
-    # -----------------------------------
-    # User-defined pre-process function
-    # TODO Is it better to call it after the internal pre-process?
-    if exists('b:OutlinePreProcess') &&
-            index(keys(g:outline_include_before_exclude), &filetype) != -1
-        # b:PreProcessOutline is a Funcref
-        Outline = b:OutlinePreProcess(Outline)
-    endif
+        # -----------------------------------
+        # Pre-process Outline
+        # -----------------------------------
+        # User-defined pre-process function
+        # TODO Is it better to call it after the internal pre-process?
+        if exists('b:OutlinePreProcess') &&
+                index(keys(g:outline_include_before_exclude), &filetype) != -1
+            # b:PreProcessOutline is a Funcref
+            Outline = b:OutlinePreProcess(Outline)
+        endif
 
-    # Parse the buffer and populate the window
-    if exists('b:OutlinePreProcessInternal')
-        # b:PreProcessOutline is a Funcref
-        Outline = b:OutlinePreProcessInternal(Outline)
-    endif
+        # Parse the buffer and populate the window
+        if exists('b:OutlinePreProcessInternal')
+            # b:PreProcessOutline is a Funcref
+            Outline = b:OutlinePreProcessInternal(Outline)
+        endif
 
 
-    # -----------------------------------
-    # Filter user request
-    # -----------------------------------
-    if exists('b:FilterOutline')
-        Outline = b:FilterOutline(Outline)
-    endif
+        # -----------------------------------
+        # Filter user request
+        # -----------------------------------
+        if exists('b:FilterOutline')
+            Outline = b:FilterOutline(Outline)
+        endif
 
-    # Default: if filetype is not supported, then clean up the Outline
-    if !exists('b:PreProcessOutline') && !exists('b:FilterOutline')
+        # TODO make it work with vim-airline
+        return b:CurrentItem(FindClosestItem())
+    else
+        # If filetype is not supported, then clean up the Outline
+        # and put a motivational quote
         win_execute(outline_win_id, 'setlocal syntax=')
         var idx = rand(srand()) % len(quotes.quotes)
         Outline = quotes.quotes[idx]
+        return ""
     endif
 enddef
 
 
-export def RefreshWindow(): string
-    # It does not make sense to you refresh the outline buffer if the current
-    # buffer is the outline itself.
-    if bufnr() != winbufnr(outline_win_id)
-        UpdateOutline()
-        # If Outline is open AND I am not on Outline window AND what is shown
-        # in the outline window is the Outline buffer.
-        # The last condition is very important because you are allowed to
-        # change ONLY the Outline buffer content, not any other buffer
-        # contents that may be in the outline window!
-        if IsOpen() && bufwinid(bufnr()) != outline_win_id
-                    \ && winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
-            # -----------------------------------------
-            # clean outline and unlock outline buffer
-            # -----------------------------------------
-            win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-            deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$',
-                        \ outline_win_id))
+export def RefreshWindow()
+    UpdateOutline()
+    # If Outline is open AND Outline is not the current buffer AND what is
+    # shown in the outline window is the Outline buffer.
+    # The last condition is very important because you may risk to overwrite a
+    # some user buffer if it is shown in place of the Outline buffer in the
+    # outline window. DON'T DO THAT!
+    if IsOpen() && bufwinid(bufnr()) != outline_win_id
+                \ && winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
+        # -----------------------------------------
+        # clean outline and unlock outline buffer
+        # -----------------------------------------
+        win_execute(outline_win_id, 'setlocal modifiable noreadonly')
+        deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$',
+                    \ outline_win_id))
 
-            # ----------------------------------------------
-            # Actually populate the window
-            # ----------------------------------------------
-            setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
-            # Set outline syntax the same as the caller buffer syntax.
-            win_execute(outline_win_id, 'setlocal syntax=' .. &syntax)
-            win_execute(outline_win_id, 'setlocal nomodifiable readonly')
+        # ----------------------------------------------
+        # Actually populate the window
+        # ----------------------------------------------
+        setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
+        # Set outline syntax the same as the caller buffer syntax.
+        win_execute(outline_win_id, 'setlocal syntax=' .. &syntax)
+        win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
-            # Locate
-            if g:outline_enable_highlight
-                Locate(FindClosestItem())
-            endif
-        endif
-        # Return the cleaned target_item
-        # TODO make it work with vim-airline
-        if exists('b:CurrentItem')
-            # echo b:CurrentItem(FindClosestItem())
-            return b:CurrentItem(FindClosestItem())
-        else
-            return ""
+        # Locate
+        if g:outline_enable_highlight
+            Locate(FindClosestItem())
         endif
     endif
-    return ""
 enddef
 
 
