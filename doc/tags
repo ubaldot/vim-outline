@@ -1,4 +1,4 @@
-:OutlineJump	outline.txt	/*:OutlineJump*
+:OutlineGoToOutline	outline.txt	/*:OutlineGoToOutline*
 :OutlineRefresh	outline.txt	/*:OutlineRefresh*
 :OutlineToggle	outline.txt	/*:OutlineToggle*
 OutlineCommands	outline.txt	/*OutlineCommands*
@@ -13,6 +13,7 @@ OutlineNewLanguages	outline.txt	/*OutlineNewLanguages*
 OutlineRequirements	outline.txt	/*OutlineRequirements*
 OutlineUsage	outline.txt	/*OutlineUsage*
 b:OutlinePreProcess	outline.txt	/*b:OutlinePreProcess*
+g:outline_autoclose	outline.txt	/*g:outline_autoclose*
 g:outline_buf_name	outline.txt	/*g:outline_buf_name*
 g:outline_enable_highlight	outline.txt	/*g:outline_enable_highlight*
 g:outline_include_before_exclude	outline.txt	/*g:outline_include_before_exclude*

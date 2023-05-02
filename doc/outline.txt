@@ -71,11 +71,8 @@ Run |:OutlineRefresh| to update both the outline and the highlighting.
 Note: The refresh is asynchronous. This means that you have to manually
 run `:OutlineRefresh` to update outline & localization while you are editing
 your file.
-However, outline & localization are automatically updated in response to
-the following events:
-
-    1. Newly opened outline,
-    2. Another buffer is entered.
+However, outline & localization are automatically updated in response to a
+newly opened Outline window.
 
 I was thinking to continuously update the highlighting but that would require
 calling a number of functions at every single text change: Mr laggy is just
@@ -137,6 +134,10 @@ Type: 'string'
 Default: "Outline!"
 Name of the Outline buffer.
 
+                                                        *g:outline_autoclose*
+Type: 'bool'
+Default: true
+If true, automatically close the outline window.
                                                         *g:outline_win_size*
 Type: 'number'
 Default: 30

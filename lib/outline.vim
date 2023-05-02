@@ -19,7 +19,6 @@ def Locate(target_item: string)
 
     # Enable for modification
     win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-
     # Remove any existing sign.
     win_execute(outline_win_id, "sign_unplace('', {'buffer':
                 \ g:outline_buf_name}) ")
@@ -37,9 +36,9 @@ def Locate(target_item: string)
         # List of lines where there are duplicates.
         var lines = []
         for ii in range(0, len(Outline) - 1)
-          if Outline[ii] ==# target_item
-            add(lines, ii)
-          endif
+            if Outline[ii] ==# target_item
+                add(lines, ii)
+            endif
         endfor
         var line_nr = lines[num_duplicates - 1] + len(title) + 1
 
@@ -94,8 +93,8 @@ def GoToDefinition()
                 \ -> filter($"v:val ==# '{curr_line}'"))
 
     # TODO: check if you can replace wincmd p with some builtin function
-    # Obs! This trigger the BufEnter event!
-    # This means that there will be an immediate (wrong) RefreshWindow()
+    # OBS! This will trigger a BufEnter event! Watch out if you use some
+    # autocommand based on BufEnter.
     wincmd p
 
     # The number of jumps needed to reach the target item are counted from the
@@ -106,7 +105,9 @@ def GoToDefinition()
         search($'\V{curr_line}', "W")
     endfor
     # You moved the cursor, so to be correct you must RefreshWindow() again
-    RefreshWindow()
+    if !g:outline_autoclose
+        RefreshWindow()
+    endif
 enddef
 
 
@@ -127,16 +128,18 @@ enddef
 
 def Open(): number
     # Create empty win from current position
-    win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
+    # win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
+    win_execute(win_getid(), $':rightbelow :{g:outline_win_size}
+                \ vsplit {g:outline_buf_name}')
 
     # Set stuff in the newly created window
     outline_win_id = win_findbuf(bufnr('$'))[0]
-    win_execute(outline_win_id, 'wincmd L')
-    win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
+    # win_execute(outline_win_id, 'wincmd L')
+    # win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
     win_execute(outline_win_id,
-        \    'setlocal buftype=nofile bufhidden=wipe
-        \ nobuflisted noswapfile nowrap
-        \ nonumber norelativenumber equalalways winfixwidth')
+                \    'setlocal buftype=nofile bufhidden=wipe
+                \ nobuflisted noswapfile nowrap
+                \ nonumber norelativenumber winfixwidth')
 
     # Set few w: local variables
     # Let the Outline window to access this script by passing a function
@@ -151,8 +154,8 @@ def Open(): number
     # Set title
     setbufline(winbufnr(outline_win_id), 1, title)
     # Title does not follow syntax highlight but it is in black.
-    win_execute(outline_win_id, 'matchaddpos(''Question'', range(1,
-                \ len(title)))')
+    win_execute(outline_win_id, 'matchaddpos(''Question'',
+                \ range(1, len(title)))')
 
     # Add some sugar
     win_execute(outline_win_id, 'nnoremap <buffer> j j^')
@@ -160,6 +163,8 @@ def Open(): number
     win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
     win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
     win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
+    # TODO: Not sure where this is used
+    setwinvar(win_id2win(outline_win_id), "outline_win_id", outline_win_id)
 
     return outline_win_id
 enddef
@@ -175,11 +180,11 @@ enddef
 
 export def Toggle()
     if IsOpen()
-       Close()
+        Close()
     else
-       Open()
-       RefreshWindow()
-       GoToOutline()
+        Open()
+        # RefreshWindow()
+        GoToOutline()
     endif
 enddef
 
@@ -203,7 +208,8 @@ def UpdateOutline()
     # -----------------------------------
     # User-defined pre-process function
     # TODO Is it better to call it after the internal pre-process?
-    if exists('b:OutlinePreProcess') && index(keys(g:outline_include_before_exclude), &filetype) != -1
+    if exists('b:OutlinePreProcess') &&
+            index(keys(g:outline_include_before_exclude), &filetype) != -1
         # b:PreProcessOutline is a Funcref
         Outline = b:OutlinePreProcess(Outline)
     endif
@@ -232,12 +238,18 @@ enddef
 
 
 export def RefreshWindow(): string
+    # You are allowed to change ONLY the Outline buffer content,
+    # not user buffer contents!
+    # If for some reason the outline window is displaying another buffer, you
+    # may overwrite THAT buffer.
     if bufnr() != winbufnr(outline_win_id)
+            \ && winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
         UpdateOutline()
         # Get target item
         const target_item = FindClosestItem()
 
-        # TODO Lock window content. Consider using w:buffer OBS! NERD tree don't
+        # TODO Lock window content. Consider using w:buffer OBS! NERD tree
+        # don't
         # have this feature!
         # If Outline is open and I am not on Outline window.
         if IsOpen() && bufwinid(bufnr()) != outline_win_id
@@ -271,7 +283,7 @@ export def RefreshWindow(): string
             return ""
         endif
     endif
-        return ""
+    return ""
 enddef
 
 
@@ -280,6 +292,8 @@ augroup Outline_autochange
     # TODO: changing buffer with mouse it is tricky because it triggers two
     # events: BufEnter + CursorMove
     # Hence, you miss the current line when you enter the buffer.
-    autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id
-                \| :call RefreshWindow() | endif
+    # autocmd BufEnter *  if bufwinid(bufnr()) != outline_win_id
+    #             \| :call RefreshWindow() | endif
+    autocmd WinLeave * if bufwinid(bufnr()) == outline_win_id
+                \ && g:outline_autoclose | q | endif
 augroup END

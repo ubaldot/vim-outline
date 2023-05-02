@@ -32,6 +32,10 @@ if !exists('g:outline_enable_highlight')
      g:outline_enable_highlight = true
 endif
 
+if !exists('g:outline_autoclose')
+     g:outline_autoclose = true
+endif
+
 if !exists('g:outline_include_before_exclude')
 g:outline_include_before_exclude = {
             \ "python": false,
