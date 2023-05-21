@@ -1,4 +1,4 @@
-vim9script
+vim9script noclear
 
 # Vim plugin to get an outline for your scripts.
 # Maintainer:	Ubaldo Tiberi
