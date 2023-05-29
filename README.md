@@ -152,3 +152,7 @@ Jumps and localization functions should work automatically.
 ## Contributing
 Contributions are more than welcome!
 See `:h OutlineContributing` for more info.
+
+
+## License
+BSD3-Clause.
