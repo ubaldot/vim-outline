@@ -3,7 +3,7 @@ vim9script noclear
 # Vim plugin to get an outline for your scripts.
 # Maintainer:	Ubaldo Tiberi
 # GetLatestVimScripts: 6068 1 :AutoInstall: outline.vim
-# License: Vim license
+# License: BSD3-Clause.
 
 if !has('vim9script') ||  v:version < 900
   # Needs Vim version 9.0 and above
