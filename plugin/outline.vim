@@ -33,7 +33,7 @@ if !exists('g:outline_enable_highlight')
 endif
 
 if !exists('g:outline_autoclose')
-  g:outline_autoclose = true
+  g:outline_autoclose = false
 endif
 
 # TODO: these dictionaries don't need to be in the global namespace

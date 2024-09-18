@@ -78,14 +78,14 @@ nmap <silent> <leader>l <Plug>OutlineRefresh
 nmap <silent> <leader>o <Plug>OutlineGoToOutline
 ```
 
-> **Note** The refresh is asynchronous, meaning that outline & localization
-> are automatically updated only in response to the following events:
->
-> 1. Newly opened outline,
-> 2. Another buffer is entered,
->
-> In all the other cases, you have to refresh it manually through
-> `:OutlineRefresh`. See `:h OutlineUsage` for more info.
+<!-- > **Note** The refresh is asynchronous, meaning that outline & localization -->
+<!-- > are automatically updated only in response to the following events: -->
+<!-- > -->
+<!-- > 1. Newly opened outline, -->
+<!-- > 2. Another buffer is entered, -->
+<!-- > -->
+<!-- > In all the other cases, you have to refresh it manually through -->
+<!-- > `:OutlineRefresh`. See `:h OutlineUsage` for more info. -->
 
 ## Configuration
 
