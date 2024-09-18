@@ -25,7 +25,7 @@ if !exists('g:outline_buf_name')
 endif
 
 if !exists('g:outline_win_size')
-  g:outline_win_size = 30
+  g:outline_win_size = &columns / 4
 endif
 
 if !exists('g:outline_enable_highlight')
@@ -40,7 +40,8 @@ if !exists('g:outline_include_before_exclude')
   g:outline_include_before_exclude = {
     python: false,
     vim: false,
-    tex: false
+    tex: false,
+    markdown: true,
   }
 endif
 
@@ -50,7 +51,8 @@ if !exists('g:outline_pattern_to_include')
     vim: ['^\s*export', '^\s*def', '^\S*map',
           \ '^\s*\(autocmd\|autocommand\)', '^\s*\(command\|cmd\)',
           \ '^\s*sign ' ],
-    tex: ["^\\\\\\w*section"]
+    tex: ["^\\\\\\w*section"],
+    markdown: ['^\s*#']
   }
 endif
 
@@ -58,7 +60,8 @@ if !exists('g:outline_pattern_to_exclude')
   g:outline_pattern_to_exclude = {
     python: ['^\s*def\s_\{-1,2}'],
     vim: ['^\s*#'],
-    tex: []
+    tex: [],
+    markdown: []
   }
 endif
 
@@ -72,6 +75,11 @@ if !exists('g:outline_substitutions')
       {'\\subsection{\(.*\)}': '  \1'},
       {'\\subsubsection{\(.*\)}': '    \1'},
       {'\\subsubsubsection{\(.*\)}': '      \1'}
+    ],
+    markdown: [
+      {'\v^(\s*)(#)': '\2'},
+      {'^#\+': "\\=repeat(' ', 2 * len(submatch(0)))"},
+      {'^\s\{3}': ''}
     ]
   }
 endif
@@ -85,6 +93,9 @@ if !exists('g:outline_inverse_substitutions')
       {'\v^  (.*)$': '\\\\subsection{\1}'},
       {'\v^    (.*)$': '\\\\subsubsection{\1}'},
       {'\v^      (.*)$': '\\\\subsubsubsection{\1}'}
+    ],
+    markdown: [
+    {'^\s*': "\\='#' .. repeat('#', len(submatch(0)) / 2) .. ' '"},
     ]
   }
 endif

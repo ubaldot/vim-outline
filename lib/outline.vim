@@ -174,7 +174,7 @@ def Open(): number
     endif
 
     # Set title
-    var heading = $'{expand('%:.')}'
+    var heading = $'{expand('%')}'
     var separator = repeat('-', strlen(heading))
     title = [heading, separator, '']
     setbufline(winbufnr(outline_win_id), 1, title)
