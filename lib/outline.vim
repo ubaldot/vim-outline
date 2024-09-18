@@ -16,7 +16,8 @@ var outline_win_id = 0
 sign define CurrentItem linehl=CursorLine
 
 def CountIndexInstances(target_item: string): list<any>
-        # Return the line numbers where target_item appears
+        # Return the line numbers where target_item appears in the Outline
+        # window
         var curr_line_nr = line('.')
         var num_duplicates = len(getline(1, curr_line_nr)
                      -> filter($"v:val ==# '{target_item}'"))
@@ -94,7 +95,7 @@ def GoToDefinition()
     var target_item = getline('.')
     # counter keeps track of the number of duplicated until this line.
     var counter = len(Outline[0 : curr_line_nr - 1]
-                \ -> filter($"v:val ==# '{target_item}'"))
+                 -> filter($"v:val ==# '{target_item}'"))
 
     # 2. Jump back to the main buffer and search for the selected item.
     # TODO: check if you can replace wincmd p with some builtin function

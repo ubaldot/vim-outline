@@ -38,25 +38,25 @@ endif
 
 if !exists('g:outline_include_before_exclude')
 g:outline_include_before_exclude = {
-            \ "python": false,
-            \ "vim": false
-            \ }
+             python: false,
+             vim: false
+             }
 endif
 
 if !exists('g:outline_pattern_to_include')
 g:outline_pattern_to_include = {
-            \ "python": ['^class', '^\s*def'],
-            \ "vim": ['^\s*export', '^\s*def', '^\S*map',
+             python: ['^class', '^\s*def'],
+             vim: ['^\s*export', '^\s*def', '^\S*map',
                 \ '^\s*\(autocmd\|autocommand\)', '^\s*\(command\|cmd\)',
                 \ '^\s*sign ' ]
-            \ }
+             }
 endif
 
 if !exists('g:outline_pattern_to_exclude')
 g:outline_pattern_to_exclude = {
-            \ "python": ['^\s*def\s_\{-1,2}'],
-            \ "vim": ['^\s*#']
-            \ }
+             python: ['^\s*def\s_\{-1,2}'],
+             vim: ['^\s*#']
+             }
 endif
 
 
