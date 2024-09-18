@@ -1,4 +1,5 @@
 # vim-outline
+
 A simple outline sketcher for Vim.
 
 <p align="center">
@@ -6,8 +7,8 @@ A simple outline sketcher for Vim.
 </p>
 
 ## Introduction
-Vim-outline parse your current buffer and slam an outline in a
-side-window.
+
+Vim-outline parse your current buffer and slam an outline in a side-window.
 That's all!
 
 <!-- Well, in reality is not, in-fact Vim-outline further provides you with the -->
@@ -23,10 +24,12 @@ your code is structured and it allows you to jump from one place to another.
 It is perhaps the plugin that I use more!
 
 At the moment the supported language are `python`, `vim9script`, `tex` and
-`markdown`, but if you are good with regex and want to add support for another
-language you are welcome to send PR:s!
-Take a look at`:h OutlineAddNewLanguages` for more details.
+`markdown`. For non supported languages, you will be entertained with some
+famous quotes every time you attempt to trigger the outline window.
 
+Nevertheless, if you really don't like the quotes, and you are good with regex
+and you want to add support for another language you are welcome to send PR:s!
+Take a look at`:h OutlineAddNewLanguages` for more details.
 
 <!-- At the time I was working with Python and Vim9script, hence Python and -->
 <!-- Vim9Script are supported by default, but you can easily add other languages. -->
@@ -45,26 +48,29 @@ Take a look at`:h OutlineAddNewLanguages` for more details.
 <!-- [vim-replica](https://github.com/ubaldot/vim-replica). -->
 
 ## Installation
+
 Use any plugin manager or the builtin Vim plugin manager.
 
 ## Requirements
-Vim-outline is written in *Vim9script*, therefore you need at least *Vim 9.0*.
+
+Vim-outline is written in _Vim9script_, therefore you need at least _Vim 9.0_.
 That is pretty much all. No ctags, nor LSP servers required.
 
 ## Usage
+
 #### Commands
+
 `:OutlineToggle` open/close a side-window that shows an outline of your
 current buffer.
 
-`:OutlineJump` jump on the outline window.  Such a command is handy
-when you have different windows open in the same tab and you want to jump
-directly
-to the outline window with one key-press.
+`:OutlineJump` jump on the outline window. Such a command is handy when you
+have different windows open in the same tab and you want to jump directly to
+the outline window with one key-press.
 
 `:OutlineRefresh` update outline & locate yourself.
 
-
 #### Mappings
+
 ```
 # Default mappings
 nmap <silent> <F8> <Plug>OutlineToggle
@@ -72,20 +78,17 @@ nmap <silent> <leader>l <Plug>OutlineRefresh
 nmap <silent> <leader>o <Plug>OutlineGoToOutline
 ```
 
-
-> **Note**
-> The refresh is asynchronous, meaning that outline & localization are
-> automatically updated only in response to the following events:
+> **Note** The refresh is asynchronous, meaning that outline & localization
+> are automatically updated only in response to the following events:
 >
 > 1. Newly opened outline,
 > 2. Another buffer is entered,
 >
 > In all the other cases, you have to refresh it manually through
-> `:OutlineRefresh`.  See `:h OutlineUsage` for more info.
-
-
+> `:OutlineRefresh`. See `:h OutlineUsage` for more info.
 
 ## Configuration
+
 <!-- For each filetype you can define some regex to be used to parse the -->
 <!-- current buffer through the following dictionaries: -->
 <!-- ``` -->
@@ -102,14 +105,14 @@ nmap <silent> <leader>o <Plug>OutlineGoToOutline
 <!-- g:outline_include_before_exclude = {"python": false, "vim": false} -->
 <!-- ``` -->
 
-
-
 You only have few tweaking variables:
-``` # Default values
+
+```# Default values
 g:outline_buf_name = "Outline!"
 g:outline_win_size = &columns / 4
 g:outline_enable_highlight = true
 ```
+
 See `:h OutlineConfiguration` for more info.
 
 <!-- > **Warning** -->
@@ -117,16 +120,16 @@ See `:h OutlineConfiguration` for more info.
 <!-- > To see the current setting of a variable run `:echo g:<variable_name>`, for -->
 <!-- > example `:echo g:outline_pattern_to_exclude`. -->
 
-
 ## Can I use it for languages that are not supported yet?
-Yes, it *should* work... with a little hack. <br>
-I hope it won't bother you too
-much!<br>
 
-As an example, I'll show you how to hack it for `.cpp` files, but the
-same principle should apply, *mutatis-mutandis*, to any other filetype.
+Yes, it _should_ work... with a little hack. <br> I hope it won't bother you
+too much!<br>
+
+As an example, I'll show you how to hack it for `.cpp` files, but the same
+principle should apply, _mutatis-mutandis_, to any other filetype.
 
 #### Step 1
+
 Create a `cpp.vim` file in `.vim/ftplugin` with the following content
 
 ```
@@ -141,26 +144,30 @@ b:FilterOutline = FilterOutline
 ```
 
 #### Step 2
+
 Add the following to your `.vimrc`
+
 ```
 extend(g:outline_pattern_to_include, {"cpp": ['<KEEP-ME!>']})
 ```
 
 #### Step 3
+
 Comment each line that you want to show in the outline with `// <KEEP-ME!>`
 
 At this point, call `:OutlineToggle` (or hit `<F8>` if you are using the
-default mapping) and see what happens.
-Jumps and localization functions should work automatically.
-
+default mapping) and see what happens. Jumps and localization functions should
+work automatically.
 
 ## Help
+
 `:h outline.txt`
 
 ## Contributing
-Contributions are more than welcome!
-See `:h OutlineContributing` for more info.
 
+Contributions are more than welcome! See `:h OutlineContributing` for more
+info.
 
 ## License
+
 BSD3-Clause.
