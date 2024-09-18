@@ -15,33 +15,37 @@ var outline_win_id = 0
 
 sign define CurrentItem linehl=CursorLine
 
-# Script functions
-def Locate(target_item: string)
-    # Highlight target_item (aka closest item) in the outline window
-    win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-    win_execute(outline_win_id, "sign_unplace('', {'buffer':
-                \ g:outline_buf_name}) ")
-
-    # If you have a valid target_item, then check if there are duplicates,
-    # and highlight the correct one.
-    if target_item !=# ""
-        # Check first if the found target_item is a duplicate starting from
-        # the current line and going backwards to line 1 in the current
-        # buffer.
+def CountIndexInstances(target_item: string): list<any>
+        # Return the line numbers where target_item appears
         var curr_line_nr = line('.')
-        var num_duplicates = len(getline(1, '$')[0 : curr_line_nr - 1]
-                    \ -> filter($"v:val ==# '{target_item}'"))
+        var num_duplicates = len(getline(1, curr_line_nr)
+                     -> filter($"v:val ==# '{target_item}'"))
 
-        # List of lines where there are duplicates.
+        # List of lines where there are duplicates in the Outline window
         var lines = []
         for ii in range(0, len(Outline) - 1)
             if Outline[ii] ==# target_item
                 add(lines, ii)
             endif
         endfor
-        var line_nr = lines[num_duplicates - 1] + len(title) + 1
+        return [num_duplicates, lines]
+enddef
 
+# Script functions
+def Locate(target_item: string)
+    # Highlight target_item (aka closest item) in the outline window
+    win_execute(outline_win_id, 'setlocal modifiable noreadonly')
+    win_execute(outline_win_id, "sign_unplace('', {buffer:
+                \ g:outline_buf_name}) ")
+
+    # If you have a valid target_item, then check if there are duplicates,
+    # and highlight the correct one.
+    if target_item !=# ""
+        var tmp = CountIndexInstances(target_item)
+        var num_duplicates = tmp[0]
+        var lines = tmp[1]
         # Now you know what you should highlight
+        var line_nr = lines[num_duplicates - 1] + len(title) + 1
         setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
         win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
         win_execute(outline_win_id, 'sign_place(w:line_nr, "",
@@ -144,17 +148,22 @@ def Open(): number
     # Set few w: local variables
     # Let the Outline window to access this script by passing a function
     setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition)
-    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call
+    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> <ScriptCmd>
                 \ w:GoToDefinition()<cr>')
     if has("gui")
         win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse>
-                    \ :call w:GoToDefinition()<cr>')
+                    \ <ScriptCmd>w:GoToDefinition()<cr>')
     endif
 
     # Set title
+    var heading = $'{expand('%:.')}'
+    var separator = repeat('-', strlen(heading))
+    title = [heading, separator, '']
     setbufline(winbufnr(outline_win_id), 1, title)
-    win_execute(outline_win_id, 'matchaddpos(''Question'',
-                \ range(1, len(title)))')
+    win_execute(outline_win_id, $'matchadd("WarningMsg", "{heading}")')
+    win_execute(outline_win_id, $'matchadd("WarningMsg", "{separator}")')
+    # win_execute(outline_win_id, 'matchaddpos(''Question'',
+    #             \ range(1, len(title)))')
 
     # Add some sugar
     win_execute(outline_win_id, 'nnoremap <buffer> j j^')
@@ -163,15 +172,21 @@ def Open(): number
     win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
     win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
 
+    # winfixbuf
+    if exists('+winfixbuf')
+      win_execute(outline_win_id, 'setlocal winfixbuf' )
+    endif
+
     return outline_win_id
 enddef
 
 def IsOpen(): bool
-    if win_id2win(outline_win_id) > 0
-        return true
-    else
-        return false
-    endif
+  return win_id2win(outline_win_id) > 0 ? true : false
+    # if win_id2win(outline_win_id) > 0
+    #     return true
+    # else
+    #     return false
+    # endif
 enddef
 
 
@@ -184,7 +199,6 @@ export def Toggle()
         GoToOutline()
     endif
 enddef
-
 
 def UpdateOutline(): string
     # This function only update the Outline script variable, even if the
@@ -241,7 +255,6 @@ def UpdateOutline(): string
     endif
     return ""
 enddef
-
 
 export def RefreshWindow()
     UpdateOutline()
