@@ -36,6 +36,8 @@ if !exists('g:outline_autoclose')
   g:outline_autoclose = true
 endif
 
+# TODO: these dictionaries don't need to be in the global namespace
+# Define them as script-local and export them around.
 if !exists('g:outline_include_before_exclude')
   g:outline_include_before_exclude = {
     python: false,

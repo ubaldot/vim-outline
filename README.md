@@ -8,33 +8,41 @@ A simple outline sketcher for Vim.
 ## Introduction
 Vim-outline parse your current buffer and slam an outline in a
 side-window.
-
 That's all!
 
-Well, in reality is not, in-fact Vim-outline further provides you with the
-following features:
+<!-- Well, in reality is not, in-fact Vim-outline further provides you with the -->
+<!-- following features: -->
 
-1. Locate your current position on the outline,
-2. Jump from outline entries to the corresponding buffer lines,
-3. Feed you with random motivational quote if a *filetype* is not supported.
-   [Cringe mode ON!]
+<!-- 1. Locate your current position on the outline, -->
+<!-- 2. Jump from outline entries to the corresponding buffer lines, -->
+<!-- 3. Feed you with random motivational quote if a *filetype* is not supported. -->
+<!--    [Cringe mode ON!] -->
+
+The outline is far from being perfect, but it gives you a good idea of how
+your code is structured and it allows you to jump from one place to another.
+It is perhaps the plugin that I use more!
+
+At the moment the supported language are `python`, `vim9script`, `tex` and
+`markdown`, but if you are good with regex and want to add support for another
+language you are welcome to send PR:s!
+Take a look at`:h OutlineAddNewLanguages` for more details.
 
 
-At the time I was working with Python and Vim9script, hence Python and
-Vim9Script are supported by default, but you can easily add other languages.
-See `:h OutlineAddNewLanguages`.
+<!-- At the time I was working with Python and Vim9script, hence Python and -->
+<!-- Vim9Script are supported by default, but you can easily add other languages. -->
+<!-- See `:h OutlineAddNewLanguages`. -->
 
-I wrote vim-outline mainly for myself because I had some issue when using
-Vista! with ALE and Tagbar require ctags, which is a tool that I don't
-have installed (I know, I should).
+<!-- I wrote vim-outline mainly for myself because I had some issue when using -->
+<!-- Vista! with ALE and Tagbar require ctags, which is a tool that I don't -->
+<!-- have installed (I know, I should). -->
 
-What I needed was a self-contained tool (i.e. no-dependencies), which is
-easily configurable, fast and reliable and that would support me to get
-my job done, no matter if lacks bells and whistles and if the outcome
-is an imprecise sketch with noisy entries.
+<!-- What I needed was a self-contained tool (i.e. no-dependencies), which is -->
+<!-- easily configurable, fast and reliable and that would support me to get -->
+<!-- my job done, no matter if lacks bells and whistles and if the outcome -->
+<!-- is an imprecise sketch with noisy entries. -->
 
-If you work with Data Science you may also want to take a look at
-[vim-replica](https://github.com/ubaldot/vim-replica).
+<!-- If you work with Data Science you may also want to take a look at -->
+<!-- [vim-replica](https://github.com/ubaldot/vim-replica). -->
 
 ## Installation
 Use any plugin manager or the builtin Vim plugin manager.
@@ -78,36 +86,36 @@ nmap <silent> <leader>o <Plug>OutlineGoToOutline
 
 
 ## Configuration
-For each filetype you can define some regex to be used to parse the
-current buffer through the following dictionaries:
-```
-# Default values
-g:outline_pattern_to_include = {"python": ['^class', '^\s*def'],
-                                \  "vim": ['^\s*export', '^\s*def', '^\S*map',
-                                \           '^\s*\(autocmd\|autocommand\)',
-                                \           '^\s*\(command\|cmd\)', '^\s*sign'
-                                ]}
+<!-- For each filetype you can define some regex to be used to parse the -->
+<!-- current buffer through the following dictionaries: -->
+<!-- ``` -->
+<!-- # Default values -->
+<!-- g:outline_pattern_to_include = {"python": ['^class', '^\s*def'], -->
+<!--                                 \  "vim": ['^\s*export', '^\s*def', '^\S*map', -->
+<!--                                 \           '^\s*\(autocmd\|autocommand\)', -->
+<!--                                 \           '^\s*\(command\|cmd\)', '^\s*sign' -->
+<!--                                 ]} -->
 
-g:outline_pattern_to_exclude = {"python": ['^\s*def\s_\{-1,2}'], "vim":
-['^\s*#'] }
+<!-- g:outline_pattern_to_exclude = {"python": ['^\s*def\s_\{-1,2}'], "vim": -->
+<!-- ['^\s*#'] } -->
 
-g:outline_include_before_exclude = {"python": false, "vim": false}
-```
+<!-- g:outline_include_before_exclude = {"python": false, "vim": false} -->
+<!-- ``` -->
 
 
 
-You also have other tweaking variables:
+You only have few tweaking variables:
 ``` # Default values
 g:outline_buf_name = "Outline!"
-g:outline_win_size = 30
+g:outline_win_size = &columns / 4
 g:outline_enable_highlight = true
 ```
 See `:h OutlineConfiguration` for more info.
 
-> **Warning**
-> The default values are overwritten by user values!
-> To see the current setting of a variable run `:echo g:<variable_name>`, for
-> example `:echo g:outline_pattern_to_exclude`.
+<!-- > **Warning** -->
+<!-- > The default values are overwritten by user values! -->
+<!-- > To see the current setting of a variable run `:echo g:<variable_name>`, for -->
+<!-- > example `:echo g:outline_pattern_to_exclude`. -->
 
 
 ## Can I use it for languages that are not supported yet?
