@@ -97,15 +97,32 @@ def GoToDefinition()
     var counter = len(Outline[0 : curr_line_nr - 1]
                  -> filter($"v:val ==# '{target_item}'"))
 
-    # 2. Jump back to the main buffer and search for the selected item.
-    # TODO: check if you can replace wincmd p with some builtin function
+    # Go to the actual buffer
+    # TODO: this can be improved. What if the buffer and the Outline don't
+    # match?
+    var coupled_buffer = getline(1)
+    echom coupled_buffer
     wincmd p
+    if bufname() !=# coupled_buffer
+      exe $'buffer {coupled_buffer}'
+    endif
+
+    # 2a. If you used any substitutions, then you have to revert them.
+    # OBS! It works only if the substitution is 1-1, i.e. 'exactly A' is
+    # substituted with 'B.
+    var item_on_buffer = target_item
+    if exists('b:InverseSubstitution')
+      item_on_buffer = b:InverseSubstitution(target_item)
+    endif
+
+
+    # 2. Jump back to the main buffer and search for the selected item.
     # The number of jumps needed to reach the target item are counted from the
     # beginning of the file
     cursor(1, 1)
     for ii in range(counter)
         # TODO This looks for a regular expression not for the literal string!
-        search($'\V{target_item}', "W")
+        search($'\V{item_on_buffer}', "W")
     endfor
 
     if !g:outline_autoclose
@@ -183,11 +200,6 @@ enddef
 
 def IsOpen(): bool
   return win_id2win(outline_win_id) > 0 ? true : false
-    # if win_id2win(outline_win_id) > 0
-    #     return true
-    # else
-    #     return false
-    # endif
 enddef
 
 
