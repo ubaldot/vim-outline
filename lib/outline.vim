@@ -7,6 +7,7 @@ vim9script
 
 # Imports
 import autoload "./quotes.vim"
+import autoload "./regex.vim"
 
 # Script variables
 var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
@@ -220,7 +221,7 @@ def UpdateOutline(): string
     # to update the outline.
 
     # If supported filetype
-    if has_key(g:outline_include_before_exclude, &filetype)
+    if has_key(regex.outline_include_before_exclude, &filetype)
                 \ && bufnr() != winbufnr(outline_win_id)
         # -----------------------------------
         #  Copy the whole buffer
@@ -238,7 +239,7 @@ def UpdateOutline(): string
         # User-defined pre-process function
         # TODO Is it better to call it after the internal pre-process?
         if exists('b:OutlinePreProcess') &&
-                index(keys(g:outline_include_before_exclude), &filetype) != -1
+                index(keys(regex.outline_include_before_exclude), &filetype) != -1
             # b:PreProcessOutline is a Funcref
             Outline = b:OutlinePreProcess(Outline)
         endif
@@ -259,7 +260,7 @@ def UpdateOutline(): string
 
         # TODO make it work with vim-airline
         return b:CurrentItem(FindClosestItem())
-    elseif !has_key(g:outline_include_before_exclude, &filetype)
+    elseif !has_key(regex.outline_include_before_exclude, &filetype)
         # If filetype is not supported, then clean up the Outline
         # and put a motivational quote in Outline variable.
         var idx = rand(srand()) % len(quotes.quotes)

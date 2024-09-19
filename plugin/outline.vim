@@ -16,7 +16,6 @@ if exists('g:outline_loaded')
 endif
 g:outline_loaded = true
 
-
 # --------------------------
 # User settings
 # --------------------------
@@ -36,71 +35,6 @@ if !exists('g:outline_autoclose')
   g:outline_autoclose = false
 endif
 
-# TODO: these dictionaries don't need to be in the global namespace
-# Define them as script-local and export them around.
-if !exists('g:outline_include_before_exclude')
-  g:outline_include_before_exclude = {
-    python: false,
-    vim: false,
-    tex: false,
-    markdown: true,
-  }
-endif
-
-if !exists('g:outline_pattern_to_include')
-  g:outline_pattern_to_include = {
-    python: ['^class', '^\s*def'],
-    vim: ['^\s*export', '^\s*def', '^\S*map',
-          \ '^\s*\(autocmd\|autocommand\)', '^\s*\(command\|cmd\)',
-          \ '^\s*sign ' ],
-    tex: ["^\\\\\\w*section"],
-    markdown: ['^\s*#']
-  }
-endif
-
-if !exists('g:outline_pattern_to_exclude')
-  g:outline_pattern_to_exclude = {
-    python: ['^\s*def\s_\{-1,2}'],
-    vim: ['^\s*#'],
-    tex: [],
-    markdown: []
-  }
-endif
-
-# Each item is a list of substitutions to be used in order.
-# Substitutions and its inverse shall match!
-if !exists('g:outline_substitutions')
-  g:outline_substitutions = {
-    python: [],
-    vim: [],
-    tex: [{'\\section{\(.*\)}': '\1'},
-      {'\\subsection{\(.*\)}': '  \1'},
-      {'\\subsubsection{\(.*\)}': '    \1'},
-      {'\\subsubsubsection{\(.*\)}': '      \1'}
-    ],
-    markdown: [
-      {'\v^(\s*)(#)': '\2'},
-      {'^#\+': "\\=repeat(' ', 2 * len(submatch(0)))"},
-      {'^\s\{3}': ''}
-    ]
-  }
-endif
-
-# Each item is a list of substitutions to be used in order.
-if !exists('g:outline_inverse_substitutions')
-  g:outline_inverse_substitutions = {
-    python: [],
-    vim: [],
-    tex: [{'\v^(\s?\w.*)$': '\\\\section{\1}'},
-      {'\v^  (.*)$': '\\\\subsection{\1}'},
-      {'\v^    (.*)$': '\\\\subsubsection{\1}'},
-      {'\v^      (.*)$': '\\\\subsubsubsection{\1}'}
-    ],
-    markdown: [
-    {'^\s*': "\\='#' .. repeat('#', len(submatch(0)) / 2) .. ' '"},
-    ]
-  }
-endif
 
 # --------------------------
 # Mappings
