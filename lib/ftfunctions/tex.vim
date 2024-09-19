@@ -14,24 +14,10 @@ enddef
 
 # TODO This is the same in every function, it only changes the filetype.
 export def FilterOutline(outline: list<string>): list<string>
-  if regex.outline_include_before_exclude["vim"]
-    outline
-          \ ->filter("v:val =~ "
-          \ .. string(join(regex.outline_pattern_to_include["vim"], '\|')))
-          \ ->filter("v:val !~ "
-          \ .. string(join(regex.outline_pattern_to_exclude["vim"], '\|')))
-  else
-    outline ->filter("v:val !~ "
-          \ .. string(join(regex.outline_pattern_to_exclude["vim"], '\|')))
-          \ ->filter("v:val =~ "
-          \ .. string(join(regex.outline_pattern_to_include["vim"], '\|')))
-  endif
-  # TODO: Add a if you want to show line numbers?
-  #
-  # Substitute. OBS! There shall be a 1-1 mapping in the substitution,
-  # otherwise the inverse cannot be computed!
-  if !empty(regex.outline_substitutions["vim"])
-    for subs in regex.outline_substitutions["vim"]
+  outline->filter("v:val =~ "
+        \ .. string(join(regex.outline_pattern_to_include["tex"], '\|')))
+  if !empty(regex.outline_substitutions["tex"])
+    for subs in regex.outline_substitutions["tex"]
       outline ->map((idx, val) => substitute(val, keys(subs)[0], values(subs)[0], ''))
     endfor
   endif
@@ -43,8 +29,8 @@ export def InverseSubstitution(outline_item: string): string
   # Given a string in the outline, it reconstruct the string in the original
   # file
   var tmp = outline_item
-  if !empty(regex.outline_inverse_substitutions["vim"])
-    for subs in regex.outline_inverse_substitutions["vim"]
+  if !empty(regex.outline_inverse_substitutions["tex"])
+    for subs in regex.outline_inverse_substitutions["tex"]
       tmp = tmp ->substitute(keys(subs)[0], values(subs)[0], '')
     endfor
   endif

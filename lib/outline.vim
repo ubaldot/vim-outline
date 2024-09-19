@@ -7,6 +7,7 @@ vim9script
 
 # Imports
 import autoload "./quotes.vim"
+import autoload "./regex.vim"
 
 # Script variables
 var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
@@ -15,33 +16,38 @@ var outline_win_id = 0
 
 sign define CurrentItem linehl=CursorLine
 
-# Script functions
-def Locate(target_item: string)
-    # Highlight target_item (aka closest item) in the outline window
-    win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-    win_execute(outline_win_id, "sign_unplace('', {'buffer':
-                \ g:outline_buf_name}) ")
-
-    # If you have a valid target_item, then check if there are duplicates,
-    # and highlight the correct one.
-    if target_item !=# ""
-        # Check first if the found target_item is a duplicate starting from
-        # the current line and going backwards to line 1 in the current
-        # buffer.
+def CountIndexInstances(target_item: string): list<any>
+        # Return the line numbers where target_item appears in the Outline
+        # window
         var curr_line_nr = line('.')
-        var num_duplicates = len(getline(1, '$')[0 : curr_line_nr - 1]
-                    \ -> filter($"v:val ==# '{target_item}'"))
+        var num_duplicates = len(getline(1, curr_line_nr)
+                     -> filter($"v:val ==# '{target_item}'"))
 
-        # List of lines where there are duplicates.
+        # List of lines where there are duplicates in the Outline window
         var lines = []
         for ii in range(0, len(Outline) - 1)
             if Outline[ii] ==# target_item
                 add(lines, ii)
             endif
         endfor
-        var line_nr = lines[num_duplicates - 1] + len(title) + 1
+        return [num_duplicates, lines]
+enddef
 
+# Script functions
+def Locate(target_item: string)
+    # Highlight target_item (aka closest item) in the outline window
+    win_execute(outline_win_id, 'setlocal modifiable noreadonly')
+    win_execute(outline_win_id, "sign_unplace('', {buffer:
+                \ g:outline_buf_name}) ")
+
+    # If you have a valid target_item, then check if there are duplicates,
+    # and highlight the correct one.
+    if target_item !=# ""
+        var tmp = CountIndexInstances(target_item)
+        var num_duplicates = tmp[0]
+        var lines = tmp[1]
         # Now you know what you should highlight
+        var line_nr = lines[num_duplicates - 1] + len(title) + 1
         setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
         win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
         win_execute(outline_win_id, 'sign_place(w:line_nr, "",
@@ -90,17 +96,34 @@ def GoToDefinition()
     var target_item = getline('.')
     # counter keeps track of the number of duplicated until this line.
     var counter = len(Outline[0 : curr_line_nr - 1]
-                \ -> filter($"v:val ==# '{target_item}'"))
+                 -> filter($"v:val ==# '{target_item}'"))
+
+    # Go to the actual buffer
+    # TODO: this can be improved. What if the buffer and the Outline don't
+    # match?
+    var coupled_buffer = getline(1)
+    echom coupled_buffer
+    wincmd p
+    if bufname() !=# coupled_buffer
+      exe $'buffer {coupled_buffer}'
+    endif
+
+    # 2a. If you used any substitutions, then you have to revert them.
+    # OBS! It works only if the substitution is 1-1, i.e. 'exactly A' is
+    # substituted with 'B.
+    var item_on_buffer = target_item
+    if exists('b:InverseSubstitution')
+      item_on_buffer = b:InverseSubstitution(target_item)
+    endif
+
 
     # 2. Jump back to the main buffer and search for the selected item.
-    # TODO: check if you can replace wincmd p with some builtin function
-    wincmd p
     # The number of jumps needed to reach the target item are counted from the
     # beginning of the file
     cursor(1, 1)
     for ii in range(counter)
         # TODO This looks for a regular expression not for the literal string!
-        search($'\V{target_item}', "W")
+        search($'\V{item_on_buffer}', "W")
     endfor
 
     if !g:outline_autoclose
@@ -144,17 +167,22 @@ def Open(): number
     # Set few w: local variables
     # Let the Outline window to access this script by passing a function
     setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition)
-    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> :call
+    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> <ScriptCmd>
                 \ w:GoToDefinition()<cr>')
     if has("gui")
         win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse>
-                    \ :call w:GoToDefinition()<cr>')
+                    \ <ScriptCmd>w:GoToDefinition()<cr>')
     endif
 
     # Set title
+    var heading = $'{expand('%')}'
+    var separator = repeat('-', strlen(heading))
+    title = [heading, separator, '']
     setbufline(winbufnr(outline_win_id), 1, title)
-    win_execute(outline_win_id, 'matchaddpos(''Question'',
-                \ range(1, len(title)))')
+    win_execute(outline_win_id, $'matchadd("WarningMsg", "{heading}")')
+    win_execute(outline_win_id, $'matchadd("WarningMsg", "{separator}")')
+    # win_execute(outline_win_id, 'matchaddpos(''Question'',
+    #             \ range(1, len(title)))')
 
     # Add some sugar
     win_execute(outline_win_id, 'nnoremap <buffer> j j^')
@@ -163,15 +191,16 @@ def Open(): number
     win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
     win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
 
+    # winfixbuf
+    if exists('+winfixbuf')
+      win_execute(outline_win_id, 'setlocal winfixbuf' )
+    endif
+
     return outline_win_id
 enddef
 
 def IsOpen(): bool
-    if win_id2win(outline_win_id) > 0
-        return true
-    else
-        return false
-    endif
+  return win_id2win(outline_win_id) > 0 ? true : false
 enddef
 
 
@@ -185,7 +214,6 @@ export def Toggle()
     endif
 enddef
 
-
 def UpdateOutline(): string
     # This function only update the Outline script variable, even if the
     # outline window is closed.
@@ -193,7 +221,7 @@ def UpdateOutline(): string
     # to update the outline.
 
     # If supported filetype
-    if has_key(g:outline_include_before_exclude, &filetype)
+    if has_key(regex.outline_include_before_exclude, &filetype)
                 \ && bufnr() != winbufnr(outline_win_id)
         # -----------------------------------
         #  Copy the whole buffer
@@ -211,7 +239,7 @@ def UpdateOutline(): string
         # User-defined pre-process function
         # TODO Is it better to call it after the internal pre-process?
         if exists('b:OutlinePreProcess') &&
-                index(keys(g:outline_include_before_exclude), &filetype) != -1
+                index(keys(regex.outline_include_before_exclude), &filetype) != -1
             # b:PreProcessOutline is a Funcref
             Outline = b:OutlinePreProcess(Outline)
         endif
@@ -232,7 +260,7 @@ def UpdateOutline(): string
 
         # TODO make it work with vim-airline
         return b:CurrentItem(FindClosestItem())
-    elseif !has_key(g:outline_include_before_exclude, &filetype)
+    elseif !has_key(regex.outline_include_before_exclude, &filetype)
         # If filetype is not supported, then clean up the Outline
         # and put a motivational quote in Outline variable.
         var idx = rand(srand()) % len(quotes.quotes)
@@ -241,7 +269,6 @@ def UpdateOutline(): string
     endif
     return ""
 enddef
-
 
 export def RefreshWindow()
     UpdateOutline()
