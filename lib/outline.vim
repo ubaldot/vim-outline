@@ -162,7 +162,7 @@ def Open(): number
     win_execute(outline_win_id,
                 \    'setlocal buftype=nofile bufhidden=wipe
                 \ nobuflisted noswapfile nowrap
-                \ nonumber norelativenumber winfixwidth')
+                \ nonumber norelativenumber noscrollbind winfixwidth')
 
     # Set few w: local variables
     # Let the Outline window to access this script by passing a function
