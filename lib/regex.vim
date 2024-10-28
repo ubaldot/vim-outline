@@ -21,6 +21,7 @@ vim9script
 export var outline_include_before_exclude = {
   python: false,
   vim: false,
+  java: false,
   tex: false,
   markdown: true,
 }
@@ -32,14 +33,16 @@ export var outline_pattern_to_include = {
         \ '^\s*\(autocmd\|autocommand\)', '^\s*\(command\|cmd\)',
         \ '^\s*sign ' ],
   tex: ["^\\\\\\w*section"],
-  markdown: ['^\s*#']
+  markdown: ['^\s*#'],
+  java: ['^\s*class', '^\s*public', '^\s*private', '^\s*protected']
 }
 
 export var outline_pattern_to_exclude = {
   python: ['^\s*def\s_\{-1,2}'],
   vim: ['^\s*#'],
   tex: [],
-  markdown: []
+  markdown: [],
+  java: []
 }
 
 # For substitute()
