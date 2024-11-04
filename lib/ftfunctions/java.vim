@@ -14,7 +14,7 @@ enddef
 
 export def FilterOutline(outline: list<string>): list<string>
     outline ->filter("v:val =~ " .. string(join(regex.outline_pattern_to_include["java"], '\|')))
-    outline ->filter("v:val =~ " .. string(join(regex.outline_pattern_to_exclude["java"], '\|')))
+            ->filter("v:val =~ " .. string(join(regex.outline_pattern_to_exclude["java"], '\|')))
     return outline
 enddef
 
