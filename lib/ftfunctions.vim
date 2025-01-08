@@ -5,7 +5,7 @@ vim9script
 # regular expressions and populate the Outline window.
 # =================================================
 
-import autoload "../regex.vim"
+import autoload "./regex.vim"
 
 # TODO:remove
 export def CurrentItem(curr_item: string): string
@@ -13,25 +13,21 @@ export def CurrentItem(curr_item: string): string
 enddef
 
 # TODO This is the same in every function, it only changes the filetype.
-export def FilterOutline(outline: list<string>): list<string>
-  if regex.outline_include_before_exclude["vim"]
-    outline
-          \ ->filter("v:val =~ "
-          \ .. string(join(regex.outline_pattern_to_include["vim"], '\|')))
-          \ ->filter("v:val !~ "
-          \ .. string(join(regex.outline_pattern_to_exclude["vim"], '\|')))
-  else
-    outline ->filter("v:val !~ "
-          \ .. string(join(regex.outline_pattern_to_exclude["vim"], '\|')))
-          \ ->filter("v:val =~ "
-          \ .. string(join(regex.outline_pattern_to_include["vim"], '\|')))
+export def FilterOutline(outline: list<string>, filetype: string): list<string>
+  # echom regex.outline_include_before_exclude[filetype]
+  if regex.outline_include_before_exclude[filetype]
+    outline->filter("v:val =~ "
+        \ .. string(join(regex.outline_pattern_to_include[filetype], '\|')))
   endif
   # TODO: Add a if you want to show line numbers?
   #
   # Substitute. OBS! There shall be a 1-1 mapping in the substitution,
   # otherwise the inverse cannot be computed!
-  if !empty(regex.outline_substitutions["vim"])
-    for subs in regex.outline_substitutions["vim"]
+  echom &filetype
+  if !empty(regex.outline_substitutions[filetype])
+    # UBA
+    echom "PIPPO"
+    for subs in regex.outline_substitutions[filetype]
       outline ->map((idx, val) => substitute(val, keys(subs)[0], values(subs)[0], ''))
     endfor
   endif
@@ -39,12 +35,12 @@ export def FilterOutline(outline: list<string>): list<string>
   return outline
 enddef
 
-export def InverseSubstitution(outline_item: string): string
+export def InverseSubstitution(outline_item: string, filetype: string): string
   # Given a string in the outline, it reconstruct the string in the original
   # file
   var tmp = outline_item
-  if !empty(regex.outline_inverse_substitutions["vim"])
-    for subs in regex.outline_inverse_substitutions["vim"]
+  if !empty(regex.outline_inverse_substitutions[filetype])
+    for subs in regex.outline_inverse_substitutions[filetype]
       tmp = tmp ->substitute(keys(subs)[0], values(subs)[0], '')
     endfor
   endif

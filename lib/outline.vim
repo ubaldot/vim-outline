@@ -8,8 +8,10 @@ vim9script
 # Imports
 import autoload "./quotes.vim"
 import autoload "./regex.vim"
+import autoload "./ftfunctions.vim"
 
 # Script variables
+var supported_filetypes = ['markdown', 'python', 'java', 'tex', 'vim']
 var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
 var Outline = [""] # It does not like [] initialization
 var outline_win_id = 0
@@ -112,8 +114,8 @@ def GoToDefinition()
     # OBS! It works only if the substitution is 1-1, i.e. 'exactly A' is
     # substituted with 'B.
     var item_on_buffer = target_item
-    if exists('b:InverseSubstitution')
-      item_on_buffer = b:InverseSubstitution(target_item)
+    if index(supported_filetypes, &filetype) != -1
+      item_on_buffer = ftfunctions.InverseSubstitution(target_item, &filetype)
     endif
 
 
@@ -254,12 +256,12 @@ def UpdateOutline(): string
         # -----------------------------------
         # Filter user request
         # -----------------------------------
-        if exists('b:FilterOutline')
-            Outline = b:FilterOutline(Outline)
+        if index(supported_filetypes, &filetype) != -1
+            Outline = ftfunctions.FilterOutline(Outline, &filetype)
         endif
 
         # TODO make it work with vim-airline
-        return b:CurrentItem(FindClosestItem())
+        return ftfunctions.CurrentItem(FindClosestItem())
     elseif !has_key(regex.outline_include_before_exclude, &filetype)
         # If filetype is not supported, then clean up the Outline
         # and put a motivational quote in Outline variable.

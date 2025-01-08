@@ -27,15 +27,3 @@ def OutlinePreProcessInternal(outline: list<string>): list<string>
     # Actually remove dosctrings
     return outline ->filter("v:val !~ 'tmp_string'")
 enddef
-
-
-import autoload "../lib/ftfunctions/python.vim"
-
-b:OutlinePreProcessInternal = OutlinePreProcessInternal
-b:FilterOutline = python.FilterOutline
-b:CurrentItem = python.CurrentItem
-b:InverseSubstitution = python.InverseSubstitution
-
-
-# OBS! b:OutlinePreProcess (user-defined) shall be placed in the main
-# /ftplugin folder
