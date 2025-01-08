@@ -7,26 +7,26 @@ vim9script
 
 import autoload "./regex.vim"
 
-# TODO:remove
-export def CurrentItem(curr_item: string): string
-  return trim(substitute(curr_item, "(.*", "", ''))
-enddef
-
 # TODO This is the same in every function, it only changes the filetype.
 export def FilterOutline(outline: list<string>, filetype: string): list<string>
-  # echom regex.outline_include_before_exclude[filetype]
   if regex.outline_include_before_exclude[filetype]
-    outline->filter("v:val =~ "
-        \ .. string(join(regex.outline_pattern_to_include[filetype], '\|')))
+    outline
+          \ ->filter("v:val =~ "
+          \ .. string(join(regex.outline_pattern_to_include[filetype], '\|')))
+          \ ->filter("v:val !~ "
+          \ .. string(join(regex.outline_pattern_to_exclude[filetype], '\|')))
+  else
+    outline ->filter("v:val !~ "
+          \ .. string(join(regex.outline_pattern_to_exclude[filetype], '\|')))
+          \ ->filter("v:val =~ "
+          \ .. string(join(regex.outline_pattern_to_include[filetype], '\|')))
   endif
+
+
   # TODO: Add a if you want to show line numbers?
-  #
   # Substitute. OBS! There shall be a 1-1 mapping in the substitution,
   # otherwise the inverse cannot be computed!
-  echom &filetype
   if !empty(regex.outline_substitutions[filetype])
-    # UBA
-    echom "PIPPO"
     for subs in regex.outline_substitutions[filetype]
       outline ->map((idx, val) => substitute(val, keys(subs)[0], values(subs)[0], ''))
     endfor

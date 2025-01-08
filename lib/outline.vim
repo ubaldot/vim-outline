@@ -261,7 +261,7 @@ def UpdateOutline(): string
         endif
 
         # TODO make it work with vim-airline
-        return ftfunctions.CurrentItem(FindClosestItem())
+        return trim(substitute(FindClosestItem(), "(.*", "", ''))
     elseif !has_key(regex.outline_include_before_exclude, &filetype)
         # If filetype is not supported, then clean up the Outline
         # and put a motivational quote in Outline variable.
