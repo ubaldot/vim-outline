@@ -11,7 +11,7 @@ import autoload "./regex.vim"
 import autoload "./ftfunctions.vim"
 
 # Script variables
-var supported_filetypes = ['markdown', 'python', 'java', 'tex', 'vim']
+var supported_filetypes = keys(regex.outline_include_before_exclude)
 
 var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
 var Outline = [""] # It does not like [] initialization
@@ -223,8 +223,7 @@ def UpdateOutline(): string
     # If the current buffer is the outline itself then it does not make sense
     # to update the outline.
 
-    # If supported filetype
-    if has_key(regex.outline_include_before_exclude, &filetype)
+    if index(supported_filetypes, &filetype) != -1
                 \ && bufnr() != winbufnr(outline_win_id)
         # -----------------------------------
         #  Copy the whole buffer
@@ -242,7 +241,7 @@ def UpdateOutline(): string
         # User-defined pre-process function
         # TODO Is it better to call it after the internal pre-process?
         if exists('b:OutlinePreProcess') &&
-                index(keys(regex.outline_include_before_exclude), &filetype) != -1
+                index(supported_filetypes, &filetype) != -1
             # b:PreProcessOutline is a Funcref
             Outline = b:OutlinePreProcess(Outline)
         endif
@@ -263,7 +262,7 @@ def UpdateOutline(): string
 
         # TODO make it work with vim-airline
         return trim(substitute(FindClosestItem(), "(.*", "", ''))
-    elseif !has_key(regex.outline_include_before_exclude, &filetype)
+    elseif index(supported_filetypes, &filetype) == -1
         # If filetype is not supported, then clean up the Outline
         # and put a motivational quote in Outline variable.
         var idx = rand(srand()) % len(quotes.quotes)
