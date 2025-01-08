@@ -8,7 +8,6 @@ vim9script
 # Imports
 import autoload "./quotes.vim"
 import autoload "./regex.vim"
-import autoload "./ftfunctions.vim"
 
 # Script variables
 var supported_filetypes = keys(regex.outline_include_before_exclude)
@@ -116,7 +115,7 @@ def GoToDefinition()
     # substituted with 'B.
     var item_on_buffer = target_item
     if index(supported_filetypes, &filetype) != -1
-      item_on_buffer = ftfunctions.InverseSubstitution(target_item, &filetype)
+      item_on_buffer = InverseSubstitution(target_item)
     endif
 
 
@@ -137,7 +136,8 @@ enddef
 
 export def GoToOutline()
     if IsOpen()
-        win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
+      RefreshWindow()
+      win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
     endif
 enddef
 
@@ -238,26 +238,16 @@ def UpdateOutline(): string
         # -----------------------------------
         # Pre-process Outline
         # -----------------------------------
-        # User-defined pre-process function
-        # TODO Is it better to call it after the internal pre-process?
-        if exists('b:OutlinePreProcess') &&
-                index(supported_filetypes, &filetype) != -1
-            # b:PreProcessOutline is a Funcref
-            Outline = b:OutlinePreProcess(Outline)
+        if index(supported_filetypes, &filetype) != -1
+          && exists('regex.outline_pre_process[&filetype]')
+            Outline = regex.outline_pre_process[&filetype](Outline)
         endif
-
-        # Parse the buffer and populate the window
-        if exists('b:OutlinePreProcessInternal')
-            # b:PreProcessOutline is a Funcref
-            Outline = b:OutlinePreProcessInternal(Outline)
-        endif
-
 
         # -----------------------------------
         # Filter user request
         # -----------------------------------
         if index(supported_filetypes, &filetype) != -1
-            Outline = ftfunctions.FilterOutline(Outline, &filetype)
+            Outline = FilterOutline(Outline)
         endif
 
         # TODO make it work with vim-airline
@@ -311,6 +301,46 @@ export def RefreshWindow()
     endif
 enddef
 
+def FilterOutline(outline: list<string>): list<string>
+  if regex.outline_include_before_exclude[&filetype]
+    outline
+          \ ->filter("v:val =~ "
+          \ .. string(join(regex.outline_pattern_to_include[&filetype], '\|')))
+    if has_key(regex.outline_pattern_to_exclude, &filetype)
+      outline ->filter("v:val !~ "
+          \ .. string(join(regex.outline_pattern_to_exclude[&filetype], '\|')))
+    endif
+  else
+    # In this case outline_pattern_to_exclude is cannot be empty
+    outline ->filter("v:val !~ "
+          \ .. string(join(regex.outline_pattern_to_exclude[&filetype], '\|')))
+          \ ->filter("v:val =~ "
+          \ .. string(join(regex.outline_pattern_to_include[&filetype], '\|')))
+  endif
+
+  # TODO: Add a if you want to show line numbers?
+  # Substitute. OBS! There shall be a 1-1 mapping in the substitution,
+  # otherwise the inverse cannot be computed!
+  if has_key(regex.outline_substitutions, &filetype)
+    for subs in regex.outline_substitutions[&filetype]
+      outline ->map((idx, val) => substitute(val, keys(subs)[0], values(subs)[0], ''))
+    endfor
+  endif
+
+  return outline
+enddef
+
+def InverseSubstitution(outline_item: string): string
+  # Given a string in the outline, it reconstruct the string in the original
+  # file, so that the jump from the outline to the main buffer is accurate.
+  var tmp = outline_item
+  if has_key(regex.outline_inverse_substitutions, &filetype)
+    for subs in regex.outline_inverse_substitutions[&filetype]
+      tmp = tmp ->substitute(keys(subs)[0], values(subs)[0], '')
+    endfor
+  endif
+  return tmp
+enddef
 
 augroup Outline_autochange
     autocmd!
