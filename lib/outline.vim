@@ -12,6 +12,7 @@ import autoload "./ftfunctions.vim"
 
 # Script variables
 var supported_filetypes = ['markdown', 'python', 'java', 'tex', 'vim']
+
 var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
 var Outline = [""] # It does not like [] initialization
 var outline_win_id = 0
