@@ -45,19 +45,19 @@ import autoload "../lib/outline.vim"
 # \ <ScriptCmd>outline.Toggle()<cr>
 noremap <unique> <script> <Plug>OutlineToggle
       \ <ScriptCmd>outline.Toggle()<cr>
-if !hasmapto("<Plug>OutlineToggle" ) || empty(mapcheck("<F8>", "n"))
+if !hasmapto("<Plug>OutlineToggle" ) && empty(mapcheck("<F8>", "n"))
   nmap <silent> <unique> <F8> <Plug>OutlineToggle
 endif
 
 noremap <unique> <script> <Plug>OutlineRefresh
       \ <ScriptCmd>outline.RefreshWindow()<cr>
-if !hasmapto("<Plug>OutlineRefresh" ) || empty(mapcheck("<leader>l", "n"))
+if !hasmapto("<Plug>OutlineRefresh" ) && empty(mapcheck("<leader>l", "n"))
   nmap <silent> <unique> <leader>l <Plug>OutlineRefresh
 endif
 
 noremap <unique> <script> <Plug>OutlineGoToOutline
       \ <ScriptCmd>outline.GoToOutline()<cr>
-if !hasmapto("<Plug>OutlineGoToOutline" ) || empty(mapcheck("<leader>o", "n"))
+if !hasmapto("<Plug>OutlineGoToOutline" ) && empty(mapcheck("<leader>o", "n"))
   nmap <silent> <unique> <leader>o <Plug>OutlineGoToOutline
 endif
 
