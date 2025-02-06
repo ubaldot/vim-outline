@@ -9,19 +9,16 @@ A simple outline sketcher for Vim.
 ## Introduction
 
 Vim-outline parse your current buffer and slam an outline in a side-window
-based on a number of regex. That's all!
+based on a set of regex. That's all!
 
-The outline is far from being perfect, but it gives you a good idea of how
-your code is structured and it allows you to jump from one place to another.
-It is perhaps the plugin that I use more!
+If you pass a regex to `:Outline` command, then the tool will have the same
+behavior as `:global`, but here you can jump back and forth between the
+outline and the original windows. If no regex are passed, then the outline
+windows is filled depending on the `filetype` (if such a `filetype` is
+supported).
 
-At the moment the number of supported language is quite limited but for non
-supported languages, you will be entertained with some famous quotes every
-time you attempt to trigger the outline window.
-
-Nevertheless, if you really don't like the quotes, and you are good with regex
-and you want to add support for another language you are welcome to send PR:s!
-Take a look at`:h OutlineAddNewLanguages` for more details.
+The `filetype` outline is far from being perfect, but it gives you a good idea
+of how your buffer is structured. It is perhaps the plugin that I use more!
 
 ## Installation
 
@@ -36,8 +33,9 @@ That is pretty much all. No ctags, nor LSP servers required.
 
 #### Commands
 
-`:OutlineToggle` open/close a side-window that shows an outline of your
-current buffer.
+`:OutlineToggle [{regex}]` open/close a side-window that shows an outline of
+your current buffer based on `{regex}`. If `{regex}` is not passed, then the
+outline window will depends on the current buffer `filetype`.
 
 `:OutlineJump` jump on the outline window. Such a command is handy when you
 have different windows open in the same tab and you want to jump directly to
@@ -58,7 +56,7 @@ Feel free to change them at your convenience.
 
 ## Configuration
 
-You only have few tweaking variables:
+The basic configuration variables are the following:
 
 ```# Default values
 g:outline_buf_name = "Outline!"
@@ -66,13 +64,13 @@ g:outline_win_size = &columns / 4
 g:outline_enable_highlight = true
 ```
 
-See `:h OutlineConfiguration` for more info.
+See `:h OutlineConfiguration` for additional configuration variables.
 
 ## Create arbitrary outlines
 
-You can create arbitrary outlines in a very easy way. You just have to write
-your own regex. For example, assume that you want to create a custom outline
-for `cpp` filetype:
+You can create arbitrary outlines for different `filetypes` in a very easy
+way. You just have to write your own regex. For example, assume that you want
+to create a custom outline for `cpp` filetypes:
 
 #### Step 1
 

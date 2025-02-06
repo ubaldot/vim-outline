@@ -15,6 +15,7 @@ var supported_filetypes = keys(regex.outline_include_before_exclude)
 var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
 var Outline = [""] # It does not like [] initialization
 var outline_win_id = 0
+var user_regex = ""
 
 sign define CurrentItem linehl=CursorLine
 
@@ -104,7 +105,7 @@ def GoToDefinition()
     # TODO: this can be improved. What if the buffer and the Outline don't
     # match?
     var coupled_buffer = getline(1)
-    echom coupled_buffer
+    # echom coupled_buffer
     wincmd p
     if bufname() !=# coupled_buffer
       exe $'buffer {coupled_buffer}'
@@ -150,124 +151,150 @@ def Close()
         for wind in win_findbuf(bufnr($'^{g:outline_buf_name}$'))
             win_execute(wind, 'wincmd c')
         endfor
+
+        # Reset the user_regex
+        user_regex = ""
     endif
 enddef
 
 
-def Open(): number
-    # Create empty win from current buffer and give it a name
-    win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
-    outline_win_id = win_findbuf(bufnr('$'))[0]
+def Open(regex_from_user: string =""): number
+  # Create empty win from current buffer and give it a name
+  win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
+  outline_win_id = win_findbuf(bufnr('$'))[0]
 
-    # Set some stuff in the newly created window
-    win_execute(outline_win_id, 'wincmd L')
-    win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
-    win_execute(outline_win_id,
-                \    'setlocal buftype=nofile bufhidden=wipe
-                \ nobuflisted noswapfile nowrap
-                \ nonumber norelativenumber noscrollbind winfixwidth')
+  # Set some stuff in the newly created window
+  win_execute(outline_win_id, 'wincmd L')
+  win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
+  win_execute(outline_win_id,
+        \    'setlocal buftype=nofile bufhidden=wipe
+        \ nobuflisted noswapfile nowrap
+        \ nonumber norelativenumber noscrollbind winfixwidth')
 
-    # Set few w: local variables
-    # Let the Outline window to access this script by passing a function
-    setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition)
-    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> <ScriptCmd>
-                \ w:GoToDefinition()<cr>')
-    if has("gui")
-        win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse>
-                    \ <ScriptCmd>w:GoToDefinition()<cr>')
-    endif
+  # Set few w: local variables
+  # Let the Outline window to access this script by passing a function
+  setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition)
+  win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> <ScriptCmd>
+        \ w:GoToDefinition()<cr>')
+  if has("gui")
+    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse>
+          \ <ScriptCmd>w:GoToDefinition()<cr>')
+  endif
 
-    # Set title
-    var heading = $'{expand('%')}'
-    var separator = repeat('-', strlen(heading))
-    title = [heading, separator, '']
-    setbufline(winbufnr(outline_win_id), 1, title)
-    win_execute(outline_win_id, $'matchadd("WarningMsg", "{heading}")')
-    win_execute(outline_win_id, $'matchadd("WarningMsg", "{separator}")')
-    # win_execute(outline_win_id, 'matchaddpos(''Question'',
-    #             \ range(1, len(title)))')
+  # Set title
+  var heading = $'{expand('%')}'
+  var separator = repeat('-', strlen(heading))
+  title = [heading, separator, '']
+  setbufline(winbufnr(outline_win_id), 1, title)
+  win_execute(outline_win_id, $'matchadd("WarningMsg", "{heading}")')
+  win_execute(outline_win_id, $'matchadd("WarningMsg", "{separator}")')
+  # win_execute(outline_win_id, 'matchaddpos(''Question'',
+  #             \ range(1, len(title)))')
 
-    # Add some sugar
-    win_execute(outline_win_id, 'nnoremap <buffer> j j^')
-    win_execute(outline_win_id, 'nnoremap <buffer> k k^')
-    win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
-    win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
-    win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
+  # Add some sugar
+  win_execute(outline_win_id, 'nnoremap <buffer> j j^')
+  win_execute(outline_win_id, 'nnoremap <buffer> k k^')
+  win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
+  win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
+  win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
 
-    # winfixbuf
-    if exists('+winfixbuf')
-      win_execute(outline_win_id, 'setlocal winfixbuf' )
-    endif
+  # winfixbuf
+  if exists('+winfixbuf')
+    win_execute(outline_win_id, 'setlocal winfixbuf' )
+  endif
 
-    return outline_win_id
+  # Set script global-variable
+  user_regex = regex_from_user
+  return outline_win_id
 enddef
+
 
 def IsOpen(): bool
   return win_id2win(outline_win_id) > 0 ? true : false
 enddef
 
 
-export def Toggle()
-    if IsOpen()
-        Close()
-    else
-        Open()
-        RefreshWindow()
-        GoToOutline()
-    endif
+export def Toggle(regex_from_user: string = "")
+  if IsOpen()
+    Close()
+  else
+    Open(regex_from_user)
+    RefreshWindow()
+    GoToOutline()
+  endif
+enddef
+
+def UpdateOutlineFromUser()
+  Outline = getline(1, "$")
+  insert(Outline, &commentstring, 0)
+  # Filter is in-place function
+  Outline ->filter($"v:val =~ '{user_regex}'")
 enddef
 
 def UpdateOutline(): string
-    # This function only update the Outline script variable, even if the
-    # outline window is closed.
-    # If the current buffer is the outline itself then it does not make sense
-    # to update the outline.
+  # This function only update the Outline script variable, even if the
+  # outline window is closed.
+  # If the current buffer is the outline itself then it does not make sense
+  # to update the outline.
 
+  if index(supported_filetypes, &filetype) != -1
+        \ && bufnr() != winbufnr(outline_win_id)
+    # -----------------------------------
+    #  Copy the whole buffer
+    # -----------------------------------
+    # TIP: For debugging use portions of source code and see what
+    # happens, e.g. var Outline = getline(23, 98)
+    Outline = getline(1, "$")
+    # We add a comment line because parsing the first line is always
+    # problematic
+    insert(Outline, &commentstring, 0)
+
+    # -----------------------------------
+    # Pre-process Outline
+    # -----------------------------------
     if index(supported_filetypes, &filetype) != -1
-                \ && bufnr() != winbufnr(outline_win_id)
-        # -----------------------------------
-        #  Copy the whole buffer
-        # -----------------------------------
-        # TIP: For debugging use portions of source code and see what
-        # happens, e.g. var Outline = getline(23, 98)
-        Outline = getline(1, "$")
-        # We add a comment line because parsing the first line is always
-        # problematic
-        insert(Outline, &commentstring, 0)
-
-        # -----------------------------------
-        # Pre-process Outline
-        # -----------------------------------
-        if index(supported_filetypes, &filetype) != -1
-          && exists('regex.outline_pre_process[&filetype]')
-            Outline = regex.outline_pre_process[&filetype](Outline)
-        endif
-
-        # -----------------------------------
-        # Filter user request
-        # -----------------------------------
-        if index(supported_filetypes, &filetype) != -1
-            Outline = FilterOutline(Outline)
-        endif
-
-        # TODO make it work with vim-airline
-        return trim(substitute(FindClosestItem(), "(.*", "", ''))
-    elseif index(supported_filetypes, &filetype) == -1
-        # If filetype is not supported, then clean up the Outline
-        # and put a motivational quote in Outline variable.
-        var idx = rand(srand()) % len(quotes.quotes)
-        Outline = quotes.quotes[idx]
-        return ""
+        && exists('regex.outline_pre_process[&filetype]')
+      Outline = regex.outline_pre_process[&filetype](Outline)
     endif
+
+    # -----------------------------------
+    # Filter user request
+    # -----------------------------------
+    if index(supported_filetypes, &filetype) != -1
+      Outline = FilterOutline(Outline)
+    endif
+
+    # TODO make it work with vim-airline
+    # TODO: I can't remember, but this looks like an attempt to get the
+    # current function name and to be placed in the statusline?
+    # If this feature is unused, then perhaps this function shall not return
+    # anything?
+    return trim(substitute(FindClosestItem(), "(.*", "", ''))
+  elseif index(supported_filetypes, &filetype) == -1
+    # If filetype is not supported, then clean up the Outline
+    # and put a motivational quote in Outline variable.
+    SetFamousQuote()
     return ""
+  endif
+  return ""
+enddef
+
+def SetFamousQuote()
+  var idx = rand(srand()) % len(quotes.quotes)
+  Outline = quotes.quotes[idx]
 enddef
 
 export def RefreshWindow()
-    UpdateOutline()
+    if empty(user_regex)
+      UpdateOutline()
+    else
+      UpdateOutlineFromUser()
+    endif
     # To refresh a window such a window must be obviously open
     if IsOpen()
         # If what is shown in the outline window is the Outline buffer, then
         # overwrite it. If it is shown a user-buffer DON'T overwrite it!
+        # TODO This is not a problem if 'winfixbuf' option is on
         if winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
             # -----------------------------------------
             # clean outline and unlock outline buffer
