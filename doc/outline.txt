@@ -26,11 +26,12 @@ CONTENTS                                                     *OutlineContents*
 ==============================================================================
 INTRODUCTION                                          *OutlineIntroduction*
 
-Vim-outline parse the current buffer through a set of defined regex and slam
+Vim-outline parse the current buffer through a set of regex and slam
 the result in a side window. That's all!
 
-Well, in reality it is not, in-fact Vim-outline further provides you with the
-following features:
+The set of regex can be user-defined or it depends on the filetype.
+
+Vim-outline further provides you with the following features:
 
     a. Locate your current position with respect to the outline,
     b. Jump from outline entries to the corresponding buffer lines,
@@ -38,7 +39,7 @@ following features:
        database if a 'filetype' is not supported.
 
 Not so many languages are supported, but you can contribute by adding support
-for more languages, see |OutlineAddNewLanguages|.
+for more, see |OutlineAddNewLanguages|.
 
 I wrote vim-outline mainly for myself because I had some issue when using
 Vista with ALE and Tagbar is based on tags, which is a feature that I don't
@@ -49,7 +50,8 @@ What I needed was something easily configurable, fast and reliable that just
 support me to get my job done, no matter if lacks bells and whistles and if
 the outcome is just an imprecise sketch of my buffer with noisy entries.
 
-How that works internally?
+How it works internally?
+
 It first |filter()| the lines of your buffer to select what you want to show,
 and then it |substitute()| the filtered results to give a nice
 appearance. Both the filtering and substitutions are based on a set of regex
@@ -72,15 +74,14 @@ That is pretty much all. No ctags, nor LSP servers required.
 USAGE                                                     *OutlineUsage*
 
                                                         *:OutlineToggle*
-Run |:OutlineToggle| to open/close a side-window with an outline of your
-current buffer.
+Run |:OutlineToggle| [{regex}] to open/close a side-window with an outline of your
+current buffer. If {regex} is not passed, the the outline will be filled
+depending on the filetype.
 
                                                         *:OutlineGoToOutline*
 Run |:OutlineGoToOutline| to jump in the outline window.
-This command comes handy when you have many windows open in the same tab
+This command comes handy when you have many windows opened in the same tab
 and you want to jump directly to the outline window with one key-press.
-It is suggested that you run |:OutlineRefresh| before jumping in the outline
-window.
 
                                                         *:OutlineRefresh*
 Run |:OutlineRefresh| to update both the outline and the highlighting.
@@ -100,15 +101,17 @@ Jump into the outline side-window independently of the current buffer.
 ==============================================================================
 CUSTOMIZATION                                           *OutlineCustomization*
 
-The Outline depends on a set of predefined regular expressions that depends on
-the |'filetype'|. However, you can overwrite the list of regex through the
-dictionaries  |g:outline_pattern_to_include|,
+The Outline depends either from a regular expression passed by a user or on a
+set of predefined regular expressions that depends on
+the |'filetype'|. However, you can overwrite the list of filteype-dependent
+regex through the dictionaries  |g:outline_pattern_to_include|,
 |g:outline_substitutions|, |g:outline_inverse_substitutions|
 |g:outline_include_before_exclude|, |g:outline_pattern_to_exclude| and
 |g:outline_pre_process| dictionaries.
 It sounds a lot, but it is not. Believe me! Take a look at the source code.
 
-You can further use vim-outline engine for creating arbitrary outlines.
+You can further use vim-outline engine for creating arbitrary outlines for
+specific filetypes.
 Take a look at |OutlineArbitraryOutlines| to discover how to do that.
 
 ==============================================================================
@@ -221,10 +224,8 @@ To add a new language, you simply have to update the dictionaries in
 ==============================================================================
 ARBITRARY OUTLINES                                 *OutlineArbitraryOutlines*
 
-You can create arbitrary outlines, as explained next.
-We assume that you want to do this for `cpp` |'filetype'| (this can be any
-|filetype| in reality)
-
+You can create arbitrary outlines for specific, as explained next.
+We assume that you want to do this for `cpp` |'filetype'|.
 
 #### Step 1
 Add the following lines to your |.vimrc|
