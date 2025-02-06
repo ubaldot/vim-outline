@@ -65,13 +65,13 @@ endif
 # Commands
 # --------------------------
 if !exists(":OutlineToggle")
-  command OutlineToggle <ScriptCmd>outline.Toggle()
+  command -nargs=? OutlineToggle outline.Toggle(<f-args>)
 endif
 
 if !exists(":OutlineRefresh")
-  command OutlineRefresh <ScriptCmd>outline.RefreshWindow()
+  command OutlineRefresh outline.RefreshWindow()
 endif
 
 if !exists(":OutlineGoToOutline")
-  command OutlineGoToOutline <ScriptCmd>outline.GoToOutline()
+  command OutlineGoToOutline outline.GoToOutline()
 endif
