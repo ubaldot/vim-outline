@@ -8,16 +8,16 @@ A simple outline sketcher for Vim.
 
 ## Introduction
 
-Vim-outline parse your current buffer and slam an outline in a side-window.
-That's all!
+Vim-outline parse your current buffer and slam an outline in a side-window
+based on a number of regex. That's all!
 
 The outline is far from being perfect, but it gives you a good idea of how
 your code is structured and it allows you to jump from one place to another.
 It is perhaps the plugin that I use more!
 
-At the moment the supported language are `python`, `vim9script`, `tex` and
-`markdown`. For non supported languages, you will be entertained with some
-famous quotes every time you attempt to trigger the outline window.
+At the moment the number of supported language is quite limited but for non
+supported languages, you will be entertained with some famous quotes every
+time you attempt to trigger the outline window.
 
 Nevertheless, if you really don't like the quotes, and you are good with regex
 and you want to add support for another language you are welcome to send PR:s!
@@ -70,28 +70,11 @@ See `:h OutlineConfiguration` for more info.
 
 ## Create arbitrary outlines
 
-What about slamming `:global` results in the Outline window such that when you
-hit enter on an Outline line you jump to the corresponding line in the buffer?
-
-You can do that with a little hack, as explained next. We assume that you want
-to do this game for `cpp` filetypes.
+You can create arbitrary outlines in a very easy way. You just have to write
+your own regex. For example, assume that you want to create a custom outline
+for `cpp` filetype:
 
 #### Step 1
-
-Create a `cpp.vim` file in `./ftplugin` with the following content
-
-```
-vim9script
-
-def FilterOutline(outline: list<string>): list<string>
-    return outline ->filter("v:val =~ "
-    \ .. string(join(g:outline_pattern_to_include["cpp"], '|')))
-enddef
-
-b:FilterOutline = FilterOutline
-```
-
-#### Step 2
 
 Add the following lines to your `.vimrc`
 
@@ -104,9 +87,8 @@ Add the following lines to your `.vimrc`
 
 Comment each line that you want to keep in the outline with `// <KEEP-ME!>`.
 
-At this point, call `:OutlineToggle` (or hit <F8> if you are using the default
-mapping) and see what happens. Jumps and localization functions should work
-automatically.
+At this point, call `:OutlineToggle` and see what happens. Jumps and
+localization functions should work automatically.
 
 ## Help
 

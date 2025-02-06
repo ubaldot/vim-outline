@@ -12,7 +12,6 @@ OutlineMappings	outline.txt	/*OutlineMappings*
 OutlineNewLanguages	outline.txt	/*OutlineNewLanguages*
 OutlineRequirements	outline.txt	/*OutlineRequirements*
 OutlineUsage	outline.txt	/*OutlineUsage*
-b:OutlinePreProcess	outline.txt	/*b:OutlinePreProcess*
 g:outline_autoclose	outline.txt	/*g:outline_autoclose*
 g:outline_buf_name	outline.txt	/*g:outline_buf_name*
 g:outline_enable_highlight	outline.txt	/*g:outline_enable_highlight*
@@ -20,6 +19,7 @@ g:outline_include_before_exclude	outline.txt	/*g:outline_include_before_exclude*
 g:outline_inverse_substitutions	outline.txt	/*g:outline_inverse_substitutions*
 g:outline_pattern_to_exclude	outline.txt	/*g:outline_pattern_to_exclude*
 g:outline_pattern_to_include	outline.txt	/*g:outline_pattern_to_include*
+g:outline_pre_process	outline.txt	/*g:outline_pre_process*
 g:outline_substitutions	outline.txt	/*g:outline_substitutions*
 g:outline_win_size	outline.txt	/*g:outline_win_size*
 outline.txt	outline.txt	/*outline.txt*

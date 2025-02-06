@@ -13,7 +13,7 @@ vim9script
 #      regex are disjoint. But in practice this never happens, so you must
 #      specify if you want to first exclude or include a pattern from
 #      filter().
-#   2. Subsitutution shall be bijectives. That is, if b = a->substitute(X, Y,
+#   2. Substitution shall be bijectives. That is, if b = a->substitute(X, Y,
 #      ''), then you must secure that a = b->substitute(Y, X, '') otherwise
 #      you won't be able to jump from a line of the Outline to the correct
 #      line on the associated buffer.
@@ -21,7 +21,7 @@ vim9script
 export var outline_include_before_exclude = {
   python: false,
   vim: false,
-  java: false,
+  java: true,
   tex: false,
   markdown: true,
 }
@@ -39,16 +39,11 @@ export var outline_pattern_to_include = {
 
 export var outline_pattern_to_exclude = {
   python: ['^\s*def\s_\{-1,2}'],
-  vim: ['^\s*#'],
-  tex: [],
-  markdown: [],
-  java: []
+  vim: ['^\s*#']
 }
 
 # For substitute()
 export var outline_substitutions = {
-  python: [],
-  vim: [],
   tex: [{'\\section{\(.*\)}': '\1'},
     {'\\subsection{\(.*\)}': '  \1'},
     {'\\subsubsection{\(.*\)}': '    \1'},
@@ -58,12 +53,10 @@ export var outline_substitutions = {
     {'\v^(\s*)(#)': '\2'},
     {'^#\+': "\\=repeat(' ', 2 * len(submatch(0)))"},
     {'^\s\{3}': ''}
-  ]
+  ],
 }
 
 export var outline_inverse_substitutions = {
-  python: [],
-  vim: [],
   tex: [{'\v^(\s?\w.*)$': '\\\\section{\1}'},
     {'\v^  (.*)$': '\\\\subsection{\1}'},
     {'\v^    (.*)$': '\\\\subsubsection{\1}'},
@@ -71,7 +64,39 @@ export var outline_inverse_substitutions = {
   ],
   markdown: [
     {'^\s*': "\\='#' .. repeat('#', len(submatch(0)) / 2) .. ' '"},
-  ]
+  ],
+}
+
+# Pre-process functions
+
+def RemoveDocstrings(outline: list<string>): list<string>
+    # Docstrings removal
+    # Init
+    var ii = 0
+    var is_docstring = false
+
+    # Iteration
+    # Most likely the user won't have the value of tmp_string
+    # in any of his python comment or docstrings
+    var tmp_string = "<hshnnTejwqik93la,AMK3N2MNMAKPD+03mn2nhkalpdpk3nsla>"
+    for item in outline
+        if item =~ '.*""".*"""' # Regular expression for finding docstrings
+            outline[ii] = tmp_string
+        elseif item =~ '"""' && item !~ '.*""".*"""'
+            outline[ii] = tmp_string
+            is_docstring = !is_docstring
+        elseif is_docstring
+            outline[ii] = tmp_string
+        endif
+        ii = ii + 1
+    endfor
+
+    # Actually remove dosctrings
+    return outline ->filter("v:val !~ 'tmp_string'")
+enddef
+
+export var outline_pre_process = {
+  python: RemoveDocstrings,
 }
 
 # User extensions.
@@ -96,4 +121,8 @@ endif
 # Each item is a list of substitutions to be used in order.
 if exists('g:outline_inverse_substitutions')
   extend(outline_inverse_substitutions, g:outline_inverse_substitutions)
+endif
+
+if exists('g:outline_pre_process')
+  extend(outline_pre_process, g:outline_pre_process)
 endif
