@@ -115,7 +115,7 @@ def GoToDefinition()
     # OBS! It works only if the substitution is 1-1, i.e. 'exactly A' is
     # substituted with 'B.
     var item_on_buffer = target_item
-    if index(supported_filetypes, &filetype) != -1
+    if index(supported_filetypes, &filetype) != -1 && empty(user_regex)
       item_on_buffer = InverseSubstitution(target_item)
     endif
 
