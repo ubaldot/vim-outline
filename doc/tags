@@ -1,6 +1,7 @@
 :OutlineGoToOutline	outline.txt	/*:OutlineGoToOutline*
 :OutlineRefresh	outline.txt	/*:OutlineRefresh*
 :OutlineToggle	outline.txt	/*:OutlineToggle*
+OutlineAddNewLanguages	outline.txt	/*OutlineAddNewLanguages*
 OutlineArbitraryOutlines	outline.txt	/*OutlineArbitraryOutlines*
 OutlineConfiguration	outline.txt	/*OutlineConfiguration*
 OutlineContents	outline.txt	/*OutlineContents*
@@ -9,7 +10,6 @@ OutlineCustomization	outline.txt	/*OutlineCustomization*
 OutlineIntroduction	outline.txt	/*OutlineIntroduction*
 OutlineLicense	outline.txt	/*OutlineLicense*
 OutlineMappings	outline.txt	/*OutlineMappings*
-OutlineNewLanguages	outline.txt	/*OutlineNewLanguages*
 OutlineRequirements	outline.txt	/*OutlineRequirements*
 OutlineUsage	outline.txt	/*OutlineUsage*
 g:outline_autoclose	outline.txt	/*g:outline_autoclose*

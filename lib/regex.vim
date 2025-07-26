@@ -2,18 +2,19 @@ vim9script
 
 # This file contains regex for filter out the current buffer and create catchy
 # outline. Generally, the process happens in two steps:
-#   1. filter
-#   2. substitute
+#   1. filter -> capture the lines that you want to place in the outline,
+#   2. substitute -> the lines may be visually ugly, so you can make them nicer
+#      before you place them in the Outline buffer.
 #
 # Sometimes you also need some sort of pre-processing, see e.g. python for
 # removing the docstrings.
 #
 # However, there are some gotchas:
-#   1. 'include' and 'exclude' operators are commutative if, and only if the
-#      regex are disjoint. But in practice this never happens, so you must
-#      specify if you want to first exclude or include a pattern from
-#      filter().
-#   2. Substitution shall be bijectives. That is, if b = a->substitute(X, Y,
+#   1. 'include' and 'exclude' operators are commutative (i.e. it does not
+#      matter who comes first) if, and only if the regex are disjoint.
+#      But in practice this never happens, so you must specify if you want
+#      first exclude or include a pattern from filter().
+#   2. Substitution shall be bijections. That is, if b = a->substitute(X, Y,
 #      ''), then you must secure that a = b->substitute(Y, X, '') otherwise
 #      you won't be able to jump from a line of the Outline to the correct
 #      line on the associated buffer.
