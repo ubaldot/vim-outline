@@ -24,6 +24,8 @@ export var outline_include_before_exclude = {
   java: true,
   tex: false,
   markdown: true,
+  go: true,
+  odin: true,
 }
 
 # For filter()
@@ -34,7 +36,9 @@ export var outline_pattern_to_include = {
         \ '^\s*sign ' ],
   tex: ["^\\\\\\w*section"],
   markdown: ['^\s*#'],
-  java: ['^\s*class', '^\s*public', '^\s*private', '^\s*protected']
+  java: ['^\s*class', '^\s*public', '^\s*private', '^\s*protected'],
+  go: ['^func ', '^type '],
+  odin: ['\v^[a-zA-Z0-9]+ :: '],
 }
 
 export var outline_pattern_to_exclude = {
