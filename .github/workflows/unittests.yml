@@ -8,7 +8,7 @@ jobs:
       matrix:
         vim:
           - nightly
-          - v9.1.0000
+          - v9.1.1027
         os: [ubuntu-latest, macos-latest]
 
     steps:
@@ -37,7 +37,7 @@ jobs:
       matrix:
         vim:
           - nightly
-          - v9.1.0000
+          - v9.1.1027
 
     steps:
       - name: Setup Vim
