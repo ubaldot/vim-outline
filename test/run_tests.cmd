@@ -52,7 +52,7 @@ if %ERRORLEVEL% EQU 0 (
 
 REM Check test results
 echo ----------------------------------
-echo MARKDOWN_EXTRAS unit-test results:
+echo Outline unit-test results:
 echo/
 type results.txt
 echo ----------------------------------
