@@ -1,6 +1,6 @@
 @echo off
 
-REM Script to run the unit-tests for the MARKDOWN_EXTRAS Vim plugin on MS-Windows
+REM Script to run the unit-tests for the Outline Vim plugin on MS-Windows
 
 SETLOCAL
 REM Define the paths and files
@@ -16,6 +16,7 @@ REM
     echo set runtimepath+=..
     echo filetype plugin indent on
     echo syntax on
+    echo set nocompatible
 ) >> "%VIMRC%"
 
 SET "VIM_CMD=%VIMPRG% --clean -Es -u %VIMRC% -i NONE --not-a-term"
@@ -33,11 +34,11 @@ type "%VIMRC%"
 echo/
 
 REM Run Vim with the specified configuration and additional commands
-SET "TEST_FILES=['test_markdown_extras.vim', 'test_utils.vim', 'test_regex.vim', 'test_links.vim']"
+SET "TEST_FILES=['test_outline.vim']"
 %VIM_CMD% -c "vim9cmd g:TestFiles =  %TEST_FILES%" -S "runner.vim"
 REM If things go wrong uncomment the following line and see e.g. if the
 REM vimrc_for_test is valid, check :messages and so on.
-REM %VIM_CMD% -c "vim9cmd g:TestName = 'test_markdown_extras.vim'" -c "e README.md"
+REM %VIM_CMD% -c "vim9cmd g:TestName = 'test_outline.vim'" -c "e README.md"
 
 REM Check the exit code of Vim command
 if %ERRORLEVEL% EQU 0 (
