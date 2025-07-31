@@ -49,10 +49,10 @@ echo ""
 # -i: don't use or save and viminfo file
 # --not-a-term: non-interactive
 #
-VIM_CMD="$VIM_PRG --clean -Es -u $VIMRC -i NONE --not-a-term"
+# VIM_CMD="$VIM_PRG --clean -Es -u $VIMRC -i NONE --not-a-term"
 #
 # Use the following for checking what is going on
-# VIM_CMD="$VIM_PRG --clean -u $VIMRC -i NONE --not-a-term"
+VIM_CMD="$VIM_PRG --clean -u $VIMRC -i NONE --not-a-term"
 
 # Add test files here: OBS! <space> after ','
 TESTS_LIST="['test_outline.vim']"

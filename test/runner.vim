@@ -78,6 +78,6 @@ for test_file in g:TestFiles
 	endtry
 endfor
 
-qall!
+# qall!
 
 # vim: shiftwidth=2 softtabstop=2 noexpandtab
