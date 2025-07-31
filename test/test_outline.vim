@@ -30,6 +30,7 @@ enddef
 def g:Test_Python()
   Generate_testfile(python_code, python_file)
   exe $"edit {python_file}"
+  WaitForAssert(() => assert_equal('python', &filetype))
 
   OutlineToggle
   WaitForAssert(() => assert_equal(2, winnr('$')))
@@ -71,7 +72,7 @@ END
   assert_equal(expected_curpos, actual_curpos)
 
   # Close Outline
-  OutlineToggle
+  exe "OutlineToggle"
   assert_equal(1, winnr('$'))
 
   :%bw!

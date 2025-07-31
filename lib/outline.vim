@@ -171,6 +171,7 @@ def Open(regex_from_user: string =""): number
         \ nobuflisted noswapfile nowrap
         \ nonumber norelativenumber noscrollbind winfixwidth')
 
+
   # Set few w: local variables
   # Let the Outline window to access this script by passing a function
   setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition)
@@ -190,7 +191,6 @@ def Open(regex_from_user: string =""): number
   win_execute(outline_win_id, $'matchadd("WarningMsg", "{separator}")')
   # win_execute(outline_win_id, 'matchaddpos(''Question'',
   #             \ range(1, len(title)))')
-
   # Add some sugar
   win_execute(outline_win_id, 'nnoremap <buffer> j j^')
   win_execute(outline_win_id, 'nnoremap <buffer> k k^')
@@ -326,6 +326,7 @@ export def RefreshWindow()
                         \ .. "re-create a new one."
         endif
     endif
+
 enddef
 
 def FilterOutline(outline: list<string>): list<string>

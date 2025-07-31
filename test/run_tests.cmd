@@ -19,7 +19,8 @@ REM
     echo set nocompatible
 ) >> "%VIMRC%"
 
-SET "VIM_CMD=%VIMPRG% --clean -Es -u %VIMRC% -i NONE --not-a-term"
+REM Note that the vim starting command may change depending of the plugin!
+SET "VIM_CMD=%VIMPRG% --clean -u %VIMRC% -i NONE --not-a-term"
 
 REM Check if the vimrc file was created successfully
 if NOT EXIST "%VIMRC%" (
