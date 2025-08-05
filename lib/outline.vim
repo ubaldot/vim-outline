@@ -10,7 +10,7 @@ import autoload "./quotes.vim"
 import autoload "./regex.vim"
 
 # Script variables
-var supported_filetypes = keys(regex.outline_include_before_exclude)
+var supported_filetypes = keys(regex.patterns)
 
 var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
 var Outline = [""] # It does not like [] initialization
@@ -18,6 +18,10 @@ var outline_win_id = 0
 var user_regex = ""
 
 sign define CurrentItem linehl=CursorLine
+
+export def Echoerr(msg: string)
+  echohl ErrorMsg | echom $'[helpme] {msg}' | echohl None
+enddef
 
 def CountIndexInstances(target_item: string): list<any>
         # Return the line numbers where target_item appears in the Outline
@@ -115,9 +119,9 @@ def GoToDefinition()
     # OBS! It works only if the substitution is 1-1, i.e. 'exactly A' is
     # substituted with 'B.
     var item_on_buffer = target_item
-    if index(supported_filetypes, &filetype) != -1 && empty(user_regex)
-      item_on_buffer = InverseSubstitution(target_item)
-    endif
+    # if index(supported_filetypes, &filetype) != -1 && empty(user_regex)
+    #   item_on_buffer = InverseSubstitution(target_item)
+    # endif
 
 
     # 2. Jump back to the main buffer and search for the selected item.
@@ -252,10 +256,10 @@ def UpdateOutline(): string
     # -----------------------------------
     # Pre-process Outline
     # -----------------------------------
-    if index(supported_filetypes, &filetype) != -1
-        && exists('regex.outline_pre_process[&filetype]')
-      Outline = regex.outline_pre_process[&filetype](Outline)
-    endif
+    # if index(supported_filetypes, &filetype) != -1
+    #     && exists('regex.outline_pre_process[&filetype]')
+    #   Outline = regex.outline_pre_process[&filetype](Outline)
+    # endif
 
     # -----------------------------------
     # Filter user request
@@ -329,35 +333,28 @@ export def RefreshWindow()
 
 enddef
 
-def FilterOutline(outline: list<string>): list<string>
-  if regex.outline_include_before_exclude[&filetype]
-    outline
-          \ ->filter("v:val =~ "
-          \ .. string(join(regex.outline_pattern_to_include[&filetype], '\|')))
-    if has_key(regex.outline_pattern_to_exclude, &filetype)
-      outline ->filter("v:val !~ "
-          \ .. string(join(regex.outline_pattern_to_exclude[&filetype], '\|')))
-    endif
+def FilterOutline(lines: list<string>): list<string>
+  # Internal state to help state-less lambda functions
+  var state = false
+  var outline = []
+  if index(keys(regex.patterns), &filetype) != -1
+    outline = lines
+    for lambda in regex.patterns[&filetype]
+        outline->filter(lambda)
+    endfor
   else
-    # In this case outline_pattern_to_exclude is cannot be empty
-    outline ->filter("v:val !~ "
-          \ .. string(join(regex.outline_pattern_to_exclude[&filetype], '\|')))
-          \ ->filter("v:val =~ "
-          \ .. string(join(regex.outline_pattern_to_include[&filetype], '\|')))
+    Echoerr($"Filetype '{&filetype}' not supported")
   endif
 
-  # TODO: Add a if you want to show line numbers?
-  # Substitute. OBS! There shall be a 1-1 mapping in the substitution,
-  # otherwise the inverse cannot be computed!
-  if has_key(regex.outline_substitutions, &filetype)
-    for subs in regex.outline_substitutions[&filetype]
+  if index(keys(regex.sanitizers), &filetype) != -1
+    for subs in regex.sanitizers[&filetype]
       outline ->map((idx, val) => substitute(val, keys(subs)[0], values(subs)[0], ''))
     endfor
   endif
-
   return outline
 enddef
 
+# TODO Remove me
 def InverseSubstitution(outline_item: string): string
   # Given a string in the outline, it reconstruct the string in the original
   # file, so that the jump from the outline to the main buffer is accurate.

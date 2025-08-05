@@ -14,7 +14,7 @@ def Cleanup_testfile(src_name: string)
 enddef
 
 # Tests start here
-def g:Test_Python()
+def g:Test_python()
 
   const python_file = 'python_testfile.py'
   const python_code =<< trim END
@@ -125,8 +125,7 @@ class Cat:
     def speak(self):
 END
 
-  messages clear
-  echom assert_equal(expected_outline, actual_outline)
+  assert_equal(expected_outline, actual_outline)
 
   # test jump
   normal! gg
@@ -137,26 +136,250 @@ END
   # GoToDefinition()
   var expected_buffer = "python_testfile.py"
   var actual_buffer = bufname()
-  echom assert_equal(expected_buffer, actual_buffer)
+  assert_equal(expected_buffer, actual_buffer)
 
   var expected_curpos = [0, 39, 1, 0]
   var actual_curpos = getpos('.')
-  echom assert_equal(expected_curpos, actual_curpos)
+  assert_equal(expected_curpos, actual_curpos)
 
   # Jump back
   OutlineGoToOutline
   expected_buffer = "Outline!"
   actual_buffer = bufname()
-  echom assert_equal(expected_buffer, actual_buffer)
+  assert_equal(expected_buffer, actual_buffer)
 
   expected_curpos = [0, 7, 5, 0]
   actual_curpos = getpos('.')
-  echom assert_equal(expected_curpos, actual_curpos)
+  assert_equal(expected_curpos, actual_curpos)
 
   # Close Outline
   exe "OutlineToggle"
-  echom assert_equal(1, winnr('$'))
+  assert_equal(1, winnr('$'))
 
   :%bw!
   Cleanup_testfile(python_file)
+enddef
+
+def g:Test_LaTeX()
+
+  const latex_file = 'latex_testfile.tex'
+  const latex_code =<< trim END
+% This is a sample LaTeX document
+\documentclass{article}
+
+% Packages
+\usepackage{amsmath}  % for math
+\usepackage{graphicx} % for figures
+
+% Title
+\title{An Example LaTeX Document}
+\author{Jane Doe}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+% Introduction
+\section{Introduction}
+This document provides a basic example of a LaTeX file. We include sections,
+math, lists, and comments.
+
+% Main Content
+\section{Main Content}
+
+\subsection{Mathematical Expressions}
+Here is a simple equation:
+\[
+E = mc^2
+\]
+
+We can also write inline math such as $a^2 + b^2 = c^2$.
+
+\subsection{Lists}
+
+\subsubsection{Itemized List}
+\begin{itemize}
+  \item Apples
+  \item Bananas
+  \item Cherries
+\end{itemize}
+
+\subsubsection{Enumerated List}
+\begin{enumerate}
+  \item First item
+  \item Second item
+  \item Third item
+\end{enumerate}
+
+\subsection{Figures}
+Here we include a placeholder for a figure:
+
+\begin{figure}[h]
+  \centering
+  % \includegraphics[width=0.5\textwidth]{example.png}
+  \caption{An example figure (image not included).}
+  \label{fig:example}
+\end{figure}
+
+\section{Conclusion}
+This is a basic structure of a LaTeX document. You can expand it by adding
+tables, references, and custom formatting as needed.
+
+% End of document
+\end{document}
+END
+
+  var expected_outline =<< END
+latex_testfile.tex
+------------------
+
+Introduction
+Main Content
+  Mathematical Expressions
+  Lists
+    Itemized List
+    Enumerated List
+  Figures
+Conclusion
+END
+
+  Generate_testfile(latex_code, latex_file)
+  exe $"edit {latex_file}"
+  WaitForAssert(() => assert_equal('tex', &filetype))
+
+  OutlineToggle
+  WaitForAssert(() => assert_equal(2, winnr('$')))
+  const actual_outline = getline(1, '$')
+  assert_equal(expected_outline, actual_outline)
+
+  # Close Outline
+  exe "OutlineToggle"
+  assert_equal(1, winnr('$'))
+
+  :%bw!
+  Cleanup_testfile(latex_file)
+enddef
+
+def g:Test_markdown()
+
+  const markdown_file = 'markdown_testfile.md'
+  const markdown_code =<< trim END
+# Project Title
+
+Welcome to this sample Markdown document. This is an example to show different
+heading levels.
+
+## Introduction
+
+This section introduces the topic.
+
+Markdown supports:
+
+- Plain text
+- _Italic_, **bold**, and **_bold italic_**
+- `inline code`
+
+## Installation
+
+### Requirements
+
+- Python 3.11
+- Git
+- Make
+
+### Steps
+
+1. Clone the repository
+2. Install dependencies
+3. Run `make install`
+
+## Usage
+
+### Command Line
+
+```bash
+python main.py --input data.csv
+```
+END
+
+const expected_outline =<< END
+markdown_testfile.md
+--------------------
+
+Project Title
+  Introduction
+  Installation
+    Requirements
+    Steps
+  Usage
+    Command Line
+END
+
+  Generate_testfile(markdown_code, markdown_file)
+  exe $"edit {markdown_file}"
+  WaitForAssert(() => assert_equal('markdown', &filetype))
+
+  OutlineToggle
+  WaitForAssert(() => assert_equal(2, winnr('$')))
+  const actual_outline = getline(1, '$')
+  assert_equal(expected_outline, actual_outline)
+
+  # Close Outline
+  exe "OutlineToggle"
+  assert_equal(1, winnr('$'))
+
+  :%bw!
+  Cleanup_testfile(markdown_file)
+enddef
+
+def g:Test_vim()
+
+  const vim_file = 'vim_testfile.vim'
+  const vim_code =<< trim END
+vim9script
+
+# Define a global variable
+var counter = 0
+
+# Define a function to increment and display the counter
+def IncrementCounter()
+  counter += 1
+  echo 'Counter is now: ' .. counter
+enddef
+
+# Define a command that calls the function
+command Increment call IncrementCounter()
+
+# Define a mapping in normal mode to call the command
+nnoremap <leader>i :Increment<cr>
+
+# Print a message when the script is sourced
+echo 'Vim9 script loaded. Press <leader>i to increment the counter.'
+END
+
+const expected_outline =<< END
+vim_testfile.vim
+----------------
+
+def IncrementCounter()
+command Increment call IncrementCounter()
+nnoremap <leader>i :Increment<cr>
+END
+
+  Generate_testfile(vim_code, vim_file)
+  exe $"edit {vim_file}"
+  WaitForAssert(() => assert_equal('vim', &filetype))
+
+  OutlineToggle
+  WaitForAssert(() => assert_equal(2, winnr('$')))
+  const actual_outline = getline(1, '$')
+  assert_equal(expected_outline, actual_outline)
+
+  # Close Outline
+  exe "OutlineToggle"
+  assert_equal(1, winnr('$'))
+
+  :%bw!
+  Cleanup_testfile(vim_file)
 enddef
