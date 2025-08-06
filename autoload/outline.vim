@@ -85,6 +85,8 @@ def GoToDefinition()
 
   # Jump to the correct line in the calling buffer
   cursor(Outline_mapping[curr_line_nr - 1], 1)
+  # Force jump list
+  normal! m'
 
   # Highlight where did you jump on the Outline window
   if !g:outline_autoclose
@@ -95,6 +97,8 @@ enddef
 export def GoToOutline()
   if IsOpen()
     RefreshWindow()
+    # Force jump list
+    normal! m'
     win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
   endif
 enddef
