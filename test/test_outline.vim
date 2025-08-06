@@ -386,7 +386,6 @@ enddef
 
 
 def g:Test_java()
-
   const java_file = 'java_testfile.java'
   const java_code =<< trim END
 // File: SampleOutlineTest.java
@@ -530,8 +529,8 @@ END
   exe "OutlineToggle"
   assert_equal(1, winnr('$'))
 
-  :%bw!
-  Cleanup_testfile(java_file)
+  # :%bw!
+  # Cleanup_testfile(java_file)
 enddef
 
 def g:Test_go()

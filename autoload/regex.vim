@@ -48,7 +48,7 @@ export var patterns = {
   odin: [(_, val) => val =~ '\v^[a-zA-Z0-9]+ :: ']
 }
 
-# For substitute()
+# For having a nice layout
 export var sanitizers = {
   tex: [{'\\section{\(.*\)}': '\1'},
     {'\\subsection{\(.*\)}': '  \1'},

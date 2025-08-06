@@ -35,7 +35,6 @@ if !exists('g:outline_autoclose')
   g:outline_autoclose = false
 endif
 
-
 # --------------------------
 # Mappings
 # --------------------------

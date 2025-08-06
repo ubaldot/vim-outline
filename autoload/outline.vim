@@ -1,18 +1,13 @@
 vim9script
 
-# ========================================
-# Everything happens in the current buffer
-# with the exception of GoToDefinition()
-# ========================================
-
 # Imports
 import autoload "./quotes.vim"
 import autoload "./regex.vim"
 
 # Script variables
-var supported_filetypes = keys(regex.patterns)
+const supported_filetypes = keys(regex.patterns)
 
-var title: list<string> = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
+var title: list<string> = []
 var Outline: list<string> = [""] # It does not like [] initialization
 var Outline_mapping: list<number> = []
 var outline_win_id: number = 0
@@ -20,23 +15,29 @@ var user_regex: string = ""
 
 sign define CurrentItem linehl=CursorLine
 
-export def Echoerr(msg: string)
-  echohl ErrorMsg | echom $'[helpme] {msg}' | echohl None
+def Echoerr(msg: string)
+  echohl ErrorMsg | echom $'[vim-outline] {msg}' | echohl None
+enddef
+
+def IsSupportedFiletype(): bool
+  return index(supported_filetypes, &filetype) != -1
 enddef
 
 # Script functions
-# TODO Modify: you have the exact line number
 def HighlightOutlineLine(line_nr: number)
-  # Highlight target_item (aka closest item) in the outline window
+  # Highlight target_item in the outline window
+  # line_nr is respect to the Outline! window.
   win_execute(outline_win_id, 'setlocal modifiable noreadonly')
 
   setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
+
   win_execute(outline_win_id,
     "sign_unplace('', {buffer: g:outline_buf_name}) ")
   win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
+
   win_execute(outline_win_id,
     'sign_place(w:line_nr, "",  "CurrentItem", '
-   .. ' g:outline_buf_name, {"lnum": w:line_nr})')
+       .. ' g:outline_buf_name, {"lnum": w:line_nr})')
 
   win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 enddef
@@ -62,7 +63,7 @@ def FindClosestItemLine(): number
     endif
   endfor
 
-  # If the search towards the top hit 0, return "".
+  # If the search towards the top hit 0, return 0.
   # Otherwise, return found_item.
   if dist_min != curr_line_nr
     return found_line
@@ -72,25 +73,29 @@ def FindClosestItemLine(): number
 enddef
 
 def GoToDefinition()
-  messages clear
+  # You are in the Outline window
   var curr_line_nr = max([1, line('.') - len(title)])
 
+  # OBS! If the first line of the outline is not the buffer name, then things
+  # won't work any longer
   var coupled_buffer = getline(1)
-  # echom coupled_buffer
   wincmd p
-  if bufname() !=# coupled_buffer
-    exe $'buffer {coupled_buffer}'
-  endif
+  exe $'buffer {coupled_buffer}'
 
+  # Jump to the correct line in the calling buffer
   cursor(Outline_mapping[curr_line_nr - 1], 1)
 
-  # TODO
+  # Highlight where did you jump on the Outline window
   if !g:outline_autoclose
     HighlightOutlineLine(curr_line_nr + len(title))
   endif
 enddef
 
 export def GoToOutline()
+  if !IsSupportedFiletype()
+    Echoerr("unsupported filetype")
+    return
+  endif
   if IsOpen()
     RefreshWindow()
     win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
@@ -111,6 +116,15 @@ def Close()
   endif
 enddef
 
+def SetTitle()
+  const heading = $'{expand('%')}'
+  const separator = repeat('-', strlen(heading))
+  title = [heading, separator, '']
+
+  setbufline(winbufnr(outline_win_id), 1, title)
+  win_execute(outline_win_id, $'matchadd("WarningMsg", "{heading}")')
+  win_execute(outline_win_id, $'matchadd("WarningMsg", "{separator}")')
+enddef
 
 def Open(regex_from_user: string =""): number
   # Create empty win from current buffer and give it a name
@@ -121,30 +135,22 @@ def Open(regex_from_user: string =""): number
   win_execute(outline_win_id, 'wincmd L')
   win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
   win_execute(outline_win_id,
-        \    'setlocal buftype=nofile bufhidden=wipe
-        \ nobuflisted noswapfile nowrap
-        \ nonumber norelativenumber noscrollbind winfixwidth')
-
+        'setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap'
+       .. ' nonumber norelativenumber noscrollbind winfixwidth')
 
   # Set few w: local variables
   # Let the Outline window to access this script by passing a function
   setwinvar(win_id2win(outline_win_id), "GoToDefinition", GoToDefinition)
-  win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> <ScriptCmd>
-        \ w:GoToDefinition()<cr>')
+  win_execute(outline_win_id, 'nnoremap <buffer> <silent> <enter> <ScriptCmd>'
+        .. ' w:GoToDefinition()<cr>')
   if has("gui")
-    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse>
-          \ <ScriptCmd>w:GoToDefinition()<cr>')
+    win_execute(outline_win_id, 'nnoremap <buffer> <silent> <2-LeftMouse>'
+          .. ' <ScriptCmd>w:GoToDefinition()<cr>')
   endif
 
   # Set title
-  var heading = $'{expand('%')}'
-  var separator = repeat('-', strlen(heading))
-  title = [heading, separator, '']
-  setbufline(winbufnr(outline_win_id), 1, title)
-  win_execute(outline_win_id, $'matchadd("WarningMsg", "{heading}")')
-  win_execute(outline_win_id, $'matchadd("WarningMsg", "{separator}")')
-  # win_execute(outline_win_id, 'matchaddpos(''Question'',
-  #             \ range(1, len(title)))')
+  SetTitle()
+
   # Add some sugar
   win_execute(outline_win_id, 'nnoremap <buffer> j j^')
   win_execute(outline_win_id, 'nnoremap <buffer> k k^')
@@ -157,17 +163,20 @@ def Open(regex_from_user: string =""): number
     win_execute(outline_win_id, 'setlocal winfixbuf' )
   endif
 
-  # Set script global-variable
+  # Set script-variable
   user_regex = regex_from_user
   return outline_win_id
 enddef
-
 
 def IsOpen(): bool
   return win_id2win(outline_win_id) > 0 ? true : false
 enddef
 
 export def Toggle(regex_from_user: string = "")
+  if !IsSupportedFiletype()
+    Echoerr("unsupported filetype")
+    return
+  endif
   if IsOpen()
     Close()
   else
@@ -229,6 +238,10 @@ def SetFamousQuote()
 enddef
 
 export def RefreshWindow()
+  if !IsSupportedFiletype()
+    Echoerr("unsupported filetype")
+    return
+  endif
   if empty(user_regex)
     UpdateOutline()
   else
@@ -238,39 +251,40 @@ export def RefreshWindow()
   if IsOpen()
     # If what is shown in the outline window is the Outline buffer, then
     # overwrite it. If it is shown a user-buffer DON'T overwrite it!
-    # TODO This is not a problem if 'winfixbuf' option is on
     if winbufnr(outline_win_id) == bufnr(g:outline_buf_name)
       # -----------------------------------------
       # clean outline and unlock outline buffer
       # -----------------------------------------
       win_execute(outline_win_id, 'setlocal modifiable noreadonly')
-      deletebufline(winbufnr(outline_win_id), len(title) + 1, line('$',
-            \ outline_win_id))
+      deletebufline(winbufnr(outline_win_id), len(title) + 1,
+            line('$', outline_win_id))
 
       # ----------------------------------------------
       # Actually populate the window
       # ----------------------------------------------
       setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
-      # Set outline syntax the same as the caller buffer syntax.
-      win_execute(outline_win_id, 'setlocal syntax=' .. &syntax)
+      # Set outline filetype the same as the caller buffer filetype.
+      win_execute(outline_win_id, 'setlocal filetype=' .. &filetype)
       win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 
-      # HighlightOutlineLine
+      # Show where you are in the Outline window
       if g:outline_enable_highlight
         const line_nr = FindClosestItemLine()
         HighlightOutlineLine(index(Outline_mapping, line_nr) + len(title) + 1)
       endif
     # You may consider throwing an error message instead.
     elseif  winbufnr(outline_win_id) != bufnr(g:outline_buf_name)
-      echoerr "Previous outline content has gone!"
-            \ .. " Close and re-open the outline window to "
-            \ .. "re-create a new one."
+       Echoerr("Previous outline content has gone!"
+             .. " Close and re-open the outline window to "
+             .. "re-create a new one.")
     endif
   endif
 enddef
 
 def FilterOutline(lines: list<string>)
   # 'decorated_lines' is of the form [[1, 'foo'], [2, 'bar'], ...]
+  # Those are needed to keep track of the line numbers of the calling buffer,
+  # otherwise it becomes messy to jump back and forth to the current location
   var decorated_lines = range(len(lines))->map((ii, _) => [ii, lines[ii]])
 
   if index(keys(regex.patterns), &filetype) != -1
