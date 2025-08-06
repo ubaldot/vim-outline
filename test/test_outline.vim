@@ -163,6 +163,7 @@ END
   exe "OutlineToggle"
   assert_equal(1, winnr('$'))
   assert_true(empty(v:errors))
+  assert_equal('python', &filetype)
 
   :%bw!
   Cleanup_testfile(python_file)
