@@ -34,7 +34,7 @@ VIMRC="VIMRC"
 echo "vim9script" > "$VIMRC"
 echo "">> "$VIMRC"
 echo "set runtimepath+=.." >> "$VIMRC"
-echo "filetype indent plugin on" >> "$VIMRC"
+# echo "filetype indent plugin on" >> "$VIMRC"
 echo "syntax on" >> "$VIMRC"
 echo "set nocompatible" >> "$VIMRC"
 

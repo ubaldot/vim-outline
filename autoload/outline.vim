@@ -92,10 +92,6 @@ def GoToDefinition()
 enddef
 
 export def GoToOutline()
-  if !IsSupportedFiletype()
-    Echoerr("unsupported filetype")
-    return
-  endif
   if IsOpen()
     RefreshWindow()
     win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
@@ -104,11 +100,11 @@ enddef
 
 def Close()
   if IsOpen()
-    wincmd p
-    win_execute(outline_win_id, 'wincmd c')
+    # wincmd p
+    win_execute(outline_win_id, 'bwipe!')
     # In case there are erroneously other Outline windows open
     for wind in win_findbuf(bufnr($'^{g:outline_buf_name}$'))
-      win_execute(wind, 'wincmd c')
+      win_execute(wind, 'bwipe!')
     endfor
 
     # Reset the user_regex
@@ -127,6 +123,10 @@ def SetTitle()
 enddef
 
 def Open(regex_from_user: string =""): number
+  # if !IsSupportedFiletype()
+  #   Echoerr("unsupported filetype")
+  #   return -1
+  # endif
   # Create empty win from current buffer and give it a name
   win_execute(win_getid(), $'vertical split {g:outline_buf_name}')
   outline_win_id = win_findbuf(bufnr('$'))[0]
@@ -136,7 +136,7 @@ def Open(regex_from_user: string =""): number
   win_execute(outline_win_id, $'vertical resize {g:outline_win_size}')
   win_execute(outline_win_id,
         'setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap'
-       .. ' nonumber norelativenumber noscrollbind winfixwidth')
+       .. ' nonumber winfixwidth')
 
   # Set few w: local variables
   # Let the Outline window to access this script by passing a function
@@ -173,16 +173,13 @@ def IsOpen(): bool
 enddef
 
 export def Toggle(regex_from_user: string = "")
-  if !IsSupportedFiletype()
-    Echoerr("unsupported filetype")
-    return
-  endif
   if IsOpen()
     Close()
   else
-    Open(regex_from_user)
-    RefreshWindow()
-    GoToOutline()
+    if Open(regex_from_user) != -1
+      RefreshWindow()
+      GoToOutline()
+    endif
   endif
 enddef
 
@@ -238,10 +235,6 @@ def SetFamousQuote()
 enddef
 
 export def RefreshWindow()
-  if !IsSupportedFiletype()
-    Echoerr("unsupported filetype")
-    return
-  endif
   if empty(user_regex)
     UpdateOutline()
   else
@@ -263,9 +256,10 @@ export def RefreshWindow()
       # Actually populate the window
       # ----------------------------------------------
       setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
-      # Set outline filetype the same as the caller buffer filetype.
-      win_execute(outline_win_id, 'setlocal filetype=' .. &filetype)
-      win_execute(outline_win_id, 'setlocal nomodifiable readonly')
+      # Set outline syntax the same as the caller buffer syntax.
+      # DON'T SET filetype otherwise it is going to trigger lot of FileType
+      # events!
+      win_execute(outline_win_id, 'setlocal syntax=' .. &syntax)
 
       # Show where you are in the Outline window
       if g:outline_enable_highlight
