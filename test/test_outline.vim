@@ -383,3 +383,432 @@ END
   :%bw!
   Cleanup_testfile(vim_file)
 enddef
+
+
+def g:Test_java()
+
+  const java_file = 'java_testfile.java'
+  const java_code =<< trim END
+// File: SampleOutlineTest.java
+
+package com.example.parser;
+
+// Import section
+import java.util.List;
+import java.util.ArrayList;
+
+/**
+ * This is a sample Java file for testing a parser that builds
+ * an outline (structure) of Java files.
+ */
+public class SampleOutlineTest {
+
+    // ==========================
+    // == Fields ==
+    // ==========================
+
+    private String name; // Instance variable
+    protected int count = 0;
+    public static final double VERSION = 1.0;
+
+    // ==========================
+    // == Constructors ==
+    // ==========================
+
+    /**
+     * Default constructor
+     */
+    public SampleOutlineTest() {
+        this.name = "default";
+    }
+
+    /**
+     * Overloaded constructor
+     * @param name The name to initialize with
+     */
+    public SampleOutlineTest(String name) {
+        this.name = name;
+    }
+
+    // ==========================
+    // == Methods ==
+    // ==========================
+
+    /**
+     * Gets the name.
+     * @return The name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Sets the name.
+     * @param name The new name
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Increments the count
+     */
+    public void increment() {
+        count++;
+    }
+
+    /**
+     * Main method for testing
+     */
+    public static void main(String[] args) {
+        SampleOutlineTest test = new SampleOutlineTest("ParserTest");
+        test.increment();
+        System.out.println("Name: " + test.getName());
+    }
+
+    // ==========================
+    // == Nested Class ==
+    // ==========================
+
+    /**
+     * A nested static class
+     */
+    public static class Helper {
+
+        private List<String> logs = new ArrayList<>();
+
+        /**
+         * Logs a message
+         * @param message The message to log
+         */
+        public void log(String message) {
+            logs.add(message);
+        }
+
+        /**
+         * Prints all logs
+         */
+        public void printLogs() {
+            for (String log : logs) {
+                System.out.println(log);
+            }
+        }
+    }
+}
+END
+
+  Generate_testfile(java_code, java_file)
+  exe $"edit {java_file}"
+  WaitForAssert(() => assert_equal('java', &filetype))
+
+const expected_outline =<< END
+java_testfile.java
+------------------
+
+public class SampleOutlineTest {
+    private String name; // Instance variable
+    protected int count = 0;
+    public static final double VERSION = 1.0;
+    public SampleOutlineTest() {
+    public SampleOutlineTest(String name) {
+    public String getName() {
+    public void setName(String name) {
+    public void increment() {
+    public static void main(String[] args) {
+    public static class Helper {
+        private List<String> logs = new ArrayList<>();
+        public void log(String message) {
+        public void printLogs() {
+END
+
+  OutlineToggle
+  WaitForAssert(() => assert_equal(2, winnr('$')))
+  const actual_outline = getline(1, '$')
+  assert_equal(expected_outline, actual_outline)
+
+  # Close Outline
+  exe "OutlineToggle"
+  assert_equal(1, winnr('$'))
+
+  :%bw!
+  Cleanup_testfile(java_file)
+enddef
+
+def g:Test_go()
+
+  const go_file = 'go_testfile.go'
+  const go_code =<< trim END
+// File: sample_outline_test.go
+
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+// ==========================
+// == Constants and Globals ==
+// ==========================
+
+// VERSION is the current version of the parser test
+const VERSION = "1.0"
+
+// globalCount is a global variable
+var globalCount int = 0
+
+// ==========================
+// == Structs and Methods ==
+// ==========================
+
+// SampleOutlineTest is a struct used for testing
+type SampleOutlineTest struct {
+	Name  string
+	Count int
+}
+
+// NewSampleOutlineTest is a constructor-like function
+func NewSampleOutlineTest(name string) *SampleOutlineTest {
+	return &SampleOutlineTest{
+		Name:  name,
+		Count: 0,
+	}
+}
+
+// Increment increases the internal counter
+func (s *SampleOutlineTest) Increment() {
+	s.Count++
+}
+
+// GetName returns the name
+func (s *SampleOutlineTest) GetName() string {
+	return s.Name
+}
+
+// SetName sets the name
+func (s *SampleOutlineTest) SetName(name string) {
+	s.Name = name
+}
+
+// ==========================
+// == Interface ==
+// ==========================
+
+// Logger is a simple interface for logging messages
+type Logger interface {
+	Log(message string)
+	PrintLogs()
+}
+
+// ==========================
+// == Struct Implementing Interface ==
+// ==========================
+
+// Helper implements the Logger interface
+type Helper struct {
+	Logs []string
+}
+
+// Log adds a message to the log
+func (h *Helper) Log(message string) {
+	h.Logs = append(h.Logs, message)
+}
+
+// PrintLogs prints all logs
+func (h *Helper) PrintLogs() {
+	for _, log := range h.Logs {
+		fmt.Println(log)
+	}
+}
+
+// ==========================
+// == Main Function ==
+// ==========================
+
+func main() {
+	test := NewSampleOutlineTest("ParserTest")
+	test.Increment()
+	fmt.Println("Name:", test.GetName())
+
+	helper := &Helper{}
+	helper.Log("Initialized helper")
+	helper.Log("Running main function")
+	helper.PrintLogs()
+
+	// Nested function example
+	printUpper := func(input string) {
+		fmt.Println(strings.ToUpper(input))
+	}
+	printUpper("done")
+}
+END
+
+  Generate_testfile(go_code, go_file)
+  exe $"edit {go_file}"
+  WaitForAssert(() => assert_equal('go', &filetype))
+
+const expected_outline =<< END
+go_testfile.go
+--------------
+
+type SampleOutlineTest struct {
+func NewSampleOutlineTest(name string) *SampleOutlineTest {
+func (s *SampleOutlineTest) Increment() {
+func (s *SampleOutlineTest) GetName() string {
+func (s *SampleOutlineTest) SetName(name string) {
+type Logger interface {
+type Helper struct {
+func (h *Helper) Log(message string) {
+func (h *Helper) PrintLogs() {
+func main() {
+END
+
+  OutlineToggle
+  WaitForAssert(() => assert_equal(2, winnr('$')))
+  const actual_outline = getline(1, '$')
+  assert_equal(expected_outline, actual_outline)
+
+  # Close Outline
+  exe "OutlineToggle"
+  assert_equal(1, winnr('$'))
+
+  :%bw!
+  Cleanup_testfile(go_file)
+enddef
+
+def g:Test_odin()
+
+  const odin_file = 'odin_testfile.odin'
+  const odin_code =<< trim END
+// File: sample_outline_test.odin
+
+package main
+
+import "core:fmt"
+
+// ==========================
+// == Constants and Globals ==
+// ==========================
+
+VERSION: string : "1.0" // Global constant
+global_count: int = 0   // Global variable
+
+// ==========================
+// == Enum Declaration ==
+// ==========================
+
+LogLevel :: enum {
+    Info,
+    Warning,
+    Error,
+}
+
+// ==========================
+// == Struct and Methods ==
+// ==========================
+
+SampleOutlineTest :: struct {
+    name: string,
+    count: int,
+}
+
+// Constructor-like function
+new_sample_outline_test :: proc(name: string) -> SampleOutlineTest {
+    return SampleOutlineTest{
+        name = name,
+        count = 0,
+    };
+}
+
+// Method-like procedure using receiver
+increment :: proc(s: ^SampleOutlineTest) {
+    s.count += 1;
+}
+
+get_name :: proc(s: SampleOutlineTest) -> string {
+    return s.name;
+}
+
+set_name :: proc(s: ^SampleOutlineTest, name: string) {
+    s.name = name;
+}
+
+// ==========================
+// == Interface Equivalent ==
+// ==========================
+
+// Odin doesn't have traditional interfaces, but we can simulate behavior via procedures
+
+Logger :: struct {
+    log      : proc(message: string),
+    print_all: proc(),
+}
+
+// ==========================
+// == Struct with Callbacks ==
+// ==========================
+
+Helper :: struct {
+    logs: []string,
+}
+
+log_message :: proc(h: ^Helper, message: string) {
+    h.logs = append(h.logs, message);
+}
+
+print_logs :: proc(h: Helper) {
+    for log in h.logs {
+        fmt.println(log);
+    }
+}
+
+// ==========================
+// == Main Procedure ==
+// ==========================
+
+main :: proc() {
+    test := new_sample_outline_test("ParserTest");
+    increment(&test);
+    fmt.println("Name: ", get_name(test));
+
+    helper := Helper{logs = {}};
+    log_message(&helper, "Helper initialized");
+    log_message(&helper, "Main running");
+    print_logs(helper);
+
+    // Nested procedure (closure-style)
+    print_upper := proc(input: string) {
+        fmt.println(to_upper(input));
+    };
+
+    print_upper("done");
+}
+END
+  Generate_testfile(odin_code, odin_file)
+  exe $"edit {odin_file}"
+  WaitForAssert(() => assert_equal('odin', &filetype))
+
+const expected_outline =<< END
+odin_testfile.odin
+------------------
+
+LogLevel :: enum {
+SampleOutlineTest :: struct {
+increment :: proc(s: ^SampleOutlineTest) {
+Logger :: struct {
+Helper :: struct {
+main :: proc() {
+END
+
+  OutlineToggle
+  WaitForAssert(() => assert_equal(2, winnr('$')))
+  const actual_outline = getline(1, '$')
+  assert_equal(expected_outline, actual_outline)
+
+  # Close Outline
+  exe "OutlineToggle"
+  assert_equal(1, winnr('$'))
+
+  :%bw!
+  Cleanup_testfile(odin_file)
+enddef
