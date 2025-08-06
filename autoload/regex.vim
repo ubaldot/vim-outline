@@ -1,12 +1,12 @@
 vim9script
 
-# TODO: Jumps to be redefined!
 # This file contains regex for filter out the current buffer and create catchy
 # outline. Generally, the process happens in two steps:
 #   1. filter -> capture the lines that you want to place in the outline,
 #   2. sanitize -> the lines may be visually ugly, so you can make them nicer
 #      before you place them in the Outline buffer.
 
+# This is used to filter out doc-strings in python files.
 def PythonDocstringFilter(): any
   var in_docstring = false
   return (_, line) => {

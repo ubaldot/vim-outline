@@ -248,7 +248,7 @@ We assume that you want to do this for `cpp` |'filetype'|.
 #### Step 1
 Add the following lines to your |.vimrc|
 >
-    extend(g:outline_include_before_exclude, {cpp: true})
+    extend(g:outline_patterns, {cpp: true})
     extend(g:outline_pattern_to_include, {cpp: ['<KEEP-ME!>']})
 >
 #### Step 2

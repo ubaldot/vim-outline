@@ -35,6 +35,17 @@ if !exists('g:outline_autoclose')
   g:outline_autoclose = false
 endif
 
+
+import autoload "../autoload/regex.vim" as regex
+# User extensions.
+if exists('g:outline_patterns')
+  extend(regex.patterns, g:outline_patterns)
+endif
+
+if exists('g:outline_sanitizers')
+  extend(regex.sanitizers, g:outline_sanitizers)
+endif
+
 # --------------------------
 # Mappings
 # --------------------------
