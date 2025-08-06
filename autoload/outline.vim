@@ -101,7 +101,6 @@ enddef
 
 def Close()
   if IsOpen()
-    # wincmd p
     win_execute(outline_win_id, 'bwipe!')
     # In case there are erroneously other Outline windows open
     for wind in win_findbuf(bufnr($'^{g:outline_buf_name}$'))

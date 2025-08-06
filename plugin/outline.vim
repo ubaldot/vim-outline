@@ -14,7 +14,7 @@ endif
 if exists('g:outline_loaded') && g:outline_loaded
   finish
 endif
-g:outline_loaded = false
+g:outline_loaded = true
 
 # --------------------------
 # User settings
