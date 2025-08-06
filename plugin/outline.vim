@@ -39,7 +39,7 @@ endif
 # --------------------------
 # Mappings
 # --------------------------
-import autoload "../lib/outline.vim"
+import autoload "../autoload/outline.vim"
 
 # noremap <unique> <script> <Plug>OutlineToggle
 # \ <ScriptCmd>outline.Toggle()<cr>

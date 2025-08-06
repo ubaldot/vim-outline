@@ -7,7 +7,7 @@ vim9script
 #   2. sanitize -> the lines may be visually ugly, so you can make them nicer
 #      before you place them in the Outline buffer.
 
-def MakeDocstringFilter(): any
+def PythonDocstringFilter(): any
   var in_docstring = false
   return (_, line) => {
     if line =~ '.*""".*"""'
@@ -24,7 +24,7 @@ enddef
 
 export var patterns = {
   python: [
-    MakeDocstringFilter(),
+    PythonDocstringFilter(),
     (_, val) => val !~ '^\s*def\s_\{-1,2}',
     (_, val) => val =~ '\v(^class|^\s*def)',
   ],
