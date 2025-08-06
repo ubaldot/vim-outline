@@ -14,7 +14,7 @@ endif
 if exists('g:outline_loaded') && g:outline_loaded
   finish
 endif
-g:outline_loaded = true
+g:outline_loaded = false
 
 # --------------------------
 # User settings
@@ -36,10 +36,20 @@ if !exists('g:outline_autoclose')
 endif
 
 
+import autoload "../autoload/regex.vim" as regex
+# User extensions
+if exists('g:outline_patterns')
+  extend(regex.patterns, g:outline_patterns)
+endif
+
+if exists('g:outline_sanitizers')
+  extend(regex.sanitizers, g:outline_sanitizers)
+endif
+
 # --------------------------
 # Mappings
 # --------------------------
-import autoload "../lib/outline.vim"
+import autoload "../autoload/outline.vim"
 
 # noremap <unique> <script> <Plug>OutlineToggle
 # \ <ScriptCmd>outline.Toggle()<cr>

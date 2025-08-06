@@ -34,9 +34,10 @@ VIMRC="VIMRC"
 echo "vim9script" > "$VIMRC"
 echo "">> "$VIMRC"
 echo "set runtimepath+=.." >> "$VIMRC"
-echo "filetype indent plugin on" >> "$VIMRC"
 echo "syntax on" >> "$VIMRC"
 echo "set nocompatible" >> "$VIMRC"
+echo "g:outline_patterns = {text: [(_, val) => val =~ '<KEEP-ME!>']}" >> "$VIMRC"
+echo "g:outline_sanitizers = {text: [{'KEEP': 'KISS'}]}" >> "$VIMRC"
 
 # Display vimrc content
 echo "----- vimrc content ---------"

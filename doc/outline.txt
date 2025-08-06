@@ -15,12 +15,10 @@ CONTENTS                                                     *OutlineContents*
     2. Requirements ................. |OutlineRequirements|
     3. Usage ........................ |OutlineUsage|
     4. Mappings ..................... |OutlineMappings|
-    5. Customization ................ |OutlineCustomization|
     5. Configuration ................ |OutlineConfiguration|
-    6. Add new languages ............ |OutlineNewLanguages|
-    7. Contributing ................. |OutlineContributing|
-    8. Arbitrary outlines............ |OutlineArbitraryOutlines|
-    9. License ...................... |OutlineLicense|
+    6. Contributing ................. |OutlineContributing|
+    7. Arbitrary outlines............ |OutlineArbitraryOutlines|
+    8. License ...................... |OutlineLicense|
 
 
 ==============================================================================
@@ -53,13 +51,9 @@ the outcome is just an imprecise sketch of my buffer with noisy entries.
 How it works internally?
 
 It first |filter()| the lines of your buffer to select what you want to show,
-and then it |substitute()| the filtered results to give a nice
-appearance. Both the filtering and substitutions are based on a set of regex
-that depends on the buffer |'filetype'|.
-
-If the buffer to parse is messy, then vim-outline uses some pre-process
-function. For example, vim-outline uses a pre-process function to remove
-docstrings in python files.
+and then it sanitizes the results to give a nice appearance.
+Both the filtering and sanitation are based on a set of regex that
+depends on the buffer |'filetype'|.
 
 By hitting Enter on any line in the outline window, the cursor will jump
 in the corresponding position in the main buffer.
@@ -74,9 +68,10 @@ That is pretty much all. No ctags, nor LSP servers required.
 USAGE                                                     *OutlineUsage*
 
                                                         *:OutlineToggle*
-Run |:OutlineToggle| [{regex}] to open/close a side-window with an outline of your
-current buffer. If {regex} is not passed, the the outline will be filled
-depending on the filetype.
+Run |:OutlineToggle| [{regex}] to open/close a side-window with an outline
+of your current buffer.
+If {regex} is not passed, the the outline will be filled depending on the
+filetype.
 
                                                         *:OutlineGoToOutline*
 Run |:OutlineGoToOutline| to jump in the outline window.
@@ -99,162 +94,100 @@ Refresh the outline side-window and the localization.
 Jump into the outline side-window independently of the current buffer.
 
 ==============================================================================
-CUSTOMIZATION                                           *OutlineCustomization*
-
-The Outline depends either from a regular expression passed by a user or on a
-set of predefined regular expressions that depends on
-the |'filetype'|. However, you can overwrite the list of filteype-dependent
-regex through the dictionaries  |g:outline_pattern_to_include|,
-|g:outline_substitutions|, |g:outline_inverse_substitutions|
-|g:outline_include_before_exclude|, |g:outline_pattern_to_exclude| and
-|g:outline_pre_process| dictionaries.
-It sounds a lot, but it is not. Believe me! Take a look at the source code.
-
-You can further use vim-outline engine for creating arbitrary outlines for
-specific filetypes.
-Take a look at |OutlineArbitraryOutlines| to discover how to do that.
-
-==============================================================================
 CONFIGURATION                                        *OutlineConfiguration*
 
                                                         *g:outline_buf_name*
-Type: 'string'
+Type: |string|
 Default: "Outline!"
 Name of the Outline buffer.
 
                                                         *g:outline_autoclose*
-Type: 'bool'
+Type: |bool|
 Default: true
 If true, automatically close the outline window when you leave it.
 
                                                         *g:outline_win_size*
-Type: 'number'
+Type: |number|
 Default: 30
 Size of the outline window in number of columns unit.
 
                                                 *g:outline_enable_highlight*
-Type: 'bool'
+Type: |bool|
 Default: true
 Enable (true) or disable (false) the highlighting.
 
-                                            *g:outline_include_before_exclude*
-Type: 'dict'<'filetype', 'bool'>
+                                                    *g:outline_patterns*
+Type: |dict|<|'filetype', |list|<|Funcref|>>
 Default:{}
 
-Determine the execution order of the patterns defined in
-|g:outline_pattern_to_include| and |g:outline_pattern_to_exclude| when parsing
-a buffer for generating an outline. This is important because _include_ and
-_exclude_ operators are commutative if and only if the regex are disjoint, but
-that never happens.
-
-                                            *g:outline_pattern_to_include*
-Type: 'dict'<'filetype', 'list'<'string'>>
-Default:{}
-
-Patterns to include when parsing a buffer to generate an outline.
-The list is the sequence of regex used by the |filter()| with |=~| condition
-on the buffer.
-Note: the default values will be overwritten!
-
-                                            *g:outline_pattern_to_exclude*
-Type: 'dict'<'filetype', 'list'<'string'>>
-Default:{},
-
-Patterns to exclude when parsing a buffer to generate an outline.
-The list is the sequence of regex used by the |filter()| with |!~| condition
-on the buffer.
-Note: the default values will be overwritten!
-
-                                            *g:outline_substitutions*
-Type: 'dict'<'filetype', 'list'<'dict'<'string', 'string'>>>
-Default:{},
-
-Substitution {string}-{pattern} for each |'filetype'|.  Each element of the
-list is a dictionary where the key is the {string} and the value is the
-{pattern} used by the |substitute()| function.  The purpose of the
-substitution is to give a nice appearance to the Outline buffer. That is, a
-string in the Outline may be different than the corresponding string in the
-buffer.
-Note: the default values will be overwritten!
-
-                                        *g:outline_inverse_substitutions*
-Type: 'dict'<'filetype', 'list'<'dict'<'string', 'string'>>>
-Default:{},
-
-This dictionary is used to revert back strings as they appears in the Outline
-back to strings as they appear in the buffer.  For example if `### Foo` is a
-line in the buffer that has been converted as `Foo` in the Outline, then when
-we select `Foo` in the Outline we need to re-convert it back to `### Foo` in
-order to make an accurate search in the main buffer.
-It is desirable that the string-mapping from the buffer to the outline is
-bijective to secure invertibility, which means to exactly jump from an Outline
-line to a buffer line.  The dictionary contains substitution
-{string}-{pattern} for each |'filetype'|.
-Each element of the list is a dictionary where the key is the {string} and
-the value is the {pattern} used by the |substitute()| function.
-
-                                                *g:outline_pre_process*
-Type: 'dict'<'filetype', 'Funcref'>
-Default:{},
-
-The function pointed by such a 'Funcref' manipulate the current buffer before
-applying the filter and substitutions regex. It must accept one input argument
-that is the current buffer lines expressed as a list of strings and return an
-outline as a list of strings,
+For each 'filetype' there is a |list| of |Funcref| that is used to filter the
+main buffer through the |filter()| function.
 
 Example:
-You have a key-value pair my_filetype: MyFunc. Then, MyFunc shall be defined
-as it follows:
->
-   def MyFunc(outline: list<string>): list<string>
-       # do something
-       return modified_outline
+>vim
+  g:outline_patterns = {
+    java: [
+      (_, val) => val =~ '\v(^\s*class |^\s*public |^\s*private |\s*protected )'
+    ],
+    go: [(_, val) => val =~ '\v(^func |^type )'],
+    odin: [(_, val) => val =~ '\v^[a-zA-Z0-9]+ :: ']
+  }
 <
-the modified_outline list will be filtered through the specified regex.
-This allow the user to not rely only on regex but it provides the opportunity
-of using conditionals, iterations, etc. for parsing the current buffer before
-using regex.
+
+                                                  *g:outline_sanitizers*
+Type: |dict|<|'filetype', |list|<|dict|<|string|, |string||>>>
+Default:{}
+
+For each 'filetype' there is a |list| of |dict|<|string|, |string|> that is used
+to sanitize the filtered results through the |substitute()| function.
+
+Example:
+
+>vim
+  g:outline_sanitizers = {
+    tex: [
+    {'\\section{\(.*\)}': '\1'},
+    {'\\subsection{\(.*\)}': '  \1'},
+    {'\\subsubsection{\(.*\)}': '    \1'},
+    {'\\subsubsubsection{\(.*\)}': '      \1'}
+    ]
+  }
+<
+The keys of the dictionaries are the {pat} and the values are the {sub} of
+|substitute()|.
+
+Note: the default values will be overwritten!
 
 ==============================================================================
 ADD NEW LANGUAGES                                     *OutlineAddNewLanguages*
 
-To add a new language, you simply have to update the dictionaries in
-./lib/regex.vim with new regex and test if it works!
+To add a new language, you simply have to update the variables patterns and
+sanitizers in ./autoload/regex.vim with new regex and test if it works!
 
 More precisely, the process for creating an Outline happens in two steps:
   1. filter -> capture the lines that you want to place in the outline,
-  2. substitute -> the lines may be visually ugly, so you can make them nicer
+  2. sanitize -> the lines may be visually ugly, so you can make them nicer
      before you place them in the Outline buffer.
-
-Sometimes you also need some sort of pre-processing, see e.g. python for
-removing the docstrings.
-
-However, there are some gotchas:
-  1. 'include' and 'exclude' operators are commutative (i.e. it does not
-     matter who comes first) if, and only if the regex are disjoint.
-     But in practice this never happens, so you must specify if you want
-     first exclude or include a pattern from filter().
-  2. Substitution shall be bijections. That is, if b = a->substitute(X, Y,
-     ''), then you must secure that a = b->substitute(Y, X, '') otherwise
-     you won't be able to jump from a line of the Outline to the correct
-     line
 
 ==============================================================================
 ARBITRARY OUTLINES                                 *OutlineArbitraryOutlines*
 
 You can create arbitrary outlines for specific, as explained next.
-We assume that you want to do this for `cpp` |'filetype'|.
+We assume that you want to do this for `text` |'filetype'|.
 
-#### Step 1
+# Step 1~
 Add the following lines to your |.vimrc|
 >
-    extend(g:outline_include_before_exclude, {cpp: true})
-    extend(g:outline_pattern_to_include, {cpp: ['<KEEP-ME!>']})
+  g:outline_patterns = {text: [(_, val) => val =~ '<KEEP-ME!>']}
+  g:outline_sanitizers = {text: [{'KEEP': 'KISS'}]}
 >
-#### Step 2
-Comment each line that you want to keep in the outline with `// <KEEP-ME!>`.
+# Step 2~
+Comment each line that you want to keep in the outline with `// <KEEP-ME!>` in
+any file that has text as 'filetype'.
 
 At this point, call |:OutlineToggle| and see what happens.
+All the lines that contain '<KEEP-ME>' are held, and all the 'KEEP' are
+replaced with 'KISS'.
 Jumps and localization functions should work automatically.
 
 ==============================================================================

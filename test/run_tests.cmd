@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 
 REM Script to run the unit-tests for the Outline Vim plugin on MS-Windows
 
@@ -9,7 +10,6 @@ SET "VIMRC=vimrc_for_tests"
 
 REM Create or overwrite the vimrc file with the initial setting
 REM
-
 (
     echo vim9script
     echo/
@@ -17,7 +17,10 @@ REM
     echo filetype plugin indent on
     echo syntax on
     echo set nocompatible
+    echo g:outline_patterns = {text: [(_, val^) =^> val =~ '^<KEEP-ME^^!^>']}
+    echo g:outline_sanitizers = {text: [^{'KEEP': 'KISS'}]}
 ) >> "%VIMRC%"
+
 
 REM Note that the vim starting command may change depending of the plugin!
 SET "VIM_CMD=%VIMPRG% --clean -u %VIMRC% -i NONE --not-a-term"
