@@ -823,3 +823,49 @@ END
   :%bw!
   Cleanup_testfile(odin_file)
 enddef
+
+def g:Test_custom_outline()
+
+
+  var text_filename = 'text_test.txt'
+  var text_lines =<< END
+Lorem Ipsum is simply dummy text of the printing and typesetting
+industry.
+
+Lorem Ipsum <KEEP-ME!> has been the industry's standard dummy text ever since
+the 1500s, when an unknown printer took a galley of type and scrambled it to
+make a type <KEEP-ME!> specimen book. It has survived not only five centuries, but also
+the leap into electronic typesetting, remaining essentially unchanged.
+
+It was popularised in the 1960s with the release of Letraset sheets containing Lorem
+Ipsum passages, <KEEP-ME!> and more recently with desktop publishing software like Aldus
+PageMaker including versions of Lorem Ipsum.
+END
+
+var expected_outline =<< END
+text_test.txt
+-------------
+
+Lorem Ipsum <KISS-ME!> has been the industry's standard dummy text ever since
+make a type <KISS-ME!> specimen book. It has survived not only five centuries, but also
+Ipsum passages, <KISS-ME!> and more recently with desktop publishing software like Aldus
+END
+
+
+  Generate_testfile(text_lines, text_filename)
+  exe $"edit {text_filename}"
+  set filetype=text
+  WaitForAssert(() => assert_equal('text', &filetype))
+
+  OutlineToggle
+  WaitForAssert(() => assert_equal(2, winnr('$')))
+  const actual_outline = getline(1, '$')
+  assert_equal(expected_outline, actual_outline)
+
+  # Close Outline
+  exe "OutlineToggle"
+  assert_equal(1, winnr('$'))
+
+  :%bw!
+  Cleanup_testfile(text_filename)
+enddef

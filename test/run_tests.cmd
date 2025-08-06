@@ -17,6 +17,8 @@ REM
     echo filetype plugin indent on
     echo syntax on
     echo set nocompatible
+    echo g:outline_patterns = {text: [(_, val) => val =~ '<KEEP-ME!>']}
+    echo g:outline_sanitizers = {text: [{'KEEP': 'KISS'}]}
 ) >> "%VIMRC%"
 
 REM Note that the vim starting command may change depending of the plugin!

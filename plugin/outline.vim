@@ -14,7 +14,7 @@ endif
 if exists('g:outline_loaded') && g:outline_loaded
   finish
 endif
-g:outline_loaded = true
+g:outline_loaded = false
 
 # --------------------------
 # User settings
@@ -37,7 +37,7 @@ endif
 
 
 import autoload "../autoload/regex.vim" as regex
-# User extensions.
+# User extensions
 if exists('g:outline_patterns')
   extend(regex.patterns, g:outline_patterns)
 endif
