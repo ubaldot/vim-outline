@@ -12,10 +12,11 @@ import autoload "./regex.vim"
 # Script variables
 var supported_filetypes = keys(regex.patterns)
 
-var title = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
-var Outline = [""] # It does not like [] initialization
-var outline_win_id = 0
-var user_regex = ""
+var title: list<string> = ['Go on a line and hit <enter>', 'to jump to definition.', ""]
+var Outline: list<string> = [""] # It does not like [] initialization
+var Outline_mapping: list<number> = []
+var outline_win_id: number = 0
+var user_regex: string = ""
 
 sign define CurrentItem linehl=CursorLine
 
@@ -23,6 +24,7 @@ export def Echoerr(msg: string)
   echohl ErrorMsg | echom $'[helpme] {msg}' | echohl None
 enddef
 
+# TODO: remove me
 def CountIndexInstances(target_item: string): list<any>
         # Return the line numbers where target_item appears in the Outline
         # window
@@ -41,26 +43,30 @@ def CountIndexInstances(target_item: string): list<any>
 enddef
 
 # Script functions
-def Locate(target_item: string)
+# TODO Modify: you have the exact line number
+def Locate(line_nr: number)
     # Highlight target_item (aka closest item) in the outline window
     win_execute(outline_win_id, 'setlocal modifiable noreadonly')
     win_execute(outline_win_id, "sign_unplace('', {buffer:
                 \ g:outline_buf_name}) ")
 
+    win_execute(outline_win_id, 'sign_place(line_nr, "",
+                \ ''CurrentItem'', g:outline_buf_name, {''lnum'':
+                \ line_nr})')
     # If you have a valid target_item, then check if there are duplicates,
     # and highlight the correct one.
-    if target_item !=# ""
-        var tmp = CountIndexInstances(target_item)
-        var num_duplicates = tmp[0]
-        var lines = tmp[1]
-        # Now you know what you should highlight
-        var line_nr = lines[num_duplicates - 1] + len(title) + 1
-        setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
-        win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
-        win_execute(outline_win_id, 'sign_place(w:line_nr, "",
-                    \ ''CurrentItem'', g:outline_buf_name, {''lnum'':
-                    \ w:line_nr})')
-    endif
+    # if target_item !=# ""
+    #     var tmp = CountIndexInstances(target_item)
+    #     var num_duplicates = tmp[0]
+    #     var lines = tmp[1]
+    #     # Now you know what you should highlight
+    #     var line_nr = lines[num_duplicates - 1] + len(title) + 1
+    #     setwinvar(win_id2win(outline_win_id), "line_nr", line_nr)
+    #     win_execute(outline_win_id, 'cursor(w:line_nr, 1) | norm! ^')
+    #     win_execute(outline_win_id, 'sign_place(w:line_nr, "",
+    #                 \ ''CurrentItem'', g:outline_buf_name, {''lnum'':
+    #                 \ w:line_nr})')
+    # endif
     # Lock window
     win_execute(outline_win_id, 'setlocal nomodifiable readonly')
 enddef
@@ -95,8 +101,29 @@ def FindClosestItem(): string
     endif
 enddef
 
-
 def GoToDefinition()
+  messages clear
+    var curr_line_nr = max([1, line('.') - len(title)])
+    echom curr_line_nr
+
+    var coupled_buffer = getline(1)
+    # echom coupled_buffer
+    wincmd p
+    if bufname() !=# coupled_buffer
+      exe $'buffer {coupled_buffer}'
+    endif
+
+    cursor(Outline_mapping[curr_line_nr - 1], 1)
+
+    # TODO
+    # var target_item = getline('.')
+    if !g:outline_autoclose
+        Locate(curr_line_nr + len(title))
+    endif
+enddef
+
+# TODO update
+def GoToDefinition_OLD()
     # In two steps:
     # 1. Search selected item in the Outline (including duplicates),
     var curr_line_nr = max([1, line('.') - len(title)])
@@ -138,14 +165,12 @@ def GoToDefinition()
     endif
 enddef
 
-
 export def GoToOutline()
     if IsOpen()
       RefreshWindow()
       win_gotoid(bufwinid($"^{g:outline_buf_name}$"))
     endif
 enddef
-
 
 def Close()
     if IsOpen()
@@ -217,7 +242,6 @@ def IsOpen(): bool
   return win_id2win(outline_win_id) > 0 ? true : false
 enddef
 
-
 export def Toggle(regex_from_user: string = "")
   if IsOpen()
     Close()
@@ -248,27 +272,18 @@ def UpdateOutline(): string
     # -----------------------------------
     # TIP: For debugging use portions of source code and see what
     # happens, e.g. var Outline = getline(23, 98)
-    Outline = getline(1, "$")
+    var buffer_lines = getline(1, "$")
     # We add a comment line because parsing the first line is always
     # problematic
-    insert(Outline, &commentstring, 0)
-
-    # -----------------------------------
-    # Pre-process Outline
-    # -----------------------------------
-    # if index(supported_filetypes, &filetype) != -1
-    #     && exists('regex.outline_pre_process[&filetype]')
-    #   Outline = regex.outline_pre_process[&filetype](Outline)
-    # endif
+    insert(buffer_lines, &commentstring, 0)
 
     # -----------------------------------
     # Filter user request
     # -----------------------------------
     if index(supported_filetypes, &filetype) != -1
-      Outline = FilterOutline(Outline)
+      FilterOutline(buffer_lines)
     endif
 
-    # TODO make it work with vim-airline
     # TODO: I can't remember, but this looks like an attempt to get the
     # current function name and to be placed in the statusline?
     # If this feature is unused, then perhaps this function shall not return
@@ -330,28 +345,30 @@ export def RefreshWindow()
                         \ .. "re-create a new one."
         endif
     endif
-
 enddef
 
-def FilterOutline(lines: list<string>): list<string>
-  # Internal state to help state-less lambda functions
-  var state = false
-  var outline = []
+def FilterOutline(lines: list<string>)
+  # 'decorated_lines' is of the form [[1, 'foo'], [2, 'bar'], ...]
+  var decorated_lines = range(len(lines))->map((ii, _) => [ii, lines[ii]])
+
   if index(keys(regex.patterns), &filetype) != -1
-    outline = lines
     for lambda in regex.patterns[&filetype]
-        outline->filter(lambda)
+      decorated_lines = decorated_lines->filter((_, pair) => call(lambda, [pair[0], pair[1]]))
     endfor
   else
     Echoerr($"Filetype '{&filetype}' not supported")
   endif
 
+  # Separate original buffer lines numbers with the actual lines
+  # 'Outline' and 'Outline_mappings' are script-local variables.
+  Outline = decorated_lines->mapnew((_, pair) => pair[1])
+  Outline_mapping = decorated_lines->mapnew((_, pair) => pair[0])
+
   if index(keys(regex.sanitizers), &filetype) != -1
     for subs in regex.sanitizers[&filetype]
-      outline ->map((idx, val) => substitute(val, keys(subs)[0], values(subs)[0], ''))
+      Outline ->map((idx, val) => substitute(val, keys(subs)[0], values(subs)[0], ''))
     endfor
   endif
-  return outline
 enddef
 
 # TODO Remove me
