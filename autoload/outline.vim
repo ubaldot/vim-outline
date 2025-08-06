@@ -19,6 +19,7 @@ def Echoerr(msg: string)
   echohl ErrorMsg | echom $'[vim-outline] {msg}' | echohl None
 enddef
 
+# TODO: add when the filetype is preserved through different windows
 def IsSupportedFiletype(): bool
   return index(supported_filetypes, &filetype) != -1
 enddef
@@ -123,6 +124,7 @@ def SetTitle()
 enddef
 
 def Open(regex_from_user: string =""): number
+  # TODO: add when the filetype is preserved through different windows
   # if !IsSupportedFiletype()
   #   Echoerr("unsupported filetype")
   #   return -1

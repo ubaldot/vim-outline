@@ -156,6 +156,14 @@ END
   exe "OutlineToggle"
   assert_equal(1, winnr('$'))
 
+  # Close from the main buffer
+  exe "OutlineToggle"
+  WaitForAssert(() => assert_equal(2, winnr('$')))
+  wincmd p
+  exe "OutlineToggle"
+  assert_equal(1, winnr('$'))
+  assert_true(empty(v:errors))
+
   :%bw!
   Cleanup_testfile(python_file)
 enddef
