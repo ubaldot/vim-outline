@@ -126,7 +126,23 @@ def SetTitle()
   win_execute(outline_win_id, $'matchadd("WarningMsg", "{separator}")')
 enddef
 
-def Open(regex_from_user: string =""): number
+def InstallLocalMappings()
+  win_execute(outline_win_id, 'nnoremap <buffer> h <C-W>>')
+  win_execute(outline_win_id, 'nmap <buffer> <left> h')
+  win_execute(outline_win_id, 'nmap <buffer> < h')
+  win_execute(outline_win_id, 'nnoremap <buffer> l <C-W><')
+  win_execute(outline_win_id, 'nmap <buffer> <right> l')
+  win_execute(outline_win_id, 'nmap <buffer> > l')
+  win_execute(outline_win_id, 'nnoremap <buffer> q <cmd>close<cr>')
+  win_execute(outline_win_id, 'nnoremap <buffer> j j^')
+  win_execute(outline_win_id, 'nnoremap <buffer> k k^')
+  win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
+  win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
+  win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
+enddef
+
+
+def OpenEmpty(regex_from_user: string =""): number
   # TODO: add when the filetype is preserved through different windows
   # if !IsSupportedFiletype()
   #   Echoerr("unsupported filetype")
@@ -153,15 +169,8 @@ def Open(regex_from_user: string =""): number
           .. ' <ScriptCmd>w:GoToDefinition()<cr>')
   endif
 
-  # Set title
-  SetTitle()
-
   # Add some sugar
-  win_execute(outline_win_id, 'nnoremap <buffer> j j^')
-  win_execute(outline_win_id, 'nnoremap <buffer> k k^')
-  win_execute(outline_win_id, 'nnoremap <buffer> <down> <down>^')
-  win_execute(outline_win_id, 'nnoremap <buffer> <up> <up>^')
-  win_execute(outline_win_id, 'cursor(len(title) + 1, 1)')
+  InstallLocalMappings()
 
   # winfixbuf
   if exists('+winfixbuf')
@@ -181,7 +190,7 @@ export def Toggle(regex_from_user: string = "")
   if IsOpen()
     Close()
   else
-    if Open(regex_from_user) != -1
+    if OpenEmpty(regex_from_user) != -1
       RefreshWindow()
       GoToOutline()
     endif
@@ -260,6 +269,10 @@ export def RefreshWindow()
       # ----------------------------------------------
       # Actually populate the window
       # ----------------------------------------------
+      # Set title
+      SetTitle()
+
+      # Set content
       setbufline(winbufnr(outline_win_id), len(title) + 1, Outline)
       # Set outline syntax the same as the caller buffer syntax.
       # DON'T SET filetype otherwise it is going to trigger lot of FileType
@@ -306,8 +319,9 @@ def FilterOutline(lines: list<string>)
   endif
 enddef
 
-augroup Outline_autochange
-  autocmd!
-  autocmd WinLeave * if bufwinid(bufnr()) == outline_win_id
-        \ && g:outline_autoclose | q | endif
-augroup END
+if g:outline_autoclose
+  augroup Outline_autochange
+    autocmd!
+    autocmd WinLeave * if bufwinid(bufnr()) == outline_win_id | q | endif
+  augroup END
+endif
