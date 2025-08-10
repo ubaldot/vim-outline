@@ -11,10 +11,10 @@ if !has('vim9script') ||  v:version < 900
   finish
 endif
 
-if exists('g:outline_loaded') && g:outline_loaded
+if exists('g:loaded_outline') && g:loaded_outline
   finish
 endif
-g:outline_loaded = true
+g:loaded_outline = true
 
 # --------------------------
 # User settings
