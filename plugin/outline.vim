@@ -1,4 +1,4 @@
-vim9script noclear
+vim9script
 
 # Vim plugin to get an outline for your scripts.
 # Maintainer:	Ubaldo Tiberi
@@ -11,9 +11,6 @@ if !has('vim9script') ||  v:version < 900
   finish
 endif
 
-if exists('g:loaded_outline') && g:loaded_outline
-  finish
-endif
 g:loaded_outline = true
 
 # --------------------------
@@ -74,14 +71,14 @@ endif
 # --------------------------
 # Commands
 # --------------------------
-if !exists(":OutlineToggle")
+if exists(":OutlineToggle") == 0
   command -nargs=? OutlineToggle outline.Toggle(<f-args>)
 endif
 
-if !exists(":OutlineRefresh")
+if exists(":OutlineRefresh") == 0
   command OutlineRefresh outline.RefreshWindow()
 endif
 
-if !exists(":OutlineGoToOutline")
+if exists(":OutlineGoToOutline") == 0
   command OutlineGoToOutline outline.GoToOutline()
 endif
