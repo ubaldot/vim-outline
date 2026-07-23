@@ -33,7 +33,7 @@ if !exists('g:outline_autoclose')
 endif
 
 
-import autoload "../autoload/regex.vim" as regex
+import autoload "../lib/regex.vim" as regex
 # User extensions
 if exists('g:outline_patterns')
   extend(regex.patterns, g:outline_patterns)
@@ -46,7 +46,7 @@ endif
 # --------------------------
 # Mappings
 # --------------------------
-import autoload "../autoload/outline.vim"
+import autoload "../lib/outline.vim"
 
 # noremap <unique> <script> <Plug>OutlineToggle
 # \ <ScriptCmd>outline.Toggle()<cr>
